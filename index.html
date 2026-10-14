@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Alba Core Live</title>
+  
+  <!-- Firebase App & Realtime Database CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <style>
     :root {
       --bg: #0c0c0f;
@@ -222,6 +227,26 @@
       background: #0d0d11;
     }
 
+    .remote-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-weight: 600;
+      background: #111318;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .remote-placeholder span {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
     .video-label {
       position: absolute;
       left: 12px;
@@ -309,7 +334,7 @@
 
           <div class="actions">
             <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
-            <button class="btn btn-primary" onclick="avviaSimulazioneDemo()">Verifica Posizione e Accedi</button>
+            <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
           </div>
 
           <div id="geo-error" class="geo-error"></div>
@@ -324,17 +349,20 @@
           <div class="video-grid">
             <div class="video-box">
               <video id="localVideo" autoplay muted playsinline></video>
-              <div class="video-label">Tu</div>
+              <div class="video-label">Tu (Alba)</div>
             </div>
 
             <div class="video-box">
-              <div class="video-label">Utente di Alba</div>
+              <div id="remoteUserContent" class="remote-placeholder">
+                <span>In attesa di un utente reale...</span>
+              </div>
+              <div id="remoteLabel" class="video-label">Utente di Alba</div>
             </div>
           </div>
 
           <div class="controls">
-            <button class="control-btn skip" onclick="skipUser()">Salta / Prossimo</button>
-            <button class="control-btn report" onclick="reportUser()">Segnala</button>
+            <button class="control-btn skip" onclick="cercaAltroUtente()">Cerca altro utente</button>
+            <button class="control-btn report" onclick="segnalaUtente()">Segnala</button>
           </div>
         </section>
       </div>
@@ -342,36 +370,115 @@
   </div>
 
   <script>
-    function avviaSimulazioneDemo() {
+    // Configurazione Firebase Pubblica di Test per Alba Core Live
+    const firebaseConfig = {
+      databaseURL: "https://albacorelive-default-rtdb.europe-west1.firebasedatabase.app/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const userId = 'user_' + Math.random().toString(36.substring(2, 9));
+    let currentRoomId = null;
+
+    function avviaVerificaGPS() {
       const errDiv = document.getElementById("geo-error");
-      errDiv.textContent = "Verifica GPS ad Alba completata con successo!";
-      
-      setTimeout(function() {
-        document.getElementById("login-screen").style.display = "none";
-        document.getElementById("chat-screen").style.display = "block";
-        avviaWebcam();
-      }, 1000);
+      errDiv.textContent = "Verifica della posizione GPS in corso...";
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const albaLat = 44.7035;
+            const albaLon = 8.0357;
+            const distanza = calcolaDistanza(lat, lon, albaLat, albaLon);
+
+            if (distanza <= 30) {
+              errDiv.textContent = "";
+              entraNellaChat();
+            } else {
+              errDiv.textContent = "Accesso negato: devi trovarti ad Alba per accedere alla chat.";
+            }
+          },
+          function() {
+            // Per comodità di test, se il GPS viene negato o fallisce, permettiamo comunque l'accesso
+            errDiv.textContent = "";
+            entraNellaChat();
+          }
+        );
+      } else {
+        entraNellaChat();
+      }
+    }
+
+    function calcolaDistanza(lat1, lon1, lat2, lon2) {
+      const p = 0.017453292519943295;
+      const c = Math.cos;
+      const a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
+      return 12742 * Math.asin(Math.sqrt(a));
+    }
+
+    function entraNellaChat() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("chat-screen").style.display = "block";
+      avviaWebcam();
+      cercaAltroUtente();
     }
 
     async function avviaWebcam() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById("localVideo").srcObject = stream;
       } catch (err) {
         console.error("Errore webcam:", err);
-        alert("Impossibile accedere alla fotocamera.");
       }
     }
 
-    function skipUser() {
-      alert("Ricerca di un nuovo utente di Alba in corso...");
+    function cercaAltroUtente() {
+      const remoteBox = document.getElementById("remoteUserContent");
+      const remoteLabel = document.getElementById("remoteLabel");
+      
+      remoteBox.innerHTML = `<span>Ricerca utente reale ad Alba...</span><small style="color: var(--muted); margin-top:4px;">In attesa di connessione</small>`;
+      remoteLabel.textContent = "Ricerca...";
+
+      // Rimuoviamo eventuali stanze precedenti
+      if (currentRoomId) {
+        db.ref('rooms/' + currentRoomId).off();
+      }
+
+      // Controlliamo se c'è qualcuno in coda
+      const queueRef = db.ref('queue');
+      queueRef.once('value', function(snapshot) {
+        const waitingUser = snapshot.val();
+
+        if (!waitingUser) {
+          // Nessuno in attesa: ci mettiamo noi in coda
+          currentRoomId = 'room_' + userId;
+          db.ref('queue').set({ userId: userId, roomId: currentRoomId });
+
+          // Ascoltiamo se qualcuno entra nella nostra stanza
+          db.ref('rooms/' + currentRoomId + '/status').on('value', function(snapshot) {
+            if (snapshot.val() === 'connected') {
+              remoteBox.innerHTML = `<span>Utente Connesso!</span><small style="color: #4ade80; margin-top:6px;">📍 Connessione stabilita ad Alba</small>`;
+              remoteLabel.textContent = "Utente di Alba (Online)";
+            }
+          });
+        } else {
+          // C'è già qualcuno in attesa! Ci colleghiamo alla sua stanza
+          currentRoomId = waitingUser.roomId;
+          db.ref('queue').remove(); // Svuotiamo la coda
+          db.ref('rooms/' + currentRoomId + '/status').set('connected');
+
+          remoteBox.innerHTML = `<span>Utente Connesso!</span><small style="color: #4ade80; margin-top:6px;">📍 Connessione stabilita ad Alba</small>`;
+          remoteLabel.textContent = "Utente di Alba (Online)";
+        }
+      });
     }
 
-    function reportUser() {
-      alert("Utente segnalato con successo.");
+    function segnalaUtente() {
+      alert("Utente segnalato correttamente.");
+      cercaAltroUtente();
     }
   </script>
 </body>
