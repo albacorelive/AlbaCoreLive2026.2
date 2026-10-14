@@ -391,7 +391,8 @@
     }
 
     function redirigiOAuthTikTok() {
-      const redirectUri = encodeURIComponent(window.location.href.split("?")[0]);
+      const cleanUrl = window.location.href.split("?")[0].replace(/\/$/, "");
+      const redirectUri = encodeURIComponent(cleanUrl);
       const tiktokAuthUrl =
         "https://www.tiktok.com/v2/auth/authorize/?client_key=" +
         TIKTOK_CLIENT_KEY +
