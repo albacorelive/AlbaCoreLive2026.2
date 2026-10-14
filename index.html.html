@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alba Core Live</title>
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --bg-2: #16181d;
+      --panel: rgba(25, 27, 33, 0.96);
+      --panel-alt: rgba(31, 34, 40, 0.96);
+      --primary: #e50914;
+      --primary-2: #ff3b4c;
+      --accent: #ff9800;
+      --text: #f4f4f5;
+      --muted: #a3a3a8;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(229,9,20,0.18), transparent 30%),
+        linear-gradient(135deg, var(--bg), var(--bg-2));
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      min-height: 100vh;
+    }
+
+    .page {
+      width: min(100%, 900px);
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 3.3rem);
+      letter-spacing: 0.08em;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .brand .brand-accent {
+      color: var(--primary);
+      text-shadow: 0 0 18px rgba(229,9,20,0.5);
+    }
+
+    .brand p {
+      margin-top: 8px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+
+    .content {
+      padding: 30px 30px 26px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .hero h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.5rem, 3vw, 2.3rem);
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .steps {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin-bottom: 24px;
+    }
+
+    .steps ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text);
+      line-height: 1.9;
+      font-size: 1rem;
+    }
+
+    .steps a {
+      color: #ff5d6d;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .steps a:hover {
+      text-decoration: underline;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 24px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(229,9,20,0.35);
+    }
+
+    .btn-dark {
+      background: #050505;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .btn-warn {
+      background: linear-gradient(135deg, #ff9800, #ffb347);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(255,152,0,0.25);
+    }
+
+    .geo-error {
+      min-height: 22px;
+      margin-top: 16px;
+      text-align: center;
+      color: #ff5a66;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .footer-links {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .footer-links a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 8px;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    #chat-screen {
+      display: none;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin: 8px 0 22px;
+    }
+
+    .video-box {
+      position: relative;
+      height: 290px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #20242b, #121418);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #0d0d11;
+    }
+
+    .video-label {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .control-btn {
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .skip { background: linear-gradient(135deg, #ff9800, #ffad33); }
+    .report { background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+
+    @media (max-width: 640px) {
+      .content {
+        padding: 24px 18px 20px;
+      }
+
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .video-box {
+        height: 220px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="brand">
+      <h1><span class="brand-accent">ALBA</span> CORE LIVE</h1>
+      <p>La chat ufficiale della community di Alba</p>
+    </header>
+
+    <main class="card">
+      <div class="content">
+        <section id="login-screen">
+          <div class="hero">
+            <h2>Sblocca l'accesso</h2>
+            <p>Per entrare nella community e trovare gli utenti di Alba, completa i passaggi richiesti.</p>
+          </div>
+
+          <div class="steps">
+            <ol>
+              <li>Segui la pagina ufficiale <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">@albacore26</a> su TikTok.</li>
+              <li>Verifica la tua posizione ad Alba e accedi con il tuo account.</li>
+            </ol>
+          </div>
+
+          <div class="actions">
+            <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
+            <button class="btn btn-primary" onclick="avviaVerificaGPS_e_Login()">Verifica Posizione e Accedi</button>
+          </div>
+
+          <div id="geo-error" class="geo-error"></div>
+
+          <div class="footer-links">
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Termini</a>
+          </div>
+        </section>
+
+        <section id="chat-screen">
+          <div class="video-grid">
+            <div class="video-box">
+              <video id="localVideo" autoplay muted playsinline></video>
+              <div class="video-label">Tu</div>
+            </div>
+
+            <div class="video-box">
+              <div class="video-label">Utente di Alba</div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="control-btn skip" onclick="skipUser()">Salta / Prossimo</button>
+            <button class="control-btn report" onclick="reportUser()">Segnala</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const TIKTOK_CLIENT_KEY = "aw2o4267frcwh86h";
+
+    function avviaVerificaGPS_e_Login() {
+      const errDiv = document.getElementById("geo-error");
+      errDiv.textContent = "Verifica della posizione GPS in corso...";
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const albaLat = 44.7035;
+            const albaLon = 8.0357;
+            const distanza = calcolaDistanza(lat, lon, albaLat, albaLon);
+
+            if (distanza <= 30) {
+              errDiv.textContent = "";
+              redirigiOAuthTikTok();
+            } else {
+              errDiv.textContent = "Accesso negato: devi trovarti ad Alba per accedere alla chat.";
+            }
+          },
+          function() {
+            errDiv.textContent = "Devi consentire l'accesso alla posizione GPS per verificare che ti trovi ad Alba.";
+          }
+        );
+      } else {
+        errDiv.textContent = "Il tuo browser non supporta la geolocalizzazione.";
+      }
+    }
+
+    function calcolaDistanza(lat1, lon1, lat2, lon2) {
+      const p = 0.017453292519943295;
+      const c = Math.cos;
+      const a =
+        0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+
+      return 12742 * Math.asin(Math.sqrt(a));
+    }
+
+    function redirigiOAuthTikTok() {
+      const redirectUri = encodeURIComponent(window.location.href.split("?")[0]);
+      const tiktokAuthUrl =
+        "https://www.tiktok.com/v2/auth/authorize/?client_key=" +
+        TIKTOK_CLIENT_KEY +
+        "&scope=user.info.basic&response_type=code&redirect_uri=" +
+        redirectUri;
+
+      window.location.href = tiktokAuthUrl;
+    }
+
+    window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+      const authCode = params.get("code");
+
+      if (authCode) {
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("chat-screen").style.display = "block";
+        avviaWebcam();
+      }
+    };
+
+    async function avviaWebcam() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true
+        });
+
+        document.getElementById("localVideo").srcObject = stream;
+      } catch (err) {
+        console.error("Errore webcam:", err);
+        alert("Impossibile accedere alla fotocamera o al microfono.");
+      }
+    }
+
+    function skipUser() {
+      alert("Ricerca di un nuovo utente di Alba in corso...");
+    }
+
+    function reportUser() {
+      alert("Utente segnalato con successo. Grazie per aver protetto la community!");
+    }
+  </script>
+</body>
+</html>
