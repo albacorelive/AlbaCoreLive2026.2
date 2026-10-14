@@ -391,8 +391,7 @@
     }
 
     function redirigiOAuthTikTok() {
-      const cleanUrl = window.location.href.split("?")[0].replace(/\/$/, "");
-      const redirectUri = encodeURIComponent(cleanUrl);
+      const redirectUri = encodeURIComponent("https://albacorelive.github.io/AlbaCoreLive2026.2/");
       const tiktokAuthUrl =
         "https://www.tiktok.com/v2/auth/authorize/?client_key=" +
         TIKTOK_CLIENT_KEY +
