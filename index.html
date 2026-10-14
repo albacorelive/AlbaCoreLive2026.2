@@ -175,7 +175,7 @@
       min-height: 22px;
       margin-top: 16px;
       text-align: center;
-      color: #ff5a66;
+      color: #ff9800;
       font-weight: 700;
       line-height: 1.4;
     }
@@ -349,7 +349,7 @@
           <div class="video-grid">
             <div class="video-box">
               <video id="localVideo" autoplay muted playsinline></video>
-              <div class="video-label">Tu (Alba)</div>
+              <div class="video-label">Tu</div>
             </div>
 
             <div class="video-box">
@@ -370,7 +370,6 @@
   </div>
 
   <script>
-    // Configurazione Firebase Pubblica di Test per Alba Core Live
     const firebaseConfig = {
       databaseURL: "https://albacorelive-default-rtdb.europe-west1.firebasedatabase.app/"
     };
@@ -378,7 +377,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const userId = 'user_' + Math.random().toString(36.substring(2, 9));
+    const userId = 'user_' + Math.random().toString(36).substring(2, 9);
     let currentRoomId = null;
 
     function avviaVerificaGPS() {
@@ -394,20 +393,17 @@
             const albaLon = 8.0357;
             const distanza = calcolaDistanza(lat, lon, albaLat, albaLon);
 
-            if (distanza <= 30) {
-              errDiv.textContent = "";
-              entraNellaChat();
-            } else {
-              errDiv.textContent = "Accesso negato: devi trovarti ad Alba per accedere alla chat.";
-            }
-          },
-          function() {
-            // Per comodità di test, se il GPS viene negato o fallisce, permettiamo comunque l'accesso
             errDiv.textContent = "";
             entraNellaChat();
-          }
+          },
+          function() {
+            errDiv.textContent = "";
+            entraNellaChat();
+          },
+          { timeout: 10000 }
         );
       } else {
+        errDiv.textContent = "";
         entraNellaChat();
       }
     }
@@ -439,39 +435,34 @@
       const remoteBox = document.getElementById("remoteUserContent");
       const remoteLabel = document.getElementById("remoteLabel");
       
-      remoteBox.innerHTML = `<span>Ricerca utente reale ad Alba...</span><small style="color: var(--muted); margin-top:4px;">In attesa di connessione</small>`;
+      remoteBox.innerHTML = `<span>Ricerca utente reale...</span><small style="color: var(--muted); margin-top:4px;">In attesa di connessione</small>`;
       remoteLabel.textContent = "Ricerca...";
 
-      // Rimuoviamo eventuali stanze precedenti
       if (currentRoomId) {
         db.ref('rooms/' + currentRoomId).off();
       }
 
-      // Controlliamo se c'è qualcuno in coda
       const queueRef = db.ref('queue');
       queueRef.once('value', function(snapshot) {
         const waitingUser = snapshot.val();
 
         if (!waitingUser) {
-          // Nessuno in attesa: ci mettiamo noi in coda
           currentRoomId = 'room_' + userId;
           db.ref('queue').set({ userId: userId, roomId: currentRoomId });
 
-          // Ascoltiamo se qualcuno entra nella nostra stanza
           db.ref('rooms/' + currentRoomId + '/status').on('value', function(snapshot) {
             if (snapshot.val() === 'connected') {
-              remoteBox.innerHTML = `<span>Utente Connesso!</span><small style="color: #4ade80; margin-top:6px;">📍 Connessione stabilita ad Alba</small>`;
-              remoteLabel.textContent = "Utente di Alba (Online)";
+              remoteBox.innerHTML = `<span>Utente Connesso!</span><small style="color: #4ade80; margin-top:6px;">📍 Connessione stabilita</small>`;
+              remoteLabel.textContent = "Utente Online";
             }
           });
         } else {
-          // C'è già qualcuno in attesa! Ci colleghiamo alla sua stanza
           currentRoomId = waitingUser.roomId;
-          db.ref('queue').remove(); // Svuotiamo la coda
+          db.ref('queue').remove();
           db.ref('rooms/' + currentRoomId + '/status').set('connected');
 
-          remoteBox.innerHTML = `<span>Utente Connesso!</span><small style="color: #4ade80; margin-top:6px;">📍 Connessione stabilita ad Alba</small>`;
-          remoteLabel.textContent = "Utente di Alba (Online)";
+          remoteBox.innerHTML = `<span>Utente Connesso!</span><small style="color: #4ade80; margin-top:6px;">📍 Connessione stabilita</small>`;
+          remoteLabel.textContent = "Utente Online";
         }
       });
     }
