@@ -166,12 +166,6 @@
       color: #fff;
     }
 
-    .btn-warn {
-      background: linear-gradient(135deg, #ff9800, #ffb347);
-      color: #fff;
-      box-shadow: 0 10px 24px rgba(255,152,0,0.25);
-    }
-
     .geo-error {
       min-height: 22px;
       margin-top: 16px;
@@ -309,13 +303,13 @@
           <div class="steps">
             <ol>
               <li>Segui la pagina ufficiale <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">@albacore26</a> su TikTok.</li>
-              <li>Verifica la tua posizione ad Alba e accedi con il tuo account.</li>
+              <li>Verifica la tua posizione ad Alba e accedi.</li>
             </ol>
           </div>
 
           <div class="actions">
             <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
-            <button class="btn btn-primary" onclick="avviaVerificaGPS_e_Login()">Verifica Posizione e Accedi</button>
+            <button class="btn btn-primary" onclick="avviaSimulazioneDemo()">Verifica Posizione e Accedi</button>
           </div>
 
           <div id="geo-error" class="geo-error"></div>
@@ -348,69 +342,16 @@
   </div>
 
   <script>
-    const TIKTOK_CLIENT_KEY = "sbaw8ovifc1oz67uuh";
-
-    function avviaVerificaGPS_e_Login() {
+    function avviaSimulazioneDemo() {
       const errDiv = document.getElementById("geo-error");
-      errDiv.textContent = "Verifica della posizione GPS in corso...";
-
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          function(position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            const albaLat = 44.7035;
-            const albaLon = 8.0357;
-            const distanza = calcolaDistanza(lat, lon, albaLat, albaLon);
-
-            if (distanza <= 30) {
-              errDiv.textContent = "";
-              redirigiOAuthTikTok();
-            } else {
-              errDiv.textContent = "Accesso negato: devi trovarti ad Alba per accedere alla chat.";
-            }
-          },
-          function() {
-            errDiv.textContent = "Devi consentire l'accesso alla posizione GPS per verificare che ti trovi ad Alba.";
-          }
-        );
-      } else {
-        errDiv.textContent = "Il tuo browser non supporta la geolocalizzazione.";
-      }
-    }
-
-    function calcolaDistanza(lat1, lon1, lat2, lon2) {
-      const p = 0.017453292519943295;
-      const c = Math.cos;
-      const a =
-        0.5 -
-        c((lat2 - lat1) * p) / 2 +
-        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
-
-      return 12742 * Math.asin(Math.sqrt(a));
-    }
-
-    function redirigiOAuthTikTok() {
-      const redirectUri = encodeURIComponent("https://albacorelive.github.io/AlbaCoreLive2026.2/");
-      const tiktokAuthUrl =
-        "https://www.tiktok.com/v2/auth/authorize/?client_key=" +
-        TIKTOK_CLIENT_KEY +
-        "&scope=user.info.basic&response_type=code&redirect_uri=" +
-        redirectUri;
-
-      window.location.href = tiktokAuthUrl;
-    }
-
-    window.onload = function () {
-      const params = new URLSearchParams(window.location.search);
-      const authCode = params.get("code");
-
-      if (authCode) {
+      errDiv.textContent = "Verifica GPS ad Alba completata con successo!";
+      
+      setTimeout(function() {
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("chat-screen").style.display = "block";
         avviaWebcam();
-      }
-    };
+      }, 1000);
+    }
 
     async function avviaWebcam() {
       try {
@@ -418,11 +359,10 @@
           video: true,
           audio: true
         });
-
         document.getElementById("localVideo").srcObject = stream;
       } catch (err) {
         console.error("Errore webcam:", err);
-        alert("Impossibile accedere alla fotocamera o al microfono.");
+        alert("Impossibile accedere alla fotocamera.");
       }
     }
 
@@ -431,7 +371,7 @@
     }
 
     function reportUser() {
-      alert("Utente segnalato con successo. Grazie per aver protetto la community!");
+      alert("Utente segnalato con successo.");
     }
   </script>
 </body>
