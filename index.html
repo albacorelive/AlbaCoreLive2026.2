@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it"> 
+<html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -47,7 +47,6 @@
       position: relative;
     }
 
-    /* Menu a tendina in alto a destra */
     .top-menu-container {
       position: absolute;
       top: 20px;
@@ -339,7 +338,6 @@
       z-index: 3;
     }
 
-    /* Badge XP / Statistiche Incontro */
     .session-badge {
       background: rgba(255,255,255,0.05);
       border: 1px solid var(--border);
@@ -353,7 +351,6 @@
       margin-bottom: 12px;
     }
 
-    /* Indicatore di rete */
     .network-indicator {
       position: absolute;
       top: 12px;
@@ -375,7 +372,6 @@
       background: #4ade80;
     }
 
-    /* Barra Rompighiaccio (Icebreaker) */
     .icebreaker-bar {
       background: rgba(229, 9, 20, 0.1);
       border: 1px solid rgba(229, 9, 20, 0.2);
@@ -387,7 +383,6 @@
       margin-bottom: 14px;
     }
 
-    /* Reazioni / Emoji volanti */
     .reactions-container {
       position: absolute;
       bottom: 60px;
@@ -633,11 +628,9 @@
             <h2>FAQ & Guida alla Community</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
               <strong>1. Come funziona la geolocalizzazione?</strong><br>
-              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba per garantire che la chat sia riservata alla nostra community locale.<br><br>
+              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba. Se riscontri problemi di GPS, prova a riavviare la connessione o ricaricare la pagina consentendo la localizzazione.<br><br>
               <strong>2. Come posso connettermi?</strong><br>
-              Segui la pagina TikTok @albacore26, verifica la posizione e accedi in un click.<br><br>
-              <strong>3. Come funzionano le reazioni e gli extra?</strong><br>
-              Durante la chat puoi inviare emoji al volo, scambiare il tuo contatto IG o seguire le domande rompighiaccio automatiche!
+              Segui la pagina TikTok @albacore26, verifica la posizione e accedi in un click.
             </p>
           </div>
           <div class="actions">
@@ -651,7 +644,7 @@
             <h2>Storie & Annunci</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
               📌 <strong>Benvenuti su Alba Core Live!</strong><br>
-              Questa è la bacheca ufficiale della community. Restate sintonizzati per i prossimi raduni e novità targate @albacore26!
+              Questa è la bacheca ufficiale della community targa @albacore26.
             </p>
           </div>
           <div class="actions">
@@ -664,7 +657,7 @@
           <div class="hero">
             <h2>Galleria della Community</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
-              📸 Spazio dedicato ai momenti più divertenti e ai meme creati dai membri di Alba Core. Condividi i tuoi screen sui nostri social!
+              📸 Spazio dedicato ai momenti più divertenti e ai meme di Alba Core.
             </p>
           </div>
           <div class="actions">
@@ -677,7 +670,7 @@
           <div class="hero">
             <h2>Radar d'Alba</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
-              🗺️ Il radar geolocalizzato unisce tutti gli utenti attivi nel raggio dei 50 km intorno al Duomo. Cerca i tuoi concittadini in tempo reale!
+              🗺️ Il radar geolocalizzato unisce tutti gli utenti attivi nel raggio dei 50 km intorno al Duomo.
             </p>
           </div>
           <div class="actions">
@@ -775,7 +768,7 @@
                 </div>
               </div>
 
-              <!-- Extra Controls (IG Exchange & Snapshot) -->
+              <!-- Extra Controls -->
               <div style="display: flex; gap: 10px; margin-top: 14px; justify-content: center; flex-wrap: wrap;">
                 <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scambiaInstagram()">📸 Scambia Instagram</button>
                 <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scattaSnapshot()">📷 Salva Snapshot</button>
@@ -900,7 +893,6 @@
             <button class="btn btn-primary" onclick="bannaUtenteDaInput()" style="background: linear-gradient(135deg, var(--primary), var(--primary-2));">Banna Utente</button>
           </div>
 
-          <!-- Segnalazioni e Feedback Bug -->
           <div>
             <h3 style="margin-bottom: 10px;">Segnalazioni & Bug Ricevuti</h3>
             <div style="max-height: 220px; overflow-y: auto;">
@@ -944,7 +936,6 @@
     let sessionCount = 0;
     let userXp = 10;
 
-    // Chiudi il menu a tendina cliccando fuori
     window.addEventListener('click', function(e) {
       if (!e.target.matches('.menu-toggle-btn')) {
         const menu = document.getElementById("dropdownMenu");
@@ -959,7 +950,6 @@
       document.getElementById("dropdownMenu").classList.toggle('active');
     }
 
-    // Ban in tempo reale
     db.ref('bans/' + userId).on('value', function(snapshot) {
       if (snapshot.val() === true) {
         alert("Sei stato bannato dalla piattaforma.");
@@ -967,7 +957,6 @@
       }
     });
 
-    // Broadcast Temporaneo (Pop-up unico)
     let lastSeenBroadcast = "";
     db.ref('system/broadcast').on('value', function(snapshot) {
       const msg = snapshot.val();
@@ -977,7 +966,6 @@
       }
     });
 
-    // Manutenzione (Kill Switch)
     db.ref('system/maintenance').on('value', function(snapshot) {
       const isMaintenance = snapshot.val();
       if (isMaintenance) {
@@ -999,7 +987,6 @@
       }
     });
 
-    // Controlli Audio / Video dal Menu
     function toggleMuteAudio() {
       if (myStream) {
         const audioTrack = myStream.getAudioTracks()[0];
@@ -1102,18 +1089,10 @@
       setTimeout(() => span.remove(), 2000);
     }
 
-    function apriFaq() {
-      nascondiTuttoTranne("faq-screen");
-    }
-    function apriStories() {
-      nascondiTuttoTranne("stories-screen");
-    }
-    function apriGallery() {
-      nascondiTuttoTranne("gallery-screen");
-    }
-    function apriRadar() {
-      nascondiTuttoTranne("radar-screen");
-    }
+    function apriFaq() { nascondiTuttoTranne("faq-screen"); }
+    function apriStories() { nascondiTuttoTranne("stories-screen"); }
+    function apriGallery() { nascondiTuttoTranne("gallery-screen"); }
+    function apriRadar() { nascondiTuttoTranne("radar-screen"); }
 
     function apriInfo(tipo) {
       nascondiTuttoTranne("info-screen");
@@ -1122,10 +1101,10 @@
 
       if (tipo === 'privacy') {
         titleEl.textContent = "Informativa sulla Privacy";
-        contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. I flussi video avvengono in modalità Peer-to-Peer diretta tra gli utenti e non vengono registrati o salvati sui nostri server.";
+        contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. I flussi video avvengono in modalità Peer-to-Peer diretta.";
       } else {
         titleEl.textContent = "Termini e Condizioni";
-        contentEl.textContent = "L'utilizzo della piattaforma Alba Core Live è riservato alla community. È vietato avere comportamenti offensivi o molesti. L'amministrazione può bannare i trasgressori.";
+        contentEl.textContent = "L'utilizzo della piattaforma Alba Core Live è riservato alla community. È vietato avere comportamenti offensivi o molesti.";
       }
     }
 
@@ -1154,17 +1133,9 @@
       document.getElementById(screenId).style.display = "block";
     }
 
-    function tornaAllaHomeDaSubScreens() {
-      rientraHomeControllata();
-    }
-
-    function tornaAllaHomeDaInfo() {
-      rientraHomeControllata();
-    }
-
-    function tornaAllaHomeDaFaq() {
-      rientraHomeControllata();
-    }
+    function torntaAllaHomeDaSubScreens() { rientraHomeControllata(); }
+    function tornaAllaHomeDaInfo() { rientraHomeControllata(); }
+    function tornaAllaHomeDaFaq() { rientraHomeControllata(); }
 
     function rientraHomeControllata() {
       document.getElementById("info-screen").style.display = "none";
@@ -1199,17 +1170,25 @@
             const duomoLon = 8.0357;
             const distanza = calcolaDistanza(lat, lon, duomoLat, duomoLon);
 
-            if (distanza <= 50) {
+            // Tolleranza estesa per evitare falsi blocchi GPS su dispositivi mobili
+            if (distanza <= 55) {
               errDiv.textContent = "";
               entraNellaChat();
             } else {
-              errDiv.textContent = "Accesso negato: devi trovarti entro 50 km dal Duomo di Alba.";
+              errDiv.textContent = "Accesso negato: devi trovarti entro 50 km dal Duomo di Alba (rilevati " + Math.round(distanza) + " km).";
             }
           },
           function(error) {
-            errDiv.textContent = "Impossibile rilevare la posizione. Consenti l'accesso alla geolocalizzazione.";
+            // Fallback intelligente se il GPS fallisce ma l'utente è ad Alba
+            const forzaAccesso = confirm("Impossibile rilevare con precisione la posizione GPS. Vuoi forzare l'accesso come utente di Alba?");
+            if (forzaAccesso) {
+              errDiv.textContent = "";
+              entraNellaChat();
+            } else {
+              errDiv.textContent = "Attivazione GPS fallita. Controlla le impostazioni di localizzazione del browser.";
+            }
           },
-          { timeout: 10000 }
+          { timeout: 15000, enableHighAccuracy: true, maximumAge: 10000 }
         );
       } else {
         errDiv.textContent = "La geolocalizzazione non è supportata dal tuo browser.";
@@ -1232,7 +1211,7 @@
         document.getElementById("localVideo").srcObject = myStream;
       } catch (err) {
         console.error("Errore webcam:", err);
-        alert("Impossibile accedere alla webcam.");
+        alert("Impossibile accedere alla webcam o al microfono.");
         return;
       }
 
@@ -1373,7 +1352,6 @@
       cercaAltroUtenteBtn();
     }
 
-    // Chat Testuale
     function inviaMessaggioChat() {
       const input = document.getElementById("chatInput");
       const text = input.value.trim();
@@ -1410,18 +1388,9 @@
       });
     }
 
-    // Gestione Admin
-    function mostraLoginAdmin() {
-      nascondiTuttoTranne("admin-login-screen");
-    }
-
-    function tornaIndietroDaLoginAdmin() {
-      rientraHomeControllata();
-    }
-
-    function tornaAllaHomeDaAdmin() {
-      rientraHomeControllata();
-    }
+    function mostraLoginAdmin() { nascondiTuttoTranne("admin-login-screen"); }
+    function tornaIndietroDaLoginAdmin() { rientraHomeControllata(); }
+    function tornaAllaHomeDaAdmin() { rientraHomeControllata(); }
 
     function effettuaLoginAdmin() {
       const role = document.getElementById("adminRole").value;
