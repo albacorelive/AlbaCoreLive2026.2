@@ -60,6 +60,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: 0.2s;
+      z-index: 10;
     }
 
     .admin-link-btn:hover {
@@ -235,7 +236,7 @@
       color: var(--muted);
     }
 
-    .form-group input, .form-group select {
+    .form-group input, .form-group select, .form-group textarea {
       width: 100%;
       padding: 12px 16px;
       border-radius: 12px;
@@ -351,6 +352,29 @@
       background: rgba(255,255,255,0.05);
     }
 
+    .stats-box {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-card span {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #fff;
+      margin-top: 4px;
+    }
+
     @media (max-width: 640px) {
       .content {
         padding: 24px 18px 20px;
@@ -367,11 +391,14 @@
       .btn {
         width: 100%;
       }
+      .stats-box {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <button class="admin-link-btn" onclick="mostraLoginAdmin()">Admin</button>
+  <button class="admin-link-btn" onclick="gestisciPulsanteAdmin()">Admin</button>
 
   <div class="page">
     <header class="brand">
@@ -463,7 +490,7 @@
           </div>
           <div class="actions">
             <button class="btn btn-primary" onclick="effettuaLoginAdmin()">Accedi al Pannello</button>
-            <button class="btn btn-dark" onclick="tornaAllaHome()">Indietro</button>
+            <button class="btn btn-dark" onclick="tornaIndietroDaLoginAdmin()">Indietro</button>
           </div>
           <div id="admin-error" class="geo-error"></div>
         </section>
@@ -472,48 +499,99 @@
         <section id="admin-panel-screen">
           <div class="hero">
             <h2 id="adminPanelTitle">Pannello di Controllo</h2>
-            <p>Gestione in tempo reale di Alba Core Live</p>
+            <p>Gestione avanzata in tempo reale</p>
           </div>
 
-          <div style="margin-bottom: 25px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Controllo Stato Piattaforma</h3>
-            <p style="color: var(--muted); font-size: 0.9rem;">Interrompi immediatamente il sito per tutti gli utenti in caso di emergenza.</p>
+          <!-- Statistiche in tempo reale -->
+          <div class="stats-box">
+            <div class="stat-card">
+              <small style="color:var(--muted);">Utenti Online</small>
+              <span id="statOnlineUsers">0</span>
+            </div>
+            <div class="stat-card">
+              <small style="color:var(--muted);">In Coda</small>
+              <span id="statQueueUsers">0</span>
+            </div>
+            <div class="stat-card">
+              <small style="color:var(--muted);">Stanze Attive</small>
+              <span id="statActiveRooms">0</span>
+            </div>
+          </div>
+
+          <!-- Controllo Manutenzione -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Stato Piattaforma</h3>
             <button id="killSwitchBtn" class="btn btn-primary" onclick="toggleKillSwitch()">Disattiva Sito (Manutenzione)</button>
           </div>
 
-          <div id="masterAdminSection" style="margin-bottom: 25px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Crea Nuovo Aiuto-Admin</h3>
+          <!-- Broadcast Messaggi Globali -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Invia Broadcast Globale</h3>
             <div class="form-group">
-              <label>Username Aiuto-Admin</label>
-              <input type="text" id="newHelperUser" placeholder="Es. helper1" />
+              <input type="text" id="broadcastText" placeholder="Scrivi un avviso per tutti gli utenti online..." />
             </div>
-            <div class="form-group">
-              <label>Password Aiuto-Admin</label>
-              <input type="password" id="newHelperPass" placeholder="Es. password123" />
-            </div>
-            <button class="btn btn-primary" onclick="creaAiutoAdmin()">Crea Account</button>
-            <div id="helper-msg" style="margin-top: 10px; font-weight: bold; color: #4ade80;"></div>
+            <button class="btn btn-primary" onclick="inviaBroadcast()">Invia Avviso</button>
           </div>
 
+          <!-- Sezione Master Admin: Creazione e Gestione Aiuto-Admin -->
+          <div id="masterAdminSection" style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Gestione Aiuto-Admin</h3>
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="newHelperUser" placeholder="Username" />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="newHelperPass" placeholder="Password" />
+            </div>
+            <button class="btn btn-primary" onclick="creaAiutoAdmin()">Crea Account</button>
+            <div id="helper-msg" style="margin-top: 8px; font-weight: bold; color: #4ade80;"></div>
+
+            <h4 style="margin-bottom: 6px; margin-top: 15px;">Aiuto-Admin Esistenti</h4>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Azione</th>
+                </tr>
+              </thead>
+              <tbody id="helpersTableBody">
+                <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun aiuto-admin registrato.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Ban Utenti -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Gestione Ban Utenti</h3>
+            <div class="form-group">
+              <label>ID Utente da bannare</label>
+              <input type="text" id="banUserIdInput" placeholder="Es. user_abc123" />
+            </div>
+            <button class="btn btn-primary" onclick="bannaUtenteDaInput()" style="background: linear-gradient(135deg, var(--primary), var(--primary-2));">Banna Utente</button>
+          </div>
+
+          <!-- Segnalazioni -->
           <div>
             <h3 style="margin-bottom: 10px;">Segnalazioni Ricevute</h3>
-            <div style="max-height: 250px; overflow-y: auto;">
+            <div style="max-height: 220px; overflow-y: auto;">
               <table class="admin-table">
                 <thead>
                   <tr>
                     <th>Data/Ora</th>
-                    <th>Dettagli / Stanza</th>
+                    <th>ID Utente / Stanza</th>
+                    <th>Azione</th>
                   </tr>
                 </thead>
                 <tbody id="reportsTableBody">
-                  <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>
+                  <tr><td colspan="3" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
 
           <div class="actions" style="margin-top: 25px;">
-            <button class="btn btn-dark" onclick="tornaAllaHome()">Torna alla Home</button>
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaAdmin()">Torna alla Home</button>
           </div>
         </section>
       </div>
@@ -533,6 +611,23 @@
     let myStream = null;
     let currentCall = null;
     let currentRoomId = null;
+    let currentAdminRole = null;
+
+    // Ascolto Ban in tempo reale
+    db.ref('bans/' + userId).on('value', function(snapshot) {
+      if (snapshot.val() === true) {
+        alert("Sei stato bannato dalla piattaforma.");
+        window.location.reload();
+      }
+    });
+
+    // Ascolto Broadcast Globali
+    db.ref('system/broadcast').on('value', function(snapshot) {
+      const msg = snapshot.val();
+      if (msg) {
+        alert("📢 Avviso Amministrazione: " + msg);
+      }
+    });
 
     // Controllo in tempo reale dello stato di manutenzione (Kill Switch)
     db.ref('system/maintenance').on('value', function(snapshot) {
@@ -544,12 +639,24 @@
         document.getElementById("admin-panel-screen").style.display = "none";
         document.getElementById("maintenance-screen").style.display = "block";
       } else {
+        // Se non è in manutenzione, ripristina la home solo se eravamo bloccati per manutenzione
         if (document.getElementById("maintenance-screen").style.display === "block") {
           document.getElementById("maintenance-screen").style.display = "none";
           document.getElementById("login-screen").style.display = "block";
         }
       }
     });
+
+    function gestisciPulsanteAdmin() {
+      db.ref('system/maintenance').once('value', function(snapshot) {
+        const isMaintenance = snapshot.val();
+        if (isMaintenance) {
+          // Se siamo in manutenzione, permettiamo comunque di aprire il login admin
+          document.getElementById("maintenance-screen").style.display = "none";
+        }
+        mostraLoginAdmin();
+      });
+    }
 
     function avviaVerificaGPS() {
       const errDiv = document.getElementById("geo-error");
@@ -686,11 +793,10 @@
     }
 
     function segnalaUtente() {
-      // Salva la segnalazione sul database Firebase in tempo reale
       const reportRef = db.ref('reports').push();
       reportRef.set({
         timestamp: new Date().toLocaleString(),
-        roomId: currentRoomId || 'N/A'
+        reportedUser: currentRoomId || userId
       });
 
       alert("Utente segnalato correttamente.");
@@ -705,10 +811,26 @@
       document.getElementById("admin-login-screen").style.display = "block";
     }
 
-    function tornaAllaHome() {
+    function tornaIndietroDaLoginAdmin() {
       document.getElementById("admin-login-screen").style.display = "none";
+      db.ref('system/maintenance').once('value', function(snapshot) {
+        if (snapshot.val()) {
+          document.getElementById("maintenance-screen").style.display = "block";
+        } else {
+          document.getElementById("login-screen").style.display = "block";
+        }
+      });
+    }
+
+    function tornaAllaHomeDaAdmin() {
       document.getElementById("admin-panel-screen").style.display = "none";
-      document.getElementById("login-screen").style.display = "block";
+      db.ref('system/maintenance').once('value', function(snapshot) {
+        if (snapshot.val()) {
+          document.getElementById("maintenance-screen").style.display = "block";
+        } else {
+          document.getElementById("login-screen").style.display = "block";
+        }
+      });
     }
 
     function effettuaLoginAdmin() {
@@ -725,7 +847,6 @@
           errEl.textContent = "Credenziali Admin non valide.";
         }
       } else {
-        // Controllo aiuto-admin salvati su Firebase
         db.ref('helpers/' + user).once('value', function(snapshot) {
           const helperData = snapshot.val();
           if (helperData && helperData.password === pass) {
@@ -739,12 +860,14 @@
     }
 
     function apriPannelloAdmin(role) {
+      currentAdminRole = role;
       document.getElementById("admin-login-screen").style.display = "none";
       document.getElementById("admin-panel-screen").style.display = "block";
 
       if (role === 'admin') {
         document.getElementById("adminPanelTitle").textContent = "Pannello Master Admin";
         document.getElementById("masterAdminSection").style.display = "block";
+        caricaAiutoAdminList();
       } else {
         document.getElementById("adminPanelTitle").textContent = "Pannello Aiuto-Admin";
         document.getElementById("masterAdminSection").style.display = "none";
@@ -752,6 +875,7 @@
 
       caricaSegnalazioni();
       aggiornaStatoKillSwitchBtn();
+      aggiornaStatisticheLive();
     }
 
     function toggleKillSwitch() {
@@ -775,25 +899,78 @@
       });
     }
 
+    function inviaBroadcast() {
+      const text = document.getElementById("broadcastText").value.trim();
+      if (!text) {
+        alert("Inserisci il testo dell'avviso.");
+        return;
+      }
+      db.ref('system/broadcast').set(text, function(err) {
+        if (!err) {
+          alert("Avviso inviato con successo a tutti gli utenti!");
+          document.getElementById("broadcastText").value = "";
+        }
+      });
+    }
+
     function creaAiutoAdmin() {
       const user = document.getElementById("newHelperUser").value.trim();
       const pass = document.getElementById("newHelperPass").value.trim();
       const msgEl = document.getElementById("helper-msg");
 
       if (!user || !pass) {
-        alert("Inserisci username e password validi.");
+        alert("Inserisci username e password.");
         return;
       }
 
       db.ref('helpers/' + user).set({ password: pass }, function(error) {
         if (!error) {
-          msgEl.textContent = "Account aiuto-admin '" + user + "' creato con successo!";
+          msgEl.textContent = "Account aiuto-admin '" + user + "' creato!";
           document.getElementById("newHelperUser").value = "";
           document.getElementById("newHelperPass").value = "";
-        } else {
-          alert("Errore durante la creazione.");
         }
       });
+    }
+
+    function eliminaAiutoAdmin(username) {
+      if (confirm("Vuoi davvero eliminare l'account aiuto-admin '" + username + "'?")) {
+        db.ref('helpers/' + username).remove();
+      }
+    }
+
+    function caricaAiutoAdminList() {
+      const tbody = document.getElementById("helpersTableBody");
+      db.ref('helpers').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) {
+          tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun aiuto-admin registrato.</td></tr>`;
+          return;
+        }
+
+        Object.keys(data).forEach(username => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${username}</td><td><button class="btn btn-dark" style="padding:4px 10px; font-size:0.8rem;" onclick="eliminaAiutoAdmin('${username}')">Elimina</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function bannaUtente(targetId) {
+      if (confirm("Vuoi bannare l'utente " + targetId + "?")) {
+        db.ref('bans/' + targetId).set(true);
+        alert("Utente bannato con successo.");
+      }
+    }
+
+    function bannaUtenteDaInput() {
+      const targetId = document.getElementById("banUserIdInput").value.trim();
+      if (!targetId) {
+        alert("Inserisci un ID utente valido.");
+        return;
+      }
+      bannaUtente(targetId);
+      document.getElementById("banUserIdInput").value = "";
     }
 
     function caricaSegnalazioni() {
@@ -802,15 +979,34 @@
         tbody.innerHTML = "";
         const data = snapshot.val();
         if (!data) {
-          tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>`;
           return;
         }
 
-        Object.values(data).forEach(rep => {
+        Object.entries(data).forEach(([key, rep]) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${rep.timestamp}</td><td>Stanza sessione: ${rep.roomId}</td>`;
+          tr.innerHTML = `<td>${rep.timestamp}</td><td>${rep.reportedUser}</td><td><button class="btn btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="bannaUtente('${rep.reportedUser}')">Banna</button></td>`;
           tbody.appendChild(tr);
         });
+      });
+    }
+
+    function aggiornaStatisticheLive() {
+      db.ref('queue').on('value', function(snapshot) {
+        const queueData = snapshot.val();
+        document.getElementById("statQueueUsers").textContent = queueData ? 1 : 0;
+      });
+
+      db.ref('rooms').on('value', function(snapshot) {
+        const roomsData = snapshot.val();
+        let activeCount = 0;
+        if (roomsData) {
+          Object.values(roomsData).forEach(room => {
+            if (room.status === 'connected') activeCount++;
+          });
+        }
+        document.getElementById("statActiveRooms").textContent = activeCount;
+        document.getElementById("statOnlineUsers").textContent = (activeCount * 2) + (document.getElementById("statQueueUsers").textContent == 1 ? 1 : 0);
       });
     }
   </script>
