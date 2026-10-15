@@ -786,6 +786,8 @@
       }
 
       if (currentRoomId) {
+        // Notifichiamo l'altra persona nella stanza che abbiamo chiuso/skippato
+        db.ref('rooms/' + currentRoomId + '/skip').set(userId);
         db.ref('rooms/' + currentRoomId).off();
       }
 
@@ -797,9 +799,18 @@
           currentRoomId = 'room_' + userId;
           db.ref('queue').set({ userId: userId, peerId: activePeerId, roomId: currentRoomId });
 
+          // Ascoltiamo sia lo status che l'evento skip dall'altra persona
           db.ref('rooms/' + currentRoomId).on('value', function(snapshot) {
             const roomData = snapshot.val();
-            if (roomData && roomData.status === 'connected' && roomData.peer2) {
+            if (!roomData) return;
+
+            if (roomData.skip && roomData.skip !== userId) {
+              // L'altro utente ha skippato o segnalato: ripartiamo con la ricerca
+              cercaAltroUtenteBtn();
+              return;
+            }
+
+            if (roomData.status === 'connected' && roomData.peer2) {
               const call = peer.call(roomData.peer2, myStream);
               currentCall = call;
               call.on('stream', function(remoteStream) {
@@ -813,6 +824,13 @@
           
           db.ref('queue').remove();
           db.ref('rooms/' + currentRoomId).set({ status: 'connected', peer2: activePeerId });
+
+          // Ascoltiamo se l'host skippa
+          db.ref('rooms/' + currentRoomId + '/skip').on('value', function(snapshot) {
+            if (snapshot.val() && snapshot.val() !== userId) {
+              cercaAltroUtenteBtn();
+            }
+          });
 
           const call = peer.call(hostPeerId, myStream);
           currentCall = call;
