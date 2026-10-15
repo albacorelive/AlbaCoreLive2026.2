@@ -69,7 +69,7 @@
     }
 
     .page {
-      width: min(100%, 900px);
+      width: min(100%, 950px);
     }
 
     .brand {
@@ -222,7 +222,7 @@
       text-decoration: underline;
     }
 
-    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen {
+    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen {
       display: none;
     }
 
@@ -247,16 +247,22 @@
       font-size: 1rem;
     }
 
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
     .video-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin: 8px 0 22px;
+      gap: 14px;
     }
 
     .video-box {
       position: relative;
-      height: 290px;
+      height: 260px;
       border-radius: 16px;
       overflow: hidden;
       background: linear-gradient(135deg, #20242b, #121418);
@@ -308,6 +314,68 @@
       font-weight: 600;
       backdrop-filter: blur(4px);
       z-index: 3;
+    }
+
+    .text-chat-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      height: 534px;
+      overflow: hidden;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-message {
+      background: rgba(255,255,255,0.05);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      max-width: 85%;
+      word-break: break-word;
+    }
+
+    .chat-message.me {
+      background: rgba(229, 9, 20, 0.2);
+      align-self: flex-end;
+      border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+
+    .chat-input-area {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      gap: 8px;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-size: 0.9rem;
+    }
+
+    .chat-input-area button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
     }
 
     .controls {
@@ -376,6 +444,18 @@
       margin-top: 4px;
     }
 
+    @media (max-width: 768px) {
+      .chat-layout {
+        grid-template-columns: 1fr;
+      }
+      .video-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .text-chat-box {
+        height: 250px;
+      }
+    }
+
     @media (max-width: 640px) {
       .content {
         padding: 24px 18px 20px;
@@ -409,11 +489,29 @@
 
     <main class="card">
       <div class="content">
-        <!-- Schermata di Manutenzione (Kill Switch) -->
+        <!-- Schermata di Manutenzione -->
         <section id="maintenance-screen">
           <div class="hero">
             <h2>Piattaforma in Manutenzione</h2>
             <p>Il servizio è temporaneamente disattivato dall'amministrazione. Torneremo presto online!</p>
+          </div>
+        </section>
+
+        <!-- Schermata FAQ / Guida -->
+        <section id="faq-screen">
+          <div class="hero">
+            <h2>FAQ & Guida alla Community</h2>
+            <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
+              <strong>1. Come funziona la geolocalizzazione?</strong><br>
+              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba per garantire che la chat sia riservata alla nostra community locale.<br><br>
+              <strong>2. Come posso connettermi con gli altri?</strong><br>
+              Segui la pagina TikTok @albacore26, verifica la posizione e premi il pulsante di accesso. Il sistema ti abbinerà in automatico.<br><br>
+              <strong>3. Cosa devo fare se incontro un utente scorretto?</strong><br>
+              Usa immediatamente il pulsante "Segnala" in basso: la segnalazione arriverà all'amministrazione che potrà procedere al ban istantaneo.
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaFaq()">Torna alla Home</button>
           </div>
         </section>
 
@@ -442,34 +540,58 @@
             </ol>
           </div>
 
+          <div class="form-group" style="max-width: 300px; margin: 0 auto 20px auto;">
+            <label>Preferenza di ricerca</label>
+            <select id="searchPreference">
+              <option value="local">Utenti di Alba e Dintorni</option>
+              <option value="all">Chiunque (Tutti)</option>
+            </select>
+          </div>
+
           <div class="actions">
             <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
             <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
           </div>
 
-          <div id="geo-error" class="geo-error"></div>
+            <div id="geo-error" class="geo-error"></div>
 
           <div class="footer-links">
             <a onclick="apriInfo('privacy')">Privacy</a>
             <a onclick="apriInfo('terms')">Termini</a>
+            <a onclick="apriFaq()">FAQ & Guida</a>
           </div>
         </section>
 
         <!-- Schermata Chat -->
         <section id="chat-screen">
-          <div class="video-grid">
-            <div class="video-box">
-              <video id="localVideo" autoplay muted playsinline></video>
-              <div class="video-label">Tu</div>
+          <div class="chat-layout">
+            <div class="video-grid-container">
+              <div class="video-grid">
+                <div class="video-box">
+                  <video id="localVideo" autoplay muted playsinline></video>
+                  <div class="video-label">Tu</div>
+                </div>
+
+                <div class="video-box">
+                  <div id="remotePlaceholder" class="remote-placeholder">
+                    <span>In attesa di un utente...</span>
+                    <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
+                  </div>
+                  <video id="remoteVideo" autoplay playsinline></video>
+                  <div id="remoteLabel" class="video-label">Utente Online</div>
+                </div>
+              </div>
             </div>
 
-            <div class="video-box">
-              <div id="remotePlaceholder" class="remote-placeholder">
-                <span>In attesa di un utente...</span>
-                <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
+            <!-- Box Chat Testuale -->
+            <div class="text-chat-box">
+              <div id="chatMessages" class="chat-messages">
+                <div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>
               </div>
-              <video id="remoteVideo" autoplay playsinline></video>
-              <div id="remoteLabel" class="video-label">Utente Online</div>
+              <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Scrivi un messaggio..." onkeypress="controllaInvioChat(event)" />
+                <button onclick="inviaMessaggioChat()">Invia</button>
+              </div>
             </div>
           </div>
 
@@ -514,7 +636,6 @@
             <p>Gestione avanzata in tempo reale</p>
           </div>
 
-          <!-- Statistiche in tempo reale -->
           <div class="stats-box">
             <div class="stat-card">
               <small style="color:var(--muted);">Utenti Online</small>
@@ -530,13 +651,11 @@
             </div>
           </div>
 
-          <!-- Controllo Manutenzione -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Stato Piattaforma</h3>
             <button id="killSwitchBtn" class="btn btn-primary" onclick="toggleKillSwitch()">Disattiva Sito (Manutenzione)</button>
           </div>
 
-          <!-- Broadcast Messaggi Globali -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Invia Broadcast Globale</h3>
             <div class="form-group">
@@ -545,7 +664,6 @@
             <button class="btn btn-primary" onclick="inviaBroadcast()">Invia Avviso</button>
           </div>
 
-          <!-- Sezione Master Admin: Creazione e Gestione Aiuto-Admin -->
           <div id="masterAdminSection" style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Gestione Aiuto-Admin</h3>
             <div class="form-group">
@@ -573,7 +691,6 @@
             </table>
           </div>
 
-          <!-- Ban Utenti -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Gestione Ban Utenti</h3>
             <div class="form-group">
@@ -583,7 +700,6 @@
             <button class="btn btn-primary" onclick="bannaUtenteDaInput()" style="background: linear-gradient(135deg, var(--primary), var(--primary-2));">Banna Utente</button>
           </div>
 
-          <!-- Segnalazioni -->
           <div>
             <h3 style="margin-bottom: 10px;">Segnalazioni Ricevute</h3>
             <div style="max-height: 220px; overflow-y: auto;">
@@ -624,7 +740,6 @@
     let currentCall = null;
     let currentRoomId = null;
 
-    // Ascolto Ban in tempo reale
     db.ref('bans/' + userId).on('value', function(snapshot) {
       if (snapshot.val() === true) {
         alert("Sei stato bannato dalla piattaforma.");
@@ -632,7 +747,6 @@
       }
     });
 
-    // Ascolto Broadcast Globali
     db.ref('system/broadcast').on('value', function(snapshot) {
       const msg = snapshot.val();
       if (msg) {
@@ -640,7 +754,6 @@
       }
     });
 
-    // Controllo in tempo reale dello stato di manutenzione (Kill Switch)
     db.ref('system/maintenance').on('value', function(snapshot) {
       const isMaintenance = snapshot.val();
       if (isMaintenance) {
@@ -649,6 +762,7 @@
         document.getElementById("admin-login-screen").style.display = "none";
         document.getElementById("admin-panel-screen").style.display = "none";
         document.getElementById("info-screen").style.display = "none";
+        document.getElementById("faq-screen").style.display = "none";
         document.getElementById("maintenance-screen").style.display = "block";
       } else {
         if (document.getElementById("maintenance-screen").style.display === "block") {
@@ -684,8 +798,22 @@
       }
     }
 
+    function apriFaq() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("faq-screen").style.display = "block";
+    }
+
     function tornaAllaHomeDaInfo() {
       document.getElementById("info-screen").style.display = "none";
+      rientraHomeControllata();
+    }
+
+    function tornaAllaHomeDaFaq() {
+      document.getElementById("faq-screen").style.display = "none";
+      rientraHomeControllata();
+    }
+
+    function rientraHomeControllata() {
       db.ref('system/maintenance').once('value', function(snapshot) {
         if (snapshot.val()) {
           document.getElementById("maintenance-screen").style.display = "block";
@@ -696,6 +824,12 @@
     }
 
     function avviaVerificaGPS() {
+      const pref = document.getElementById("searchPreference").value;
+      if (pref === 'all') {
+        entraNellaChat();
+        return;
+      }
+
       const errDiv = document.getElementById("geo-error");
       errDiv.textContent = "Verifica della posizione GPS in corso...";
 
@@ -764,3 +898,347 @@
     }
 
     function mostraVideoRemoto(stream) {
+      const remoteVideo = document.getElementById("remoteVideo");
+      const placeholder = document.getElementById("remotePlaceholder");
+      remoteVideo.srcObject = stream;
+      placeholder.style.display = "none";
+    }
+
+    function nascondiVideoRemoto() {
+      const remoteVideo = document.getElementById("remoteVideo");
+      const placeholder = document.getElementById("remotePlaceholder");
+      remoteVideo.srcObject = null;
+      placeholder.style.display = "flex";
+      placeholder.innerHTML = `<span>In attesa di un utente...</span><small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>`;
+      document.getElementById("chatMessages").innerHTML = `<div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>`;
+    }
+
+    function cercaAltroUtente(peerIdOverride) {
+      const activePeerId = peerIdOverride || (peer ? peer.id : null);
+      if (!activePeerId) return;
+
+      nascondiVideoRemoto();
+      
+      if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+      }
+
+      if (currentRoomId) {
+        db.ref('rooms/' + currentRoomId + '/skip').set(userId);
+        db.ref('rooms/' + currentRoomId).off();
+        currentRoomId = null;
+      }
+
+      const queueRef = db.ref('queue');
+      queueRef.once('value', function(snapshot) {
+        const waitingUser = snapshot.val();
+
+        if (!waitingUser) {
+          currentRoomId = 'room_' + userId;
+          db.ref('queue').set({ userId: userId, peerId: activePeerId, roomId: currentRoomId });
+
+          db.ref('rooms/' + currentRoomId).on('value', function(snapshot) {
+            const roomData = snapshot.val();
+            if (!roomData) return;
+
+            if (roomData.skip && roomData.skip !== userId) {
+              db.ref('rooms/' + currentRoomId).off();
+              currentRoomId = null;
+              cercaAltroUtenteBtn();
+              return;
+            }
+
+            if (roomData.status === 'connected' && roomData.peer2) {
+              const call = peer.call(roomData.peer2, myStream);
+              currentCall = call;
+              call.on('stream', function(remoteStream) {
+                mostraVideoRemoto(remoteStream);
+              });
+              call.on('close', function() {
+                nascondiVideoRemoto();
+              });
+            }
+          });
+
+          ascoltaMessaggiChat();
+        } else {
+          currentRoomId = waitingUser.roomId;
+          const hostPeerId = waitingUser.peerId;
+          
+          db.ref('queue').remove();
+          db.ref('rooms/' + currentRoomId).set({ status: 'connected', peer2: activePeerId });
+
+          db.ref('rooms/' + currentRoomId + '/skip').on('value', function(snapshot) {
+            if (snapshot.val() && snapshot.val() !== userId) {
+              db.ref('rooms/' + currentRoomId).off();
+              currentRoomId = null;
+              cercaAltroUtenteBtn();
+            }
+          });
+
+          const call = peer.call(hostPeerId, myStream);
+          currentCall = call;
+          call.on('stream', function(remoteStream) {
+            mostraVideoRemoto(remoteStream);
+          });
+          call.on('close', function() {
+            nascondiVideoRemoto();
+          });
+
+          ascoltaMessaggiChat();
+        }
+      });
+    }
+
+    function cercaAltroUtenteBtn() {
+      if (peer) {
+        cercaAltroUtente(peer.id);
+      }
+    }
+
+    function segnalaUtente() {
+      const reportRef = db.ref('reports').push();
+      reportRef.set({
+        timestamp: new Date().toLocaleString(),
+        reportedUser: currentRoomId || userId
+      });
+
+      alert("Utente segnalato correttamente.");
+      cercaAltroUtenteBtn();
+    }
+
+    // Gestione Chat Testuale
+    function inviaMessaggioChat() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text || !currentRoomId) return;
+
+      const msgRef = db.ref('rooms/' + currentRoomId + '/messages').push();
+      msgRef.set({
+        sender: userId,
+        text: text
+      });
+
+      input.value = "";
+    }
+
+    function controllaInvioChat(e) {
+      if (e.key === 'Enter') {
+        inviaMessaggioChat();
+      }
+    }
+
+    function ascoltaMessaggiChat() {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/messages').on('child_added', function(snapshot) {
+        const msg = snapshot.val();
+        if (!msg) return;
+
+        const chatBox = document.getElementById("chatMessages");
+        const div = document.createElement("div");
+        div.className = "chat-message" + (msg.sender === userId ? " me" : "");
+        div.textContent = msg.text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+
+    // Gestione Admin
+    function mostraLoginAdmin() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("chat-screen").style.display = "none";
+      document.getElementById("admin-panel-screen").style.display = "none";
+      document.getElementById("info-screen").style.display = "none";
+      document.getElementById("faq-screen").style.display = "none";
+      document.getElementById("admin-login-screen").style.display = "block";
+    }
+
+    function tornaIndietroDaLoginAdmin() {
+      document.getElementById("admin-login-screen").style.display = "none";
+      rientraHomeControllata();
+    }
+
+    function tornaAllaHomeDaAdmin() {
+      document.getElementById("admin-panel-screen").style.display = "none";
+      rientraHomeControllata();
+    }
+
+    function effettuaLoginAdmin() {
+      const role = document.getElementById("adminRole").value;
+      const user = document.getElementById("adminUser").value.trim();
+      const pass = document.getElementById("adminPass").value.trim();
+      const errEl = document.getElementById("admin-error");
+
+      if (role === 'admin') {
+        if (user === "FILLOB" && pass === "1q2w3e4r5t6y7u8i9o0p") {
+          errEl.textContent = "";
+          apriPannelloAdmin('admin');
+        } else {
+          errEl.textContent = "Credenziali Admin non valide.";
+        }
+      } else {
+        db.ref('helpers/' + user).once('value', function(snapshot) {
+          const helperData = snapshot.val();
+          if (helperData && helperData.password === pass) {
+            errEl.textContent = "";
+            apriPannelloAdmin('helper');
+          } else {
+            errEl.textContent = "Credenziali Aiuto-Admin non valide.";
+          }
+        });
+      }
+    }
+
+    function apriPannelloAdmin(role) {
+      document.getElementById("admin-login-screen").style.display = "none";
+      document.getElementById("admin-panel-screen").style.display = "block";
+
+      if (role === 'admin') {
+        document.getElementById("adminPanelTitle").textContent = "Pannello Master Admin";
+        document.getElementById("masterAdminSection").style.display = "block";
+        caricaAiutoAdminList();
+      } else {
+        document.getElementById("adminPanelTitle").textContent = "Pannello Aiuto-Admin";
+        document.getElementById("masterAdminSection").style.display = "none";
+      }
+
+      caricaSegnalazioni();
+      aggiornaStatoKillSwitchBtn();
+      aggiornaStatisticheLive();
+    }
+
+    function toggleKillSwitch() {
+      db.ref('system/maintenance').once('value', function(snapshot) {
+        const currentVal = snapshot.val() || false;
+        db.ref('system/maintenance').set(!currentVal);
+      });
+    }
+
+    function aggiornaStatoKillSwitchBtn() {
+      db.ref('system/maintenance').on('value', function(snapshot) {
+        const isMaintenance = snapshot.val();
+        const btn = document.getElementById("killSwitchBtn");
+        if (isMaintenance) {
+          btn.textContent = "Riattiva Sito (Online)";
+          btn.style.background = "#4ade80";
+        } else {
+          btn.textContent = "Disattiva Sito (Manutenzione)";
+          btn.style.background = "linear-gradient(135deg, var(--primary), var(--primary-2))";
+        }
+      });
+    }
+
+    function inviaBroadcast() {
+      const text = document.getElementById("broadcastText").value.trim();
+      if (!text) {
+        alert("Inserisci il testo dell'avviso.");
+        return;
+      }
+      db.ref('system/broadcast').set(text, function(err) {
+        if (!err) {
+          alert("Avviso inviato con successo a tutti gli utenti!");
+          document.getElementById("broadcastText").value = "";
+        }
+      });
+    }
+
+    function creaAiutoAdmin() {
+      const user = document.getElementById("newHelperUser").value.trim();
+      const pass = document.getElementById("newHelperPass").value.trim();
+      const msgEl = document.getElementById("helper-msg");
+
+      if (!user || !pass) {
+        alert("Inserisci username e password.");
+        return;
+      }
+
+      db.ref('helpers/' + user).set({ password: pass }, function(error) {
+        if (!error) {
+          msgEl.textContent = "Account aiuto-admin '" + user + "' creato!";
+          document.getElementById("newHelperUser").value = "";
+          document.getElementById("newHelperPass").value = "";
+        }
+      });
+    }
+
+    function eliminaAiutoAdmin(username) {
+      if (confirm("Vuoi davvero eliminare l'account aiuto-admin '" + username + "'?")) {
+        db.ref('helpers/' + username).remove();
+      }
+    }
+
+    function caricaAiutoAdminList() {
+      const tbody = document.getElementById("helpersTableBody");
+      db.ref('helpers').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) {
+          tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun aiuto-admin registrato.</td></tr>`;
+          return;
+        }
+
+        Object.keys(data).forEach(username => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${username}</td><td><button class="btn btn-dark" style="padding:4px 10px; font-size:0.8rem;" onclick="eliminaAiutoAdmin('${username}')">Elimina</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function bannaUtente(targetId) {
+      if (confirm("Vuoi bannare l'utente " + targetId + "?")) {
+        db.ref('bans/' + targetId).set(true);
+        alert("Utente bannato con successo.");
+      }
+    }
+
+    function bannaUtenteDaInput() {
+      const targetId = document.getElementById("banUserIdInput").value.trim();
+      if (!targetId) {
+        alert("Inserisci un ID utente valido.");
+        return;
+      }
+      bannaUtente(targetId);
+      document.getElementById("banUserIdInput").value = "";
+    }
+
+    function caricaSegnalazioni() {
+      const tbody = document.getElementById("reportsTableBody");
+      db.ref('reports').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) {
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>`;
+          return;
+        }
+
+        Object.entries(data).forEach(([key, rep]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${rep.timestamp}</td><td>${rep.reportedUser}</td><td><button class="btn btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="bannaUtente('${rep.reportedUser}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function aggiornaStatisticheLive() {
+      db.ref('queue').on('value', function(snapshot) {
+        const queueData = snapshot.val();
+        document.getElementById("statQueueUsers").textContent = queueData ? 1 : 0;
+      });
+
+      db.ref('rooms').on('value', function(snapshot) {
+        const roomsData = snapshot.val();
+        let activeCount = 0;
+        if (roomsData) {
+          Object.values(roomsData).forEach(room => {
+            if (room.status === 'connected') activeCount++;
+          });
+        }
+        document.getElementById("statActiveRooms").textContent = activeCount;
+        document.getElementById("statOnlineUsers").textContent = (activeCount * 2) + (document.getElementById("statQueueUsers").textContent == 1 ? 1 : 0);
+      });
+    }
+  </script>
+</body>
+</html>
