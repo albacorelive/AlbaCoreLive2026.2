@@ -215,13 +215,14 @@
       color: #fff;
       text-decoration: none;
       margin: 0 8px;
+      cursor: pointer;
     }
 
     .footer-links a:hover {
       text-decoration: underline;
     }
 
-    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen {
+    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen {
       display: none;
     }
 
@@ -416,6 +417,17 @@
           </div>
         </section>
 
+        <!-- Schermata Informazioni (Privacy / Termini) -->
+        <section id="info-screen">
+          <div class="hero">
+            <h2 id="infoTitle">Titolo</h2>
+            <p id="infoContent" style="text-align: left; line-height: 1.6; color: var(--muted);"></p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaInfo()">Torna alla Home</button>
+          </div>
+        </section>
+
         <!-- Schermata Principale (Login Utente) -->
         <section id="login-screen">
           <div class="hero">
@@ -438,8 +450,8 @@
           <div id="geo-error" class="geo-error"></div>
 
           <div class="footer-links">
-            <a href="privacy.html">Privacy</a>
-            <a href="terms.html">Termini</a>
+            <a onclick="apriInfo('privacy')">Privacy</a>
+            <a onclick="apriInfo('terms')">Termini</a>
           </div>
         </section>
 
@@ -611,7 +623,6 @@
     let myStream = null;
     let currentCall = null;
     let currentRoomId = null;
-    let currentAdminRole = null;
 
     // Ascolto Ban in tempo reale
     db.ref('bans/' + userId).on('value', function(snapshot) {
@@ -637,9 +648,9 @@
         document.getElementById("chat-screen").style.display = "none";
         document.getElementById("admin-login-screen").style.display = "none";
         document.getElementById("admin-panel-screen").style.display = "none";
+        document.getElementById("info-screen").style.display = "none";
         document.getElementById("maintenance-screen").style.display = "block";
       } else {
-        // Se non è in manutenzione, ripristina la home solo se eravamo bloccati per manutenzione
         if (document.getElementById("maintenance-screen").style.display === "block") {
           document.getElementById("maintenance-screen").style.display = "none";
           document.getElementById("login-screen").style.display = "block";
@@ -651,10 +662,36 @@
       db.ref('system/maintenance').once('value', function(snapshot) {
         const isMaintenance = snapshot.val();
         if (isMaintenance) {
-          // Se siamo in manutenzione, permettiamo comunque di aprire il login admin
           document.getElementById("maintenance-screen").style.display = "none";
         }
         mostraLoginAdmin();
+      });
+    }
+
+    function apriInfo(tipo) {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("info-screen").style.display = "block";
+      
+      const titleEl = document.getElementById("infoTitle");
+      const contentEl = document.getElementById("infoContent");
+
+      if (tipo === 'privacy') {
+        titleEl.textContent = "Informativa sulla Privacy";
+        contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. I flussi video avvengono in modalità Peer-to-Peer diretta tra gli utenti e non vengono registrati o salvati sui nostri server. La geolocalizzazione viene utilizzata unicamente per verificare l'appartenenza alla community locale.";
+      } else {
+        titleEl.textContent = "Termini e Condizioni";
+        contentEl.textContent = "L'utilizzo della piattaforma Alba Core Live è riservato agli utenti della community. È vietato avere comportamenti offensivi, molesti o inappropriati. Ciascun utente può segnalare comportamenti scorretti tramite l'apposito tasto. L'amministrazione si riserva il diritto di bannare gli utenti che violano le regole.";
+      }
+    }
+
+    function tornaAllaHomeDaInfo() {
+      document.getElementById("info-screen").style.display = "none";
+      db.ref('system/maintenance').once('value', function(snapshot) {
+        if (snapshot.val()) {
+          document.getElementById("maintenance-screen").style.display = "block";
+        } else {
+          document.getElementById("login-screen").style.display = "block";
+        }
       });
     }
 
@@ -808,6 +845,7 @@
       document.getElementById("login-screen").style.display = "none";
       document.getElementById("chat-screen").style.display = "none";
       document.getElementById("admin-panel-screen").style.display = "none";
+      document.getElementById("info-screen").style.display = "none";
       document.getElementById("admin-login-screen").style.display = "block";
     }
 
@@ -860,7 +898,6 @@
     }
 
     function apriPannelloAdmin(role) {
-      currentAdminRole = role;
       document.getElementById("admin-login-screen").style.display = "none";
       document.getElementById("admin-panel-screen").style.display = "block";
 
