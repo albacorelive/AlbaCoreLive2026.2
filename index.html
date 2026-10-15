@@ -47,29 +47,70 @@
       position: relative;
     }
 
-    .admin-link-btn {
+    /* Menu a tendina in alto a destra */
+    .top-menu-container {
       position: absolute;
       top: 20px;
       right: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-      z-index: 10;
+      z-index: 100;
     }
 
-    .admin-link-btn:hover {
-      background: rgba(255,255,255,0.1);
+    .menu-toggle-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .menu-toggle-btn:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 45px;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      width: 240px;
+      padding: 8px 0;
+      backdrop-filter: blur(10px);
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 10px 16px;
+      color: var(--text);
+      font-size: 0.88rem;
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(229, 9, 20, 0.15);
       color: #fff;
     }
 
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 6px 0;
+    }
+
     .page {
-      width: min(100%, 950px);
+      width: min(100%, 980px);
     }
 
     .brand {
@@ -204,25 +245,7 @@
       line-height: 1.4;
     }
 
-    .footer-links {
-      margin-top: 18px;
-      text-align: center;
-      font-size: 0.9rem;
-      color: var(--muted);
-    }
-
-    .footer-links a {
-      color: #fff;
-      text-decoration: none;
-      margin: 0 8px;
-      cursor: pointer;
-    }
-
-    .footer-links a:hover {
-      text-decoration: underline;
-    }
-
-    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen {
+    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen, #stories-screen, #gallery-screen, #radar-screen {
       display: none;
     }
 
@@ -316,13 +339,100 @@
       z-index: 3;
     }
 
+    /* Badge XP / Statistiche Incontro */
+    .session-badge {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    /* Indicatore di rete */
+    .network-indicator {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.6);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(4px);
+      z-index: 3;
+    }
+    .net-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    /* Barra Rompighiaccio (Icebreaker) */
+    .icebreaker-bar {
+      background: rgba(229, 9, 20, 0.1);
+      border: 1px solid rgba(229, 9, 20, 0.2);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #ffccd0;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    /* Reazioni / Emoji volanti */
+    .reactions-container {
+      position: absolute;
+      bottom: 60px;
+      right: 20px;
+      display: flex;
+      gap: 8px;
+      z-index: 5;
+    }
+    .reaction-btn {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    .reaction-btn:hover {
+      transform: scale(1.15);
+      background: rgba(255,255,255,0.2);
+    }
+
+    .flying-emoji {
+      position: absolute;
+      font-size: 2rem;
+      animation: flyUp 2s ease-out forwards;
+      z-index: 10;
+      pointer-events: none;
+    }
+    @keyframes flyUp {
+      0% { transform: translateY(0) scale(0.8); opacity: 1; }
+      100% { transform: translateY(-180px) scale(1.4); opacity: 0; }
+    }
+
     .text-chat-box {
       background: rgba(255,255,255,0.02);
       border: 1px solid var(--border);
       border-radius: 16px;
       display: flex;
       flex-direction: column;
-      height: 534px;
+      height: 510px;
       overflow: hidden;
     }
 
@@ -479,7 +589,27 @@
   </style>
 </head>
 <body>
-  <button class="admin-link-btn" onclick="gestisciPulsanteAdmin()">Admin</button>
+  <!-- Menu in alto a destra -->
+  <div class="top-menu-container">
+    <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">☰ Menu</button>
+    <div id="dropdownMenu" class="dropdown-menu">
+      <a class="dropdown-item" onclick="toggleMuteAudio()">🎤 Silenzia Audio</a>
+      <a class="dropdown-item" onclick="toggleCamVideo()">📷 Disattiva Camera</a>
+      <a class="dropdown-item" onclick="attivaFullscreen()">📺 Schermo Intero</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">🎵 Segui @albacore26</a>
+      <a class="dropdown-item" onclick="apriFaq()">❓ FAQ & Guida</a>
+      <a class="dropdown-item" onclick="apriStories()">📰 Storie Community</a>
+      <a class="dropdown-item" onclick="apriGallery()">🖼️ Galleria Meme</a>
+      <a class="dropdown-item" onclick="apriRadar()">🗺️ Radar d'Alba</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" onclick="apriInfo('privacy')">🔒 Privacy</a>
+      <a class="dropdown-item" onclick="apriInfo('terms')">📄 Termini e Condizioni</a>
+      <a class="dropdown-item" onclick="apriBugModal()">⚠️ Segnala Bug</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" onclick="mostraLoginAdmin()" style="font-weight: bold; color: var(--primary-2);">⚙️ Pannello Admin</a>
+    </div>
+  </div>
 
   <div class="page">
     <header class="brand">
@@ -489,7 +619,7 @@
 
     <main class="card">
       <div class="content">
-        <!-- Schermata di Manutenzione -->
+        <!-- Schermata Manutenzione -->
         <section id="maintenance-screen">
           <div class="hero">
             <h2>Piattaforma in Manutenzione</h2>
@@ -497,17 +627,17 @@
           </div>
         </section>
 
-        <!-- Schermata FAQ / Guida -->
+        <!-- Schermata FAQ -->
         <section id="faq-screen">
           <div class="hero">
             <h2>FAQ & Guida alla Community</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
               <strong>1. Come funziona la geolocalizzazione?</strong><br>
               Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba per garantire che la chat sia riservata alla nostra community locale.<br><br>
-              <strong>2. Come posso connettermi con gli altri?</strong><br>
-              Segui la pagina TikTok @albacore26, verifica la posizione e premi il pulsante di accesso. Il sistema ti abbinerà in automatico.<br><br>
-              <strong>3. Cosa devo fare se incontro un utente scorretto?</strong><br>
-              Usa immediatamente il pulsante "Segnala" in basso: la segnalazione arriverà all'amministrazione che potrà procedere al ban istantaneo.
+              <strong>2. Come posso connettermi?</strong><br>
+              Segui la pagina TikTok @albacore26, verifica la posizione e accedi in un click.<br><br>
+              <strong>3. Come funzionano le reazioni e gli extra?</strong><br>
+              Durante la chat puoi inviare emoji al volo, scambiare il tuo contatto IG o seguire le domande rompighiaccio automatiche!
             </p>
           </div>
           <div class="actions">
@@ -515,7 +645,47 @@
           </div>
         </section>
 
-        <!-- Schermata Informazioni (Privacy / Termini) -->
+        <!-- Schermata Storie / Bacheca -->
+        <section id="stories-screen">
+          <div class="hero">
+            <h2>Storie & Annunci</h2>
+            <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
+              📌 <strong>Benvenuti su Alba Core Live!</strong><br>
+              Questa è la bacheca ufficiale della community. Restate sintonizzati per i prossimi raduni e novità targate @albacore26!
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaSubScreens()">Torna alla Home</button>
+          </div>
+        </section>
+
+        <!-- Schermata Galleria Meme -->
+        <section id="gallery-screen">
+          <div class="hero">
+            <h2>Galleria della Community</h2>
+            <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
+              📸 Spazio dedicato ai momenti più divertenti e ai meme creati dai membri di Alba Core. Condividi i tuoi screen sui nostri social!
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaSubScreens()">Torna alla Home</button>
+          </div>
+        </section>
+
+        <!-- Schermata Radar d'Alba -->
+        <section id="radar-screen">
+          <div class="hero">
+            <h2>Radar d'Alba</h2>
+            <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
+              🗺️ Il radar geolocalizzato unisce tutti gli utenti attivi nel raggio dei 50 km intorno al Duomo. Cerca i tuoi concittadini in tempo reale!
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaSubScreens()">Torna alla Home</button>
+          </div>
+        </section>
+
+        <!-- Schermata Privacy / Termini -->
         <section id="info-screen">
           <div class="hero">
             <h2 id="infoTitle">Titolo</h2>
@@ -540,12 +710,10 @@
             </ol>
           </div>
 
-          <div class="form-group" style="max-width: 300px; margin: 0 auto 20px auto;">
-            <label>Preferenza di ricerca</label>
-            <select id="searchPreference">
-              <option value="local">Utenti di Alba e Dintorni</option>
-              <option value="all">Chiunque (Tutti)</option>
-            </select>
+          <!-- Bio / Nickname Opzionale -->
+          <div class="form-group" style="max-width: 320px; margin: 0 auto 20px auto;">
+            <label>Il tuo Nickname (Opzionale)</label>
+            <input type="text" id="userNickname" placeholder="Es. Mario_Alba" maxlength="20" />
           </div>
 
           <div class="actions">
@@ -553,33 +721,65 @@
             <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
           </div>
 
-            <div id="geo-error" class="geo-error"></div>
+          <div id="geo-error" class="geo-error"></div>
 
-          <div class="footer-links">
-            <a onclick="apriInfo('privacy')">Privacy</a>
-            <a onclick="apriInfo('terms')">Termini</a>
-            <a onclick="apriFaq()">FAQ & Guida</a>
+          <div class="footer-links" style="margin-top: 18px; text-align: center; font-size: 0.9rem; color: var(--muted);">
+            <a onclick="apriInfo('privacy')" style="cursor:pointer; color:#fff; margin:0 8px;">Privacy</a>
+            <a onclick="apriInfo('terms')" style="cursor:pointer; color:#fff; margin:0 8px;">Termini</a>
+            <a onclick="apriFaq()" style="cursor:pointer; color:#fff; margin:0 8px;">FAQ</a>
           </div>
         </section>
 
         <!-- Schermata Chat -->
         <section id="chat-screen">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div class="session-badge">
+              <span>👥 Utenti incontrati in questa sessione: <strong id="sessionCounter">0</strong></span>
+            </div>
+            <div class="session-badge" style="background: rgba(229,9,20,0.15); border-color: rgba(229,9,20,0.3); color: #ffccd0;">
+              <span>⭐ Livello Alba XP: <strong id="userXpScore">10</strong></span>
+            </div>
+          </div>
+
+          <div id="icebreakerBar" class="icebreaker-bar">
+            💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
+          </div>
+
           <div class="chat-layout">
             <div class="video-grid-container">
               <div class="video-grid">
                 <div class="video-box">
                   <video id="localVideo" autoplay muted playsinline></video>
-                  <div class="video-label">Tu</div>
+                  <div class="video-label" id="localVideoLabel">Tu</div>
                 </div>
 
                 <div class="video-box">
+                  <div class="network-indicator">
+                    <div class="net-dot" id="netDot"></div>
+                    <span id="netText" style="color:#fff;">Ottima</span>
+                  </div>
                   <div id="remotePlaceholder" class="remote-placeholder">
                     <span>In attesa di un utente...</span>
                     <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
                   </div>
                   <video id="remoteVideo" autoplay playsinline></video>
                   <div id="remoteLabel" class="video-label">Utente Online</div>
+
+                  <!-- Reazioni / Emoji Volanti -->
+                  <div class="reactions-container">
+                    <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️</button>
+                    <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥</button>
+                    <button class="reaction-btn" onclick="inviaReazione('😂')">😂</button>
+                    <button class="reaction-btn" onclick="inviaReazione('👍')">👍</button>
+                  </div>
                 </div>
+              </div>
+
+              <!-- Extra Controls (IG Exchange & Snapshot) -->
+              <div style="display: flex; gap: 10px; margin-top: 14px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scambiaInstagram()">📸 Scambia Instagram</button>
+                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scattaSnapshot()">📷 Salva Snapshot</button>
+                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="condividiLinkSito()">🔗 Condividi Sito</button>
               </div>
             </div>
 
@@ -657,9 +857,9 @@
           </div>
 
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Invia Broadcast Globale</h3>
+            <h3 style="margin-top:0;">Invia Broadcast Temporaneo (Pop-up)</h3>
             <div class="form-group">
-              <input type="text" id="broadcastText" placeholder="Scrivi un avviso per tutti gli utenti online..." />
+              <input type="text" id="broadcastText" placeholder="Scrivi un avviso temporaneo per gli utenti online..." />
             </div>
             <button class="btn btn-primary" onclick="inviaBroadcast()">Invia Avviso</button>
           </div>
@@ -700,14 +900,15 @@
             <button class="btn btn-primary" onclick="bannaUtenteDaInput()" style="background: linear-gradient(135deg, var(--primary), var(--primary-2));">Banna Utente</button>
           </div>
 
+          <!-- Segnalazioni e Feedback Bug -->
           <div>
-            <h3 style="margin-bottom: 10px;">Segnalazioni Ricevute</h3>
+            <h3 style="margin-bottom: 10px;">Segnalazioni & Bug Ricevuti</h3>
             <div style="max-height: 220px; overflow-y: auto;">
               <table class="admin-table">
                 <thead>
                   <tr>
                     <th>Data/Ora</th>
-                    <th>ID Utente / Stanza</th>
+                    <th>Tipo / Dettagli</th>
                     <th>Azione</th>
                   </tr>
                 </thead>
@@ -735,11 +936,30 @@
     const db = firebase.database();
 
     const userId = 'user_' + Math.random().toString(36).substring(2, 9);
+    let nicknameUtente = "Ospite";
     let peer = null;
     let myStream = null;
     let currentCall = null;
     let currentRoomId = null;
+    let sessionCount = 0;
+    let userXp = 10;
 
+    // Chiudi il menu a tendina cliccando fuori
+    window.addEventListener('click', function(e) {
+      if (!e.target.matches('.menu-toggle-btn')) {
+        const menu = document.getElementById("dropdownMenu");
+        if (menu.classList.contains('active')) {
+          menu.classList.remove('active');
+        }
+      }
+    });
+
+    function toggleDropdownMenu(e) {
+      e.stopPropagation();
+      document.getElementById("dropdownMenu").classList.toggle('active');
+    }
+
+    // Ban in tempo reale
     db.ref('bans/' + userId).on('value', function(snapshot) {
       if (snapshot.val() === true) {
         alert("Sei stato bannato dalla piattaforma.");
@@ -747,13 +967,17 @@
       }
     });
 
+    // Broadcast Temporaneo (Pop-up unico)
+    let lastSeenBroadcast = "";
     db.ref('system/broadcast').on('value', function(snapshot) {
       const msg = snapshot.val();
-      if (msg) {
+      if (msg && msg !== lastSeenBroadcast) {
+        lastSeenBroadcast = msg;
         alert("📢 Avviso Amministrazione: " + msg);
       }
     });
 
+    // Manutenzione (Kill Switch)
     db.ref('system/maintenance').on('value', function(snapshot) {
       const isMaintenance = snapshot.val();
       if (isMaintenance) {
@@ -763,6 +987,9 @@
         document.getElementById("admin-panel-screen").style.display = "none";
         document.getElementById("info-screen").style.display = "none";
         document.getElementById("faq-screen").style.display = "none";
+        document.getElementById("stories-screen").style.display = "none";
+        document.getElementById("gallery-screen").style.display = "none";
+        document.getElementById("radar-screen").style.display = "none";
         document.getElementById("maintenance-screen").style.display = "block";
       } else {
         if (document.getElementById("maintenance-screen").style.display === "block") {
@@ -772,48 +999,180 @@
       }
     });
 
-    function gestisciPulsanteAdmin() {
-      db.ref('system/maintenance').once('value', function(snapshot) {
-        const isMaintenance = snapshot.val();
-        if (isMaintenance) {
-          document.getElementById("maintenance-screen").style.display = "none";
+    // Controlli Audio / Video dal Menu
+    function toggleMuteAudio() {
+      if (myStream) {
+        const audioTrack = myStream.getAudioTracks()[0];
+        if (audioTrack) {
+          audioTrack.enabled = !audioTrack.enabled;
+          alert(audioTrack.enabled ? "Microfono riattivato" : "Microfono silenziato");
         }
-        mostraLoginAdmin();
+      } else {
+        alert("Entra prima in chat!");
+      }
+    }
+
+    function toggleCamVideo() {
+      if (myStream) {
+        const videoTrack = myStream.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.enabled = !videoTrack.enabled;
+          alert(videoTrack.enabled ? "Telecamera riattivata" : "Telecamera disattivata");
+        }
+      } else {
+        alert("Entra prima in chat!");
+      }
+    }
+
+    function attivaFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert("Errore attivazione schermo intero.");
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function scambiaInstagram() {
+      const ig = prompt("Inserisci il tuo contatto Instagram o Social:");
+      if (ig && currentRoomId) {
+        const msgRef = db.ref('rooms/' + currentRoomId + '/messages').push();
+        msgRef.set({
+          sender: userId,
+          text: "📱 Contatto Social condiviso: " + ig
+        });
+      }
+    }
+
+    function scattaSnapshot() {
+      const videoEl = document.getElementById("remoteVideo");
+      if (!videoEl.srcObject) {
+        alert("Nessun utente connesso per lo snapshot!");
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = videoEl.videoWidth || 640;
+      canvas.height = videoEl.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const link = document.createElement("a");
+      link.download = "AlbaCoreLive_Snapshot.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function condividiLinkSito() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Alba Core Live',
+          text: 'Unisciti alla videochat della community di Alba!',
+          url: window.location.href
+        }).catch(() => {});
+      } else {
+        prompt("Copia il link della piattaforma:", window.location.href);
+      }
+    }
+
+    function inviaReazione(emoji) {
+      if (!currentRoomId) return;
+      const reactRef = db.ref('rooms/' + currentRoomId + '/reactions').push();
+      reactRef.set({ emoji: emoji, sender: userId });
+    }
+
+    function ascoltaReazioni() {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/reactions').on('child_added', function(snapshot) {
+        const data = snapshot.val();
+        if (data && data.sender !== userId) {
+          mostraAnimazioneEmoji(data.emoji);
+        }
       });
     }
 
+    function mostraAnimazioneEmoji(emoji) {
+      const box = document.querySelector(".video-box:nth-child(2)");
+      const span = document.createElement("div");
+      span.className = "flying-emoji";
+      span.textContent = emoji;
+      span.style.left = Math.random() * 70 + 15 + "%";
+      box.appendChild(span);
+      setTimeout(() => span.remove(), 2000);
+    }
+
+    function apriFaq() {
+      nascondiTuttoTranne("faq-screen");
+    }
+    function apriStories() {
+      nascondiTuttoTranne("stories-screen");
+    }
+    function apriGallery() {
+      nascondiTuttoTranne("gallery-screen");
+    }
+    function apriRadar() {
+      nascondiTuttoTranne("radar-screen");
+    }
+
     function apriInfo(tipo) {
-      document.getElementById("login-screen").style.display = "none";
-      document.getElementById("info-screen").style.display = "block";
-      
+      nascondiTuttoTranne("info-screen");
       const titleEl = document.getElementById("infoTitle");
       const contentEl = document.getElementById("infoContent");
 
       if (tipo === 'privacy') {
         titleEl.textContent = "Informativa sulla Privacy";
-        contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. I flussi video avvengono in modalità Peer-to-Peer diretta tra gli utenti e non vengono registrati o salvati sui nostri server. La geolocalizzazione viene utilizzata unicamente per verificare l'appartenenza alla community locale.";
+        contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. I flussi video avvengono in modalità Peer-to-Peer diretta tra gli utenti e non vengono registrati o salvati sui nostri server.";
       } else {
         titleEl.textContent = "Termini e Condizioni";
-        contentEl.textContent = "L'utilizzo della piattaforma Alba Core Live è riservato agli utenti della community. È vietato avere comportamenti offensivi, molesti o inappropriati. Ciascun utente può segnalare comportamenti scorretti tramite l'apposito tasto. L'amministrazione si riserva il diritto di bannare gli utenti che violano le regole.";
+        contentEl.textContent = "L'utilizzo della piattaforma Alba Core Live è riservato alla community. È vietato avere comportamenti offensivi o molesti. L'amministrazione può bannare i trasgressori.";
       }
     }
 
-    function apriFaq() {
+    function apriBugModal() {
+      const bugText = prompt("Segnala un bug o invia un feedback tecnico agli admin:");
+      if (bugText) {
+        const bugRef = db.ref('reports').push();
+        bugRef.set({
+          timestamp: new Date().toLocaleString(),
+          reportedUser: "[BUG/FEEDBACK] " + bugText
+        });
+        alert("Feedback inviato con successo agli amministratori!");
+      }
+    }
+
+    function nascondiTuttoTranne(screenId) {
       document.getElementById("login-screen").style.display = "none";
-      document.getElementById("faq-screen").style.display = "block";
+      document.getElementById("chat-screen").style.display = "none";
+      document.getElementById("admin-login-screen").style.display = "none";
+      document.getElementById("admin-panel-screen").style.display = "none";
+      document.getElementById("info-screen").style.display = "none";
+      document.getElementById("faq-screen").style.display = "none";
+      document.getElementById("stories-screen").style.display = "none";
+      document.getElementById("gallery-screen").style.display = "none";
+      document.getElementById("radar-screen").style.display = "none";
+      document.getElementById(screenId).style.display = "block";
+    }
+
+    function tornaAllaHomeDaSubScreens() {
+      rientraHomeControllata();
     }
 
     function tornaAllaHomeDaInfo() {
-      document.getElementById("info-screen").style.display = "none";
       rientraHomeControllata();
     }
 
     function tornaAllaHomeDaFaq() {
-      document.getElementById("faq-screen").style.display = "none";
       rientraHomeControllata();
     }
 
     function rientraHomeControllata() {
+      document.getElementById("info-screen").style.display = "none";
+      document.getElementById("faq-screen").style.display = "none";
+      document.getElementById("stories-screen").style.display = "none";
+      document.getElementById("gallery-screen").style.display = "none";
+      document.getElementById("radar-screen").style.display = "none";
+      
       db.ref('system/maintenance').once('value', function(snapshot) {
         if (snapshot.val()) {
           document.getElementById("maintenance-screen").style.display = "block";
@@ -824,11 +1183,9 @@
     }
 
     function avviaVerificaGPS() {
-      const pref = document.getElementById("searchPreference").value;
-      if (pref === 'all') {
-        entraNellaChat();
-        return;
-      }
+      const nickInput = document.getElementById("userNickname").value.trim();
+      if (nickInput) nicknameUtente = nickInput;
+      document.getElementById("localVideoLabel").textContent = nicknameUtente + " (Tu)";
 
       const errDiv = document.getElementById("geo-error");
       errDiv.textContent = "Verifica della posizione GPS in corso...";
@@ -902,6 +1259,12 @@
       const placeholder = document.getElementById("remotePlaceholder");
       remoteVideo.srcObject = stream;
       placeholder.style.display = "none";
+
+      sessionCount++;
+      userXp += 5;
+      document.getElementById("sessionCounter").textContent = sessionCount;
+      document.getElementById("userXpScore").textContent = userXp;
+      ascoltaReazioni();
     }
 
     function nascondiVideoRemoto() {
@@ -936,7 +1299,7 @@
 
         if (!waitingUser) {
           currentRoomId = 'room_' + userId;
-          db.ref('queue').set({ userId: userId, peerId: activePeerId, roomId: currentRoomId });
+          db.ref('queue').set({ userId: userId, peerId: activePeerId, roomId: currentRoomId, nickname: nicknameUtente });
 
           db.ref('rooms/' + currentRoomId).on('value', function(snapshot) {
             const roomData = snapshot.val();
@@ -950,6 +1313,7 @@
             }
 
             if (roomData.status === 'connected' && roomData.peer2) {
+              document.getElementById("remoteLabel").textContent = roomData.nick2 || "Utente Online";
               const call = peer.call(roomData.peer2, myStream);
               currentCall = call;
               call.on('stream', function(remoteStream) {
@@ -965,9 +1329,10 @@
         } else {
           currentRoomId = waitingUser.roomId;
           const hostPeerId = waitingUser.peerId;
+          document.getElementById("remoteLabel").textContent = waitingUser.nickname || "Utente Online";
           
           db.ref('queue').remove();
-          db.ref('rooms/' + currentRoomId).set({ status: 'connected', peer2: activePeerId });
+          db.ref('rooms/' + currentRoomId).set({ status: 'connected', peer2: activePeerId, nick2: nicknameUtente });
 
           db.ref('rooms/' + currentRoomId + '/skip').on('value', function(snapshot) {
             if (snapshot.val() && snapshot.val() !== userId) {
@@ -1008,7 +1373,7 @@
       cercaAltroUtenteBtn();
     }
 
-    // Gestione Chat Testuale
+    // Chat Testuale
     function inviaMessaggioChat() {
       const input = document.getElementById("chatInput");
       const text = input.value.trim();
@@ -1017,6 +1382,7 @@
       const msgRef = db.ref('rooms/' + currentRoomId + '/messages').push();
       msgRef.set({
         sender: userId,
+        name: nicknameUtente,
         text: text
       });
 
@@ -1038,7 +1404,7 @@
         const chatBox = document.getElementById("chatMessages");
         const div = document.createElement("div");
         div.className = "chat-message" + (msg.sender === userId ? " me" : "");
-        div.textContent = msg.text;
+        div.textContent = (msg.name ? msg.name + ": " : "") + msg.text;
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
       });
@@ -1046,21 +1412,14 @@
 
     // Gestione Admin
     function mostraLoginAdmin() {
-      document.getElementById("login-screen").style.display = "none";
-      document.getElementById("chat-screen").style.display = "none";
-      document.getElementById("admin-panel-screen").style.display = "none";
-      document.getElementById("info-screen").style.display = "none";
-      document.getElementById("faq-screen").style.display = "none";
-      document.getElementById("admin-login-screen").style.display = "block";
+      nascondiTuttoTranne("admin-login-screen");
     }
 
     function tornaIndietroDaLoginAdmin() {
-      document.getElementById("admin-login-screen").style.display = "none";
       rientraHomeControllata();
     }
 
     function tornaAllaHomeDaAdmin() {
-      document.getElementById("admin-panel-screen").style.display = "none";
       rientraHomeControllata();
     }
 
@@ -1091,8 +1450,7 @@
     }
 
     function apriPannelloAdmin(role) {
-      document.getElementById("admin-login-screen").style.display = "none";
-      document.getElementById("admin-panel-screen").style.display = "block";
+      nascondiTuttoTranne("admin-panel-screen");
 
       if (role === 'admin') {
         document.getElementById("adminPanelTitle").textContent = "Pannello Master Admin";
@@ -1137,7 +1495,7 @@
       }
       db.ref('system/broadcast').set(text, function(err) {
         if (!err) {
-          alert("Avviso inviato con successo a tutti gli utenti!");
+          alert("Avviso temporaneo inviato con successo!");
           document.getElementById("broadcastText").value = "";
         }
       });
