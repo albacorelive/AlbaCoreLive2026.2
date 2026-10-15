@@ -44,6 +44,27 @@
       justify-content: center;
       padding: 30px 20px;
       min-height: 100vh;
+      position: relative;
+    }
+
+    .admin-link-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .admin-link-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
     }
 
     .page {
@@ -199,8 +220,29 @@
       text-decoration: underline;
     }
 
-    #chat-screen {
+    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen {
       display: none;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-size: 1rem;
     }
 
     .video-grid {
@@ -292,23 +334,36 @@
     .skip { background: linear-gradient(135deg, #ff9800, #ffad33); }
     .report { background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
 
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .admin-table th, .admin-table td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .admin-table th {
+      background: rgba(255,255,255,0.05);
+    }
+
     @media (max-width: 640px) {
       .content {
         padding: 24px 18px 20px;
       }
-
       .video-grid {
         grid-template-columns: 1fr;
       }
-
       .video-box {
         height: 220px;
       }
-
       .actions {
         flex-direction: column;
       }
-
       .btn {
         width: 100%;
       }
@@ -316,6 +371,8 @@
   </style>
 </head>
 <body>
+  <button class="admin-link-btn" onclick="mostraLoginAdmin()">Admin</button>
+
   <div class="page">
     <header class="brand">
       <h1><span class="brand-accent">ALBA</span> CORE LIVE</h1>
@@ -324,6 +381,15 @@
 
     <main class="card">
       <div class="content">
+        <!-- Schermata di Manutenzione (Kill Switch) -->
+        <section id="maintenance-screen">
+          <div class="hero">
+            <h2>Piattaforma in Manutenzione</h2>
+            <p>Il servizio è temporaneamente disattivato dall'amministrazione. Torneremo presto online!</p>
+          </div>
+        </section>
+
+        <!-- Schermata Principale (Login Utente) -->
         <section id="login-screen">
           <div class="hero">
             <h2>Sblocca l'accesso</h2>
@@ -350,6 +416,7 @@
           </div>
         </section>
 
+        <!-- Schermata Chat -->
         <section id="chat-screen">
           <div class="video-grid">
             <div class="video-box">
@@ -372,6 +439,83 @@
             <button class="control-btn report" onclick="segnalaUtente()">Segnala</button>
           </div>
         </section>
+
+        <!-- Schermata Login Admin -->
+        <section id="admin-login-screen">
+          <div class="hero">
+            <h2>Accesso Riservato Admin</h2>
+            <p>Seleziona il tuo ruolo e inserisci le credenziali.</p>
+          </div>
+          <div class="form-group">
+            <label>Ruolo</label>
+            <select id="adminRole">
+              <option value="admin">Admin Principale</option>
+              <option value="helper">Aiuto-Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nome Utente</label>
+            <input type="text" id="adminUser" placeholder="Inserisci username" />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="adminPass" placeholder="Inserisci password" />
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="effettuaLoginAdmin()">Accedi al Pannello</button>
+            <button class="btn btn-dark" onclick="tornaAllaHome()">Indietro</button>
+          </div>
+          <div id="admin-error" class="geo-error"></div>
+        </section>
+
+        <!-- Pannello di Controllo Admin -->
+        <section id="admin-panel-screen">
+          <div class="hero">
+            <h2 id="adminPanelTitle">Pannello di Controllo</h2>
+            <p>Gestione in tempo reale di Alba Core Live</p>
+          </div>
+
+          <div style="margin-bottom: 25px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Controllo Stato Piattaforma</h3>
+            <p style="color: var(--muted); font-size: 0.9rem;">Interrompi immediatamente il sito per tutti gli utenti in caso di emergenza.</p>
+            <button id="killSwitchBtn" class="btn btn-primary" onclick="toggleKillSwitch()">Disattiva Sito (Manutenzione)</button>
+          </div>
+
+          <div id="masterAdminSection" style="margin-bottom: 25px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Crea Nuovo Aiuto-Admin</h3>
+            <div class="form-group">
+              <label>Username Aiuto-Admin</label>
+              <input type="text" id="newHelperUser" placeholder="Es. helper1" />
+            </div>
+            <div class="form-group">
+              <label>Password Aiuto-Admin</label>
+              <input type="password" id="newHelperPass" placeholder="Es. password123" />
+            </div>
+            <button class="btn btn-primary" onclick="creaAiutoAdmin()">Crea Account</button>
+            <div id="helper-msg" style="margin-top: 10px; font-weight: bold; color: #4ade80;"></div>
+          </div>
+
+          <div>
+            <h3 style="margin-bottom: 10px;">Segnalazioni Ricevute</h3>
+            <div style="max-height: 250px; overflow-y: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Data/Ora</th>
+                    <th>Dettagli / Stanza</th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                  <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="actions" style="margin-top: 25px;">
+            <button class="btn btn-dark" onclick="tornaAllaHome()">Torna alla Home</button>
+          </div>
+        </section>
       </div>
     </main>
   </div>
@@ -390,6 +534,23 @@
     let currentCall = null;
     let currentRoomId = null;
 
+    // Controllo in tempo reale dello stato di manutenzione (Kill Switch)
+    db.ref('system/maintenance').on('value', function(snapshot) {
+      const isMaintenance = snapshot.val();
+      if (isMaintenance) {
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("chat-screen").style.display = "none";
+        document.getElementById("admin-login-screen").style.display = "none";
+        document.getElementById("admin-panel-screen").style.display = "none";
+        document.getElementById("maintenance-screen").style.display = "block";
+      } else {
+        if (document.getElementById("maintenance-screen").style.display === "block") {
+          document.getElementById("maintenance-screen").style.display = "none";
+          document.getElementById("login-screen").style.display = "block";
+        }
+      }
+    });
+
     function avviaVerificaGPS() {
       const errDiv = document.getElementById("geo-error");
       errDiv.textContent = "Verifica della posizione GPS in corso...";
@@ -399,11 +560,8 @@
           function(position) {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
-            
-            // Coordinate del Duomo di Alba (centro del raggio)
             const duomoLat = 44.7035;
             const duomoLon = 8.0357;
-            
             const distanza = calcolaDistanza(lat, lon, duomoLat, duomoLon);
 
             if (distanza <= 50) {
@@ -414,7 +572,7 @@
             }
           },
           function(error) {
-            errDiv.textContent = "Impossibile rilevare la posizione. Assicurati di consentire l'accesso alla geolocalizzazione.";
+            errDiv.textContent = "Impossibile rilevare la posizione. Consenti l'accesso alla geolocalizzazione.";
           },
           { timeout: 10000 }
         );
@@ -528,8 +686,132 @@
     }
 
     function segnalaUtente() {
+      // Salva la segnalazione sul database Firebase in tempo reale
+      const reportRef = db.ref('reports').push();
+      reportRef.set({
+        timestamp: new Date().toLocaleString(),
+        roomId: currentRoomId || 'N/A'
+      });
+
       alert("Utente segnalato correttamente.");
       cercaAltroUtenteBtn();
+    }
+
+    // Gestione Admin
+    function mostraLoginAdmin() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("chat-screen").style.display = "none";
+      document.getElementById("admin-panel-screen").style.display = "none";
+      document.getElementById("admin-login-screen").style.display = "block";
+    }
+
+    function tornaAllaHome() {
+      document.getElementById("admin-login-screen").style.display = "none";
+      document.getElementById("admin-panel-screen").style.display = "none";
+      document.getElementById("login-screen").style.display = "block";
+    }
+
+    function effettuaLoginAdmin() {
+      const role = document.getElementById("adminRole").value;
+      const user = document.getElementById("adminUser").value.trim();
+      const pass = document.getElementById("adminPass").value.trim();
+      const errEl = document.getElementById("admin-error");
+
+      if (role === 'admin') {
+        if (user === "FILLOB" && pass === "1q2w3e4r5t6y7u8i9o0p") {
+          errEl.textContent = "";
+          apriPannelloAdmin('admin');
+        } else {
+          errEl.textContent = "Credenziali Admin non valide.";
+        }
+      } else {
+        // Controllo aiuto-admin salvati su Firebase
+        db.ref('helpers/' + user).once('value', function(snapshot) {
+          const helperData = snapshot.val();
+          if (helperData && helperData.password === pass) {
+            errEl.textContent = "";
+            apriPannelloAdmin('helper');
+          } else {
+            errEl.textContent = "Credenziali Aiuto-Admin non valide.";
+          }
+        });
+      }
+    }
+
+    function apriPannelloAdmin(role) {
+      document.getElementById("admin-login-screen").style.display = "none";
+      document.getElementById("admin-panel-screen").style.display = "block";
+
+      if (role === 'admin') {
+        document.getElementById("adminPanelTitle").textContent = "Pannello Master Admin";
+        document.getElementById("masterAdminSection").style.display = "block";
+      } else {
+        document.getElementById("adminPanelTitle").textContent = "Pannello Aiuto-Admin";
+        document.getElementById("masterAdminSection").style.display = "none";
+      }
+
+      caricaSegnalazioni();
+      aggiornaStatoKillSwitchBtn();
+    }
+
+    function toggleKillSwitch() {
+      db.ref('system/maintenance').once('value', function(snapshot) {
+        const currentVal = snapshot.val() || false;
+        db.ref('system/maintenance').set(!currentVal);
+      });
+    }
+
+    function aggiornaStatoKillSwitchBtn() {
+      db.ref('system/maintenance').on('value', function(snapshot) {
+        const isMaintenance = snapshot.val();
+        const btn = document.getElementById("killSwitchBtn");
+        if (isMaintenance) {
+          btn.textContent = "Riattiva Sito (Online)";
+          btn.style.background = "#4ade80";
+        } else {
+          btn.textContent = "Disattiva Sito (Manutenzione)";
+          btn.style.background = "linear-gradient(135deg, var(--primary), var(--primary-2))";
+        }
+      });
+    }
+
+    function creaAiutoAdmin() {
+      const user = document.getElementById("newHelperUser").value.trim();
+      const pass = document.getElementById("newHelperPass").value.trim();
+      const msgEl = document.getElementById("helper-msg");
+
+      if (!user || !pass) {
+        alert("Inserisci username e password validi.");
+        return;
+      }
+
+      db.ref('helpers/' + user).set({ password: pass }, function(error) {
+        if (!error) {
+          msgEl.textContent = "Account aiuto-admin '" + user + "' creato con successo!";
+          document.getElementById("newHelperUser").value = "";
+          document.getElementById("newHelperPass").value = "";
+        } else {
+          alert("Errore durante la creazione.");
+        }
+      });
+    }
+
+    function caricaSegnalazioni() {
+      const tbody = document.getElementById("reportsTableBody");
+      db.ref('reports').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) {
+          tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>`;
+          return;
+        }
+
+        Object.values(data).forEach(rep => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${rep.timestamp}</td><td>Stanza sessione: ${rep.roomId}</td>`;
+          tbody.appendChild(tr);
+        });
+      });
     }
   </script>
 </body>
