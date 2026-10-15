@@ -333,7 +333,7 @@
           <div class="steps">
             <ol>
               <li>Segui la pagina ufficiale <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">@albacore26</a> su TikTok.</li>
-              <li>Verifica la tua posizione ad Alba e accedi.</li>
+              <li>Verifica la tua posizione ad Alba (entro 50 km dal Duomo) e accedi.</li>
             </ol>
           </div>
 
@@ -397,19 +397,37 @@
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           function(position) {
-            errDiv.textContent = "";
-            entraNellaChat();
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            // Coordinate del Duomo di Alba (centro del raggio)
+            const duomoLat = 44.7035;
+            const duomoLon = 8.0357;
+            
+            const distanza = calcolaDistanza(lat, lon, duomoLat, duomoLon);
+
+            if (distanza <= 50) {
+              errDiv.textContent = "";
+              entraNellaChat();
+            } else {
+              errDiv.textContent = "Accesso negato: devi trovarti entro 50 km dal Duomo di Alba.";
+            }
           },
-          function() {
-            errDiv.textContent = "";
-            entraNellaChat();
+          function(error) {
+            errDiv.textContent = "Impossibile rilevare la posizione. Assicurati di consentire l'accesso alla geolocalizzazione.";
           },
           { timeout: 10000 }
         );
       } else {
-        errDiv.textContent = "";
-        entraNellaChat();
+        errDiv.textContent = "La geolocalizzazione non è supportata dal tuo browser.";
       }
+    }
+
+    function calcolaDistanza(lat1, lon1, lat2, lon2) {
+      const p = 0.017453292519943295;
+      const c = Math.cos;
+      const a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
+      return 12742 * Math.asin(Math.sqrt(a));
     }
 
     async function entraNellaChat() {
