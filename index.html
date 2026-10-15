@@ -627,8 +627,8 @@
           <div class="hero">
             <h2>FAQ & Guida alla Community</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
-              <strong>1. Come funziona la geolocalizzazione?</strong><br>
-              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba. Se riscontri problemi di GPS, prova a riavviare la connessione o ricaricare la pagina consentendo la localizzazione.<br><br>
+              <strong>1. Perché il PC segna una distanza errata?</strong><br>
+              I computer fissi stimano la posizione tramite la connessione internet (IP), che a volte sbaglia città. Se sei ad Alba da PC, puoi usare il tasto di sblocco rapido sotto la verifica GPS!<br><br>
               <strong>2. Come posso connettermi?</strong><br>
               Segui la pagina TikTok @albacore26, verifica la posizione e accedi in un click.
             </p>
@@ -715,6 +715,13 @@
           </div>
 
           <div id="geo-error" class="geo-error"></div>
+
+          <!-- Pulsante di sblocco rapido per chi usa il PC ad Alba -->
+          <div style="text-align: center; margin-top: 12px;">
+            <a onclick="forzaAccessoPcAlba()" style="color: var(--muted); font-size: 0.85rem; text-decoration: underline; cursor: pointer;">
+              🖥️ Se sei ad Alba da PC fisso e il GPS sbaglia distanza, clicca qui per sbloccare l'accesso
+            </a>
+          </div>
 
           <div class="footer-links" style="margin-top: 18px; text-align: center; font-size: 0.9rem; color: var(--muted);">
             <a onclick="apriInfo('privacy')" style="cursor:pointer; color:#fff; margin:0 8px;">Privacy</a>
@@ -1133,7 +1140,7 @@
       document.getElementById(screenId).style.display = "block";
     }
 
-    function torntaAllaHomeDaSubScreens() { rientraHomeControllata(); }
+    function tornaAllaHomeDaSubScreens() { rientraHomeControllata(); }
     function tornaAllaHomeDaInfo() { rientraHomeControllata(); }
     function tornaAllaHomeDaFaq() { rientraHomeControllata(); }
 
@@ -1170,29 +1177,29 @@
             const duomoLon = 8.0357;
             const distanza = calcolaDistanza(lat, lon, duomoLat, duomoLon);
 
-            // Tolleranza estesa per evitare falsi blocchi GPS su dispositivi mobili
-            if (distanza <= 55) {
+            if (distanza <= 60) {
               errDiv.textContent = "";
               entraNellaChat();
             } else {
-              errDiv.textContent = "Accesso negato: devi trovarti entro 50 km dal Duomo di Alba (rilevati " + Math.round(distanza) + " km).";
+              errDiv.textContent = "Accesso negato: rilevati " + Math.round(distanza) + " km dal Duomo. Se usi il PC fisso, usa il tasto di sblocco rapido sotto!";
             }
           },
           function(error) {
-            // Fallback intelligente se il GPS fallisce ma l'utente è ad Alba
-            const forzaAccesso = confirm("Impossibile rilevare con precisione la posizione GPS. Vuoi forzare l'accesso come utente di Alba?");
-            if (forzaAccesso) {
-              errDiv.textContent = "";
-              entraNellaChat();
-            } else {
-              errDiv.textContent = "Attivazione GPS fallita. Controlla le impostazioni di localizzazione del browser.";
-            }
+            errDiv.textContent = "Impossibile rilevare la posizione. Usa il tasto di sblocco rapido per PC sotto.";
           },
-          { timeout: 15000, enableHighAccuracy: true, maximumAge: 10000 }
+          { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 }
         );
       } else {
         errDiv.textContent = "La geolocalizzazione non è supportata dal tuo browser.";
       }
+    }
+
+    function forzaAccessoPcAlba() {
+      const nickInput = document.getElementById("userNickname").value.trim();
+      if (nickInput) nicknameUtente = nickInput;
+      document.getElementById("localVideoLabel").textContent = nicknameUtente + " (Tu)";
+      document.getElementById("geo-error").textContent = "";
+      entraNellaChat();
     }
 
     function calcolaDistanza(lat1, lon1, lat2, lon2) {
