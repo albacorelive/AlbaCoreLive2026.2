@@ -338,7 +338,6 @@
       z-index: 3;
     }
 
-    /* Pulsanti sotto la propria cam (Mute / Cam Off) */
     .local-media-controls {
       display: flex;
       gap: 8px;
@@ -753,14 +752,13 @@
             💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
           </div>
 
-          <!-- Video griglia con controlli audio/video subito sotto la propria cam -->
+          <!-- Video griglia -->
           <div class="video-grid">
             <div class="video-column">
               <div class="video-box">
                 <video id="localVideo" autoplay muted playsinline></video>
                 <div class="video-label" id="localVideoLabel">Tu</div>
               </div>
-              <!-- Controlli microfono e camera subito sotto la cam -->
               <div class="local-media-controls">
                 <button id="muteBtn" class="media-toggle-btn" onclick="toggleMuteAudio()">🎤 Silenzia Audio</button>
                 <button id="camBtn" class="media-toggle-btn" onclick="toggleCamVideo()">📷 Disattiva Camera</button>
@@ -780,11 +778,11 @@
                 <video id="remoteVideo" autoplay playsinline></video>
                 <div id="remoteLabel" class="video-label">Utente Online</div>
               </div>
-              <div style="height: 35px;"></div> <!-- Spaziatore per allineare l'altezza con la colonna sinistra -->
+              <div style="height: 35px;"></div>
             </div>
           </div>
 
-          <!-- Reazioni / Emoji FUORI dal riquadro video -->
+          <!-- Reazioni esterne -->
           <div class="reactions-bar-external">
             <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️ Cuore</button>
             <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥 Fuoco</button>
@@ -799,7 +797,7 @@
             <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="condividiLinkSito()">🔗 Condividi Sito</button>
           </div>
 
-          <!-- Chat Testuale posizionata SOTTO -->
+          <!-- Chat Testuale -->
           <div class="text-chat-box">
             <div id="chatMessages" class="chat-messages">
               <div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>
@@ -1235,7 +1233,9 @@
       document.getElementById("chat-screen").style.display = "block";
 
       try {
-        myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (!myStream) {
+          myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        }
         document.getElementById("localVideo").srcObject = myStream;
       } catch (err) {
         console.error("Errore webcam:", err);
@@ -1243,22 +1243,25 @@
         return;
       }
 
-      peer = new Peer();
-
-      peer.on('open', function(id) {
-        cercaAltroUtente(id);
-      });
-
-      peer.on('call', function(call) {
-        currentCall = call;
-        call.answer(myStream);
-        call.on('stream', function(remoteStream) {
-          mostraVideoRemoto(remoteStream);
+      if (!peer) {
+        peer = new Peer();
+        peer.on('open', function(id) {
+          cercaAltroUtente(id);
         });
-        call.on('close', function() {
-          nascondiVideoRemoto();
+
+        peer.on('call', function(call) {
+          currentCall = call;
+          call.answer(myStream);
+          call.on('stream', function(remoteStream) {
+            mostraVideoRemoto(remoteStream);
+          });
+          call.on('close', function() {
+            nascondiVideoRemoto();
+          });
         });
-      });
+      } else {
+        cercaAltroUtente(peer.id);
+      }
     }
 
     function mostraVideoRemoto(stream) {
@@ -1377,6 +1380,11 @@
       });
 
       alert("Utente segnalato correttamente.");
+      
+      // Assicuriamoci che la webcam locale rimanga attiva e riavviamo la ricerca pulita
+      if (myStream && document.getElementById("localVideo").srcObject !== myStream) {
+        document.getElementById("localVideo").srcObject = myStream;
+      }
       cercaAltroUtenteBtn();
     }
 
