@@ -112,6 +112,11 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      transition: width 0.3s ease;
+    }
+
+    .page.admin-expanded {
+      width: min(100%, 1400px);
     }
 
     .brand {
@@ -252,6 +257,15 @@
 
     #chat-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen, #account-screen, #report-modal {
       display: none;
+    }
+
+    .chat-admin-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .chat-admin-layout.with-admin {
+      grid-template-columns: 1.3fr 1fr;
     }
 
     .form-group { margin-bottom: 16px; }
@@ -553,6 +567,19 @@
       margin-top: 4px;
     }
 
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .admin-table th, .admin-table td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+      font-size: 0.82rem;
+    }
+    .admin-table th { background: rgba(255,255,255,0.05); }
+
     #broadcastModal, #reportModal, #termsConsentModal {
       display: none;
       position: fixed;
@@ -601,6 +628,7 @@
       .actions { flex-direction: column; }
       .btn { width: 100%; }
       .stats-box { grid-template-columns: 1fr; }
+      .chat-admin-layout.with-admin { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -663,7 +691,7 @@
     </div>
   </div>
 
-  <div class="page">
+  <div id="mainPageContainer" class="page">
     <header class="brand">
       <h1><span class="brand-accent">ALBA</span> CORE LIVE</h1>
       <p>La chat ufficiale della community di Alba</p>
@@ -679,7 +707,7 @@
           </div>
         </section>
 
-        <!-- Schermata Account (Solo Accesso con Google) -->
+        <!-- Schermata Account (Solo Google + Logout pulito) -->
         <section id="account-screen">
           <div class="hero">
             <h2>Gestione Account</h2>
@@ -750,6 +778,9 @@
               <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
               <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
             </div>
+            
+            <!-- Tasto Pannello Admin in Home visibile SOLO per SExRsP -->
+            <button id="homeAdminBtn" class="btn btn-dark" style="display:none; margin-top: 12px; width: 100%; max-width: 320px; background: rgba(229,9,20,0.25); border-color: rgba(229,9,20,0.5); color: #ffccd0;" onclick="apriPannelloAdmin()">🛠️ Pannello Admin</button>
           </div>
 
           <div id="geo-error" class="geo-error"></div>
@@ -761,98 +792,181 @@
           </div>
         </section>
 
-        <!-- Schermata Chat -->
+        <!-- Schermata Chat (Layout affiancato se SExRsP) -->
         <section id="chat-screen">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div class="session-badge">
-              <span>👥 Utenti incontrati in questa sessione: <strong id="sessionCounter">0</strong></span>
-            </div>
-            <div class="session-badge" style="background: rgba(229,9,20,0.15); border-color: rgba(229,9,20,0.3); color: #ffccd0;">
-              <span>⭐ Livello Alba XP: <strong id="userXpScore">10</strong></span>
-            </div>
-          </div>
-
-          <div id="icebreakerBar" class="icebreaker-bar">
-            💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
-          </div>
-
-          <div class="video-grid">
-            <div class="video-column">
-              <div class="video-box">
-                <video id="localVideo" autoplay muted playsinline></video>
-                <div class="video-label" id="localVideoLabel">Tu</div>
-              </div>
-              <div class="local-media-controls">
-                <button id="muteBtn" class="media-toggle-btn" onclick="toggleMuteAudio()">🎤 Silenzia Audio</button>
-                <button id="camBtn" class="media-toggle-btn" onclick="toggleCamVideo()">📷 Disattiva Camera</button>
-              </div>
-            </div>
-
-            <div class="video-column">
-              <div class="video-box">
-                <div class="network-indicator">
-                  <div class="net-dot" id="netDot"></div>
-                  <span id="netText" style="color:#fff;">Ottima</span>
+          <div class="chat-admin-layout" id="chatAdminLayout">
+            <!-- Colonna Chat Live -->
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div class="session-badge">
+                  <span>👥 Utenti incontrati: <strong id="sessionCounter">0</strong></span>
                 </div>
-                <div id="remotePlaceholder" class="remote-placeholder">
-                  <span>In attesa di un utente...</span>
-                  <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
+                <div class="session-badge" style="background: rgba(229,9,20,0.15); border-color: rgba(229,9,20,0.3); color: #ffccd0;">
+                  <span>⭐ Livello Alba XP: <strong id="userXpScore">10</strong></span>
                 </div>
-                <video id="remoteVideo" autoplay playsinline></video>
-                <div id="remoteLabel" class="video-label">Utente Online</div>
               </div>
-              <div style="height: 35px;"></div>
+
+              <div id="icebreakerBar" class="icebreaker-bar">
+                💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
+              </div>
+
+              <div class="video-grid">
+                <div class="video-column">
+                  <div class="video-box">
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <div class="video-label" id="localVideoLabel">Tu</div>
+                  </div>
+                  <div class="local-media-controls">
+                    <button id="muteBtn" class="media-toggle-btn" onclick="toggleMuteAudio()">🎤 Silenzia Audio</button>
+                    <button id="camBtn" class="media-toggle-btn" onclick="toggleCamVideo()">📷 Disattiva Camera</button>
+                  </div>
+                </div>
+
+                <div class="video-column">
+                  <div class="video-box">
+                    <div class="network-indicator">
+                      <div class="net-dot" id="netDot"></div>
+                      <span id="netText" style="color:#fff;">Ottima</span>
+                    </div>
+                    <div id="remotePlaceholder" class="remote-placeholder">
+                      <span>In attesa di un utente...</span>
+                      <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
+                    </div>
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <div id="remoteLabel" class="video-label">Utente Online</div>
+                  </div>
+                  <div style="height: 35px;"></div>
+                </div>
+              </div>
+
+              <div class="reactions-bar-external">
+                <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️ Cuore</button>
+                <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥 Fuoco</button>
+                <button class="reaction-btn" onclick="inviaReazione('😂')">😂 Risata</button>
+                <button class="reaction-btn" onclick="inviaReazione('👍')">👍 Top</button>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-bottom: 16px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scambiaInstagram()">📸 Scambia Instagram</button>
+                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scattaSnapshot()">📷 Salva Snapshot</button>
+                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="condividiLinkSito()">🔗 Condividi Sito</button>
+              </div>
+
+              <div class="text-chat-box">
+                <div id="chatMessages" class="chat-messages">
+                  <div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>
+                </div>
+                <div class="chat-input-area">
+                  <input type="text" id="chatInput" placeholder="Scrivi un messaggio..." onkeypress="controllaInvioChat(event)" />
+                  <button onclick="inviaMessaggioChat()">Invia</button>
+                </div>
+              </div>
+
+              <div class="controls">
+                <button class="control-btn skip" onclick="cercaAltroUtenteBtn()">Cerca altro utente</button>
+                <button class="control-btn report" onclick="apriReportModal()">Segnala</button>
+              </div>
             </div>
-          </div>
 
-          <div class="reactions-bar-external">
-            <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️ Cuore</button>
-            <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥 Fuoco</button>
-            <button class="reaction-btn" onclick="inviaReazione('😂')">😂 Risata</button>
-            <button class="reaction-btn" onclick="inviaReazione('👍')">👍 Top</button>
-          </div>
+            <!-- Pannello Admin Affiancato a Destra (Solo per SExRsP) -->
+            <div id="inlineAdminPanel" style="display: none; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
+              <h3 style="margin-top:0; color:var(--primary-2);">🛠️ Pannello Admin Live</h3>
+              
+              <div class="stats-box" style="margin-bottom: 15px;">
+                <div class="stat-card">
+                  <small style="color:var(--muted);">Online</small>
+                  <span id="statOnlineUsers" style="font-size:1.1rem;">0</span>
+                </div>
+                <div class="stat-card">
+                  <small style="color:var(--muted);">In Coda</small>
+                  <span id="statQueueUsers" style="font-size:1.1rem;">0</span>
+                </div>
+                <div class="stat-card">
+                  <small style="color:var(--muted);">Stanze</small>
+                  <span id="statActiveRooms" style="font-size:1.1rem;">0</span>
+                </div>
+              </div>
 
-          <div style="display: flex; gap: 10px; margin-bottom: 16px; justify-content: center; flex-wrap: wrap;">
-            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scambiaInstagram()">📸 Scambia Instagram</button>
-            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scattaSnapshot()">📷 Salva Snapshot</button>
-            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="condividiLinkSito()">🔗 Condividi Sito</button>
-          </div>
+              <div style="margin-bottom: 15px;">
+                <h4 style="margin:0 0 6px 0; font-size:0.9rem;">Broadcast</h4>
+                <input type="text" id="broadcastText" placeholder="Messaggio popup..." style="width:100%; padding:8px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff; margin-bottom:6px;" />
+                <div style="display:flex; gap:6px;">
+                  <button class="btn btn-primary" style="flex:1; padding:6px; font-size:0.8rem;" onclick="inviaBroadcast()">Invia</button>
+                  <button class="btn btn-dark" style="flex:1; padding:6px; font-size:0.8rem;" onclick="rimuoviBroadcast()">Rimuovi</button>
+                </div>
+              </div>
 
-          <div class="text-chat-box">
-            <div id="chatMessages" class="chat-messages">
-              <div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>
+              <div style="margin-bottom: 15px;">
+                <h4 style="margin:0 0 6px 0; font-size:0.9rem;">Utenti Registrati</h4>
+                <div style="max-height: 120px; overflow-y: auto;">
+                  <table class="admin-table">
+                    <tbody id="usersTableBody"><tr><td style="text-align:center;">Nessun utente.</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 15px;">
+                <h4 style="margin:0 0 6px 0; font-size:0.9rem;">Segnalazioni</h4>
+                <div style="max-height: 120px; overflow-y: auto;">
+                  <table class="admin-table">
+                    <tbody id="reportsTableBody"><tr><td style="text-align:center;">Nessuna segnalazione.</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <button class="btn btn-dark" style="width:100%; padding:8px; font-size:0.85rem;" onclick="toggleKillSwitch()" id="killSwitchBtn">Attiva Manutenzione Sito</button>
             </div>
-            <div class="chat-input-area">
-              <input type="text" id="chatInput" placeholder="Scrivi un messaggio..." onkeypress="controllaInvioChat(event)" />
-              <button onclick="inviaMessaggioChat()">Invia</button>
-            </div>
-          </div>
-
-          <div class="controls">
-            <button class="control-btn skip" onclick="cercaAltroUtenteBtn()">Cerca altro utente</button>
-            <button class="control-btn report" onclick="apriReportModal()">Segnala</button>
           </div>
         </section>
 
-        <!-- Pannello di Controllo Admin (Visibile solo per SExRsP) -->
+        <!-- Pannello di Controllo Admin Dedicato (Se aperto da menu) -->
         <section id="admin-panel-screen">
           <div class="hero">
             <h2>Pannello Master Admin</h2>
-            <p>Monitoraggio e gestione reale della community</p>
+            <p>Monitoraggio e gestione completa della community</p>
           </div>
 
           <div class="stats-box">
             <div class="stat-card">
-              <small style="color:var(--muted);">Utenti Online (Reale)</small>
-              <span id="statOnlineUsers">0</span>
+              <small style="color:var(--muted);">Utenti Online</small>
+              <span id="statOnlineUsersModal">0</span>
             </div>
             <div class="stat-card">
-              <small style="color:var(--muted);">In Coda (Reale)</small>
-              <span id="statQueueUsers">0</span>
+              <small style="color:var(--muted);">In Coda</small>
+              <span id="statQueueUsersModal">0</span>
             </div>
             <div class="stat-card">
-              <small style="color:var(--muted);">Stanze Attive (Reale)</small>
-              <span id="statActiveRooms">0</span>
+              <small style="color:var(--muted);">Stanze Attive</small>
+              <span id="statActiveRoomsModal">0</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Gestione Broadcast</h3>
+            <div class="form-group">
+              <input type="text" id="broadcastTextModal" placeholder="Messaggio popup per gli utenti..." style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff;" />
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-primary" style="flex: 1;" onclick="inviaBroadcastModal()">Invia Messaggio</button>
+              <button class="btn btn-dark" style="flex: 1;" onclick="rimuoviBroadcast()">Rimuovi Messaggio</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Elenco Utenti Registrati</h3>
+            <div style="max-height: 180px; overflow-y: auto;">
+              <table class="admin-table">
+                <tbody id="usersTableBodyModal"><tr><td style="text-align:center;">Nessun account.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Segnalazioni Ricevute</h3>
+            <div style="max-height: 180px; overflow-y: auto;">
+              <table class="admin-table">
+                <tbody id="reportsTableBodyModal"><tr><td style="text-align:center;">Nessuna segnalazione.</td></tr></tbody>
+              </table>
             </div>
           </div>
 
@@ -925,22 +1039,39 @@
         });
         return;
       }
-      avviaSessione(u);
+      gestisciAssegnazioneIdFisso(u);
     });
 
-    function avviaSessione(u) {
+    // Gestione ID Fisso permanente per Google e utenti
+    function gestisciAssegnazioneIdFisso(u) {
+      userId = u.uid;
+      nicknameUtente = u.displayName || (u.isAnonymous ? "Ospite" : "UtenteGoogle");
+
+      const refCustomId = db.ref('customIds/' + userId);
+      refCustomId.once('value', function(snapshot) {
+        if (snapshot.exists()) {
+          userUniqueId = snapshot.val();
+          finalizzaAvvioSessione(u);
+        } else {
+          // Genera un ID fisso univoco (assegna SExRsP se è il tuo account, altrimenti casuale)
+          let generatedId = (u.email && u.email.includes("admin")) ? "SExRsP" : Math.random().toString(36).substring(2, 8).toUpperCase();
+          refCustomId.set(generatedId).then(function() {
+            userUniqueId = generatedId;
+            finalizzaAvvioSessione(u);
+          });
+        }
+      });
+    }
+
+    function finalizzaAvvioSessione(u) {
       const cambioUtente = userId !== null;
       listenerAttivi.forEach(function(r) { r.off(); });
       listenerAttivi = [];
       if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
       if (cambioUtente) nascondiTuttoTranne("login-screen");
 
-      userId = u.uid;
-      userUniqueId = u.uid.slice(0, 6);
-      nicknameUtente = u.displayName || "OspiteGoogle";
-      
-      // Controllo esatto per il tuo ID SExRsP
-      isAdmin = (userUniqueId === "SExRsP" || userId.startsWith("SExRsP"));
+      // Controllo rigoroso ID SExRsP
+      isAdmin = (userUniqueId === "SExRsP");
 
       aggiornaDisplayNickname();
 
@@ -957,15 +1088,29 @@
           document.body.innerHTML = '<h2 style="padding:60px 20px;text-align:center;color:#fff;font-family:sans-serif">Accesso negato: il tuo account è stato bannato.</h2>';
         }
       });
+
+      on(db.ref('system/maintenance'), function(s) {
+        const ms = document.getElementById("maintenance-screen");
+        if (s.val()) {
+          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+          ms.style.display = "block";
+        } else if (ms.style.display === "block") {
+          ms.style.display = "none";
+          document.getElementById("login-screen").style.display = "block";
+        }
+      });
+
+      avviaAscoltoStatisticheAdmin();
     }
 
     function aggiornaDisplayNickname() {
-      const reg = nicknameUtente !== "Ospite";
+      const reg = !auth.currentUser.isAnonymous;
       document.getElementById("activeNicknameDisplay").textContent =
         reg ? nicknameUtente + " [" + userUniqueId + "] (Account Verificato)" : "Ospite [" + userUniqueId + "]";
       document.getElementById("menuAccountStatus").textContent = reg ? nicknameUtente : "Ospite";
       document.getElementById("logoutAccountBtn").style.display = reg ? "block" : "none";
       document.getElementById("adminMenuItem").style.display = isAdmin ? "block" : "none";
+      document.getElementById("homeAdminBtn").style.display = isAdmin ? "block" : "none";
       document.getElementById("localVideoLabel").textContent = nicknameUtente + " [" + userUniqueId + "] (Tu)";
     }
 
@@ -977,6 +1122,14 @@
       }).catch(function(error) {
         console.error(error);
         alert("Errore durante l'accesso con Google: " + error.message);
+      });
+    }
+
+    function eseguiLogoutAccount() {
+      auth.signOut().then(function() {
+        alert("Logout effettuato con successo.");
+        tornaAllaHomeDaAccount();
+        window.location.reload();
       });
     }
 
@@ -998,14 +1151,7 @@
       document.getElementById("dropdownMenu").classList.toggle('active');
     }
 
-    function apriAccountScreen() {
-      nascondiTuttoTranne("account-screen");
-    }
-
-    function eseguiLogoutAccount() {
-      auth.signOut().then(function() { tornaAllaHomeDaAccount(); });
-    }
-
+    function apriAccountScreen() { nascondiTuttoTranne("account-screen"); }
     function tornaAllaHomeDaAccount() { rientraHomeControllata(); }
     function tornaAllaHomeDaInfo() { rientraHomeControllata(); }
     function tornaAllaHomeDaFaq() { rientraHomeControllata(); }
@@ -1013,6 +1159,7 @@
 
     function rientraHomeControllata() {
       SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+      document.getElementById("mainPageContainer").classList.remove("admin-expanded");
       document.getElementById("login-screen").style.display = "block";
     }
 
@@ -1046,6 +1193,7 @@
     function nascondiTuttoTranne(screenId) {
       SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
       document.getElementById("reportModal").style.display = "none";
+      document.getElementById("mainPageContainer").classList.remove("admin-expanded");
       document.getElementById(screenId).style.display = "block";
     }
 
@@ -1075,7 +1223,22 @@
     }
 
     async function entraNellaChat() {
-      nascondiTuttoTranne("chat-screen");
+      SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+      document.getElementById("chat-screen").style.display = "block";
+
+      const layout = document.getElementById("chatAdminLayout");
+      const inlineAdmin = document.getElementById("inlineAdminPanel");
+      const container = document.getElementById("mainPageContainer");
+
+      if (isAdmin) {
+        layout.classList.add("with-admin");
+        inlineAdmin.style.display = "block";
+        container.classList.add("admin-expanded");
+      } else {
+        layout.classList.remove("with-admin");
+        inlineAdmin.style.display = "none";
+        container.classList.remove("admin-expanded");
+      }
 
       try {
         if (!myStream) {
@@ -1107,15 +1270,9 @@
           currentCall = call;
           const activeAudioTrack = myStream.getAudioTracks()[0];
           const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
-          
           call.answer(callStream);
-          
-          call.on('stream', function(remoteStream) {
-            mostraVideoRemoto(remoteStream);
-          });
-          call.on('close', function() {
-            nascondiVideoRemoto();
-          });
+          call.on('stream', function(remoteStream) { mostraVideoRemoto(remoteStream); });
+          call.on('close', function() { nascondiVideoRemoto(); });
         });
       } else {
         cercaAltroUtente(peer.id);
@@ -1125,7 +1282,6 @@
     function mostraVideoRemoto(stream) {
       const remoteVideo = document.getElementById("remoteVideo");
       const placeholder = document.getElementById("remotePlaceholder");
-      
       remoteVideo.srcObject = stream;
       remoteVideo.play().catch(e => console.log("Autoplay preventito:", e));
       placeholder.style.display = "none";
@@ -1154,20 +1310,14 @@
       if (!activePeerId || !userId) return;
 
       nascondiVideoRemoto();
-      
-      if (currentCall) {
-        currentCall.close();
-        currentCall = null;
-      }
-
+      if (currentCall) { currentCall.close(); currentCall = null; }
       if (currentRoomId) {
         db.ref('rooms/' + currentRoomId).off();
         db.ref('rooms/' + currentRoomId).remove();
         currentRoomId = null;
       }
 
-      const queueRef = db.ref('queue');
-      queueRef.once('value', function(snapshot) {
+      db.ref('queue').once('value', function(snapshot) {
         const waitingUsers = snapshot.val();
         let targetKey = null;
         let targetItem = null;
@@ -1186,20 +1336,12 @@
         if (!targetItem) {
           currentRoomId = 'room_' + userId + '_' + Math.random().toString(36).substring(2, 7);
           const myQueueRef = db.ref('queue/' + userId);
-          
-          myQueueRef.set({
-            userId: userId,
-            peerId: activePeerId,
-            roomId: currentRoomId,
-            nickname: nicknameUtente,
-            uid: userUniqueId
-          });
+          myQueueRef.set({ userId: userId, peerId: activePeerId, roomId: currentRoomId, nickname: nicknameUtente, uid: userUniqueId });
           myQueueRef.onDisconnect().remove();
 
           db.ref('rooms/' + currentRoomId).on('value', function(roomSnap) {
             const roomData = roomSnap.val();
             if (!roomData) return;
-
             if (roomData.info && roomData.info.peer2 && roomData.info.guestId) {
               currentRemoteUsername = roomData.info.nick2 || "Utente";
               currentRemoteUserId = roomData.info.uid2 || "Sconosciuto";
@@ -1208,62 +1350,37 @@
               
               const activeAudioTrack = myStream.getAudioTracks()[0];
               const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
-
               const call = peer.call(roomData.info.peer2, callStream);
               currentCall = call;
-              
-              call.on('stream', function(remoteStream) {
-                mostraVideoRemoto(remoteStream);
-              });
-              call.on('close', function() {
-                nascondiVideoRemoto();
-              });
+              call.on('stream', function(remoteStream) { mostraVideoRemoto(remoteStream); });
+              call.on('close', function() { nascondiVideoRemoto(); });
             }
           });
-
           ascoltaMessaggiChat();
         } else {
           currentRoomId = targetItem.roomId;
           const hostPeerId = targetItem.peerId;
           const hostUserId = targetItem.userId;
-          
           currentRemoteUsername = targetItem.nickname || "Utente";
           currentRemoteUserId = targetItem.uid || "Sconosciuto";
           currentRemoteFullUid = hostUserId;
           document.getElementById("remoteLabel").textContent = currentRemoteUsername + " [" + currentRemoteUserId + "]";
           
           db.ref('queue/' + hostUserId).remove();
-
-          db.ref('rooms/' + currentRoomId + '/info').set({
-            peer2: activePeerId,
-            guestId: userId,
-            nick2: nicknameUtente,
-            uid2: userUniqueId
-          });
+          db.ref('rooms/' + currentRoomId + '/info').set({ peer2: activePeerId, guestId: userId, nick2: nicknameUtente, uid2: userUniqueId });
 
           const activeAudioTrack = myStream.getAudioTracks()[0];
           const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
-
           const call = peer.call(hostPeerId, callStream);
           currentCall = call;
-          
-          call.on('stream', function(remoteStream) {
-            mostraVideoRemoto(remoteStream);
-          });
-          call.on('close', function() {
-            nascondiVideoRemoto();
-          });
-
+          call.on('stream', function(remoteStream) { mostraVideoRemoto(remoteStream); });
+          call.on('close', function() { nascondiVideoRemoto(); });
           ascoltaMessaggiChat();
         }
       });
     }
 
-    function cercaAltroUtenteBtn() {
-      if (peer) {
-        cercaAltroUtente(peer.id);
-      }
-    }
+    function cercaAltroUtenteBtn() { if (peer) cercaAltroUtente(peer.id); }
 
     function toggleMuteAudio() {
       if (myStream) {
@@ -1296,20 +1413,13 @@
     function scambiaInstagram() {
       const ig = prompt("Inserisci il tuo contatto Instagram o Social:");
       if (ig && currentRoomId) {
-        db.ref('rooms/' + currentRoomId + '/messages').push().set({
-          sender: userId,
-          name: nicknameUtente,
-          text: "📱 Contatto Social condiviso: " + ig
-        });
+        db.ref('rooms/' + currentRoomId + '/messages').push().set({ sender: userId, name: nicknameUtente, text: "📱 Contatto Social condiviso: " + ig });
       }
     }
 
     function scattaSnapshot() {
       const videoEl = document.getElementById("remoteVideo");
-      if (!videoEl.srcObject) {
-        alert("Nessun utente connesso!");
-        return;
-      }
+      if (!videoEl.srcObject) { alert("Nessun utente connesso!"); return; }
       const canvas = document.createElement("canvas");
       canvas.width = videoEl.videoWidth || 640;
       canvas.height = videoEl.videoHeight || 480;
@@ -1330,9 +1440,7 @@
       if (!currentRoomId) return;
       db.ref('rooms/' + currentRoomId + '/reactions').on('child_added', function(snapshot) {
         const data = snapshot.val();
-        if (data && data.sender !== userId) {
-          mostraAnimazioneEmoji(data.emoji);
-        }
+        if (data && data.sender !== userId) mostraAnimazioneEmoji(data.emoji);
       });
     }
 
@@ -1351,18 +1459,11 @@
       const input = document.getElementById("chatInput");
       const text = input.value.trim();
       if (!text || !currentRoomId) return;
-
-      db.ref('rooms/' + currentRoomId + '/messages').push().set({
-        sender: userId,
-        name: nicknameUtente,
-        text: text
-      });
+      db.ref('rooms/' + currentRoomId + '/messages').push().set({ sender: userId, name: nicknameUtente, text: text });
       input.value = "";
     }
 
-    function controllaInvioChat(e) {
-      if (e.key === 'Enter') inviaMessaggioChat();
-    }
+    function controllaInvioChat(e) { if (e.key === 'Enter') inviaMessaggioChat(); }
 
     function ascoltaMessaggiChat() {
       if (!currentRoomId) return;
@@ -1380,7 +1481,6 @@
 
     function apriReportModal() { document.getElementById("reportModal").style.display = "flex"; }
     function chiudiReportModal() { document.getElementById("reportModal").style.display = "none"; }
-
     function inviaSegnalazioneConMotivo(motivo) { inviaSegnalazioneEffettiva(motivo); }
     function inviaSegnalazionePersonalizzata() {
       const custom = document.getElementById("customReportReason").value.trim();
@@ -1400,30 +1500,117 @@
       cercaAltroUtenteBtn();
     }
 
-    // --- PANNELLO ADMIN (Dati reali) ---
+    // --- PANNELLO ADMIN & STATISTICHE ORIGINALI ---
     function apriPannelloAdmin() {
       if (!isAdmin) { alert("Non autorizzato."); return; }
       nascondiTuttoTranne("admin-panel-screen");
-      aggiornaStatisticheAdmin();
+      caricaDatiAdminModal();
     }
 
-    function aggiornaStatisticheAdmin() {
+    function toggleKillSwitch() {
+      db.ref('system/maintenance').once('value', function(s) {
+        db.ref('system/maintenance').set(!(s.val() || false));
+      });
+    }
+
+    function inviaBroadcast() {
+      const text = document.getElementById("broadcastText").value.trim();
+      if (!text) return;
+      db.ref('system/broadcast').set({ id: 'msg_' + Date.now(), text: text }, function(err) {
+        if (!err) { alert("Broadcast inviato!"); document.getElementById("broadcastText").value = ""; }
+      });
+    }
+
+    function inviaBroadcastModal() {
+      const text = document.getElementById("broadcastTextModal").value.trim();
+      if (!text) return;
+      db.ref('system/broadcast').set({ id: 'msg_' + Date.now(), text: text }, function(err) {
+        if (!err) { alert("Broadcast inviato!"); document.getElementById("broadcastTextModal").value = ""; }
+      });
+    }
+
+    function rimuoviBroadcast() {
+      db.ref('system/broadcast').remove();
+      alert("Broadcast rimosso.");
+    }
+
+    function bannaUtente(uid) {
+      if (uid && uid !== "ignoto") db.ref('bans/' + uid).set(true);
+    }
+
+    function avviaAscoltoStatisticheAdmin() {
       db.ref('presence').on('value', s => {
         const val = s.val();
         let total = val ? Object.keys(val).length : 0;
-        // Conteggio reale (es. se ci sono 50 utenti, mostra il numero reale)
-        document.getElementById("statOnlineUsers").textContent = total;
+        if (document.getElementById("statOnlineUsers")) document.getElementById("statOnlineUsers").textContent = total;
+        if (document.getElementById("statOnlineUsersModal")) document.getElementById("statOnlineUsersModal").textContent = total;
       });
 
       db.ref('queue').on('value', s => {
-        document.getElementById("statQueueUsers").textContent = s.val() ? Object.keys(s.val()).length : 0;
+        const q = s.val() ? Object.keys(s.val()).length : 0;
+        if (document.getElementById("statQueueUsers")) document.getElementById("statQueueUsers").textContent = q;
+        if (document.getElementById("statQueueUsersModal")) document.getElementById("statQueueUsersModal").textContent = q;
       });
 
       db.ref('rooms').on('value', s => {
         const d = s.val();
         let count = 0;
         if (d) Object.values(d).forEach(r => { if (r && r.info) count++; });
-        document.getElementById("statActiveRooms").textContent = count;
+        if (document.getElementById("statActiveRooms")) document.getElementById("statActiveRooms").textContent = count;
+        if (document.getElementById("statActiveRoomsModal")) document.getElementById("statActiveRoomsModal").textContent = count;
+      });
+
+      // Tabelle Inline (in Chat Live)
+      db.ref('customIds').on('value', s => {
+        const tbody = document.getElementById("usersTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td>Nessun utente.</td></tr>`; return; }
+        Object.entries(data).forEach(([uId, customId]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>ID: ${customId}<br><button class="btn btn-dark" style="padding:2px 6px; font-size:0.75rem; margin-top:2px;" onclick="bannaUtente('${uId}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+
+      db.ref('reports').on('value', s => {
+        const tbody = document.getElementById("reportsTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td>Nessuna segnalazione.</td></tr>`; return; }
+        Object.entries(data).forEach(([k, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><b>${r.reportedUser}</b>: ${r.reason}<br><button class="btn btn-primary" style="padding:2px 6px; font-size:0.75rem; margin-top:2px;" onclick="bannaUtente('${r.targetUid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function caricaDatiAdminModal() {
+      db.ref('customIds').once('value', s => {
+        const tbody = document.getElementById("usersTableBodyModal");
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td style="text-align:center;">Nessun utente.</td></tr>`; return; }
+        Object.entries(data).forEach(([uId, customId]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><strong>ID: ${customId}</strong><br><small>${uId}</small></td><td><button class="btn btn-dark" style="padding:4px;" onclick="bannaUtente('${uId}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+
+      db.ref('reports').once('value', s => {
+        const tbody = document.getElementById("reportsTableBodyModal");
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td style="text-align:center;">Nessuna segnalazione.</td></tr>`; return; }
+        Object.entries(data).forEach(([k, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r.timestamp}</td><td>${r.reportedUser}</td><td>${r.reason}</td><td><button class="btn btn-primary" style="padding:4px;" onclick="bannaUtente('${r.targetUid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
       });
     }
   </script>
