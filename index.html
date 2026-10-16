@@ -831,7 +831,7 @@
             <h2>FAQ & Guida alla Community</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
               <strong>1. Come funziona la geolocalizzazione?</strong><br>
-              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba (eccetto account autorizzati).<br><br>
+              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba.<br><br>
               <strong>2. Come posso connettermi?</strong><br>
               Segui la pagina TikTok @albacore26, verifica la posizione e accedi in un click.
             </p>
@@ -872,9 +872,14 @@
             <div id="activeNicknameDisplay" style="padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; font-weight: bold; color: var(--accent);">Ospite (Crea un account per bloccarlo)</div>
           </div>
 
-          <div class="actions">
-            <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
-            <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
+          <div class="actions" style="flex-direction: column; align-items: center;">
+            <div style="display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;">
+              <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
+              <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
+            </div>
+            
+            <!-- NUOVO PULSANTE PER PC / BYPASS GPS -->
+            <button class="btn btn-dark" style="margin-top: 10px; width: 100%; max-width: 320px; background: rgba(255,152,0,0.15); border-color: rgba(255,152,0,0.4); color: #ffad33;" onclick="bypassaGpsPerTest()">💻 Entra subito (Bypass GPS PC)</button>
           </div>
 
           <div id="geo-error" class="geo-error"></div>
@@ -1582,6 +1587,12 @@
       });
     }
 
+    // Funzione Bypass GPS istantanea per PC/Test
+    function bypassaGpsPerTest() {
+      document.getElementById("geo-error").textContent = "";
+      entraNellaChat();
+    }
+
     function avviaVerificaGPS() {
       document.getElementById("localVideoLabel").textContent = nicknameUtente + " [" + userUniqueId + "] (Tu)";
 
@@ -1613,12 +1624,12 @@
             }
           },
           function(error) {
-            errDiv.textContent = "Impossibile rilevare la posizione. Consenti l'accesso alla geolocalizzazione.";
+            errDiv.textContent = "Impossibile rilevare la posizione. Consenti l'accesso alla geolocalizzazione o usa il tasto Bypass PC.";
           },
           { timeout: 15000, enableHighAccuracy: true, maximumAge: 10000 }
         );
       } else {
-        errDiv.textContent = "La geolocalizzazione non è supportata dal tuo browser.";
+        errDiv.textContent = "La geolocalizzazione non è supportata dal tuo browser. Usa il tasto Bypass PC.";
       }
     }
 
@@ -1645,7 +1656,6 @@
       }
 
       if (!peer) {
-        // AGGIUNTI I SERVER STUN DI GOOGLE PER LA GESTIONE DELLE RETI E PREVENIRE SCHERMI NERI
         peer = new Peer({
           config: {
             iceServers: [
