@@ -941,6 +941,12 @@
             </div>
           </div>
 
+          <!-- Pulsante Manutenzione aggiunto qui nel Pannello Admin Principale -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Stato Piattaforma</h3>
+            <button id="killSwitchModalBtn" class="btn btn-primary" style="width:100%;" onclick="toggleKillSwitch()">Disattiva Sito / Attiva Sito (Manutenzione)</button>
+          </div>
+
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Gestione Broadcast</h3>
             <div class="form-group">
@@ -1052,8 +1058,7 @@
           userUniqueId = snapshot.val();
           finalizzaAvvioSessione(u);
         } else {
-          // Assegna il tuo nuovo ID RV94LX se corrisponde all'admin o al tuo account principale
-          let generatedId = (u.email && u.email.includes("admin")) ? "RV94LX" : "RV94LX";
+          let generatedId = "RV94LX";
           refCustomId.set(generatedId).then(function() {
             userUniqueId = generatedId;
             finalizzaAvvioSessione(u);
@@ -1069,7 +1074,6 @@
       if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
       if (cambioUtente) nascondiTuttoTranne("login-screen");
 
-      // Controllo rigoroso ID RV94LX
       isAdmin = (userUniqueId === "RV94LX");
 
       aggiornaDisplayNickname();
@@ -1090,7 +1094,8 @@
 
       on(db.ref('system/maintenance'), function(s) {
         const ms = document.getElementById("maintenance-screen");
-        if (s.val()) {
+        const isMaint = s.val();
+        if (isMaint) {
           SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
           ms.style.display = "block";
         } else if (ms.style.display === "block") {
@@ -1508,7 +1513,12 @@
 
     function toggleKillSwitch() {
       db.ref('system/maintenance').once('value', function(s) {
-        db.ref('system/maintenance').set(!(s.val() || false));
+        const currentState = s.val() || false;
+        db.ref('system/maintenance').set(!currentState, function(err) {
+          if (!err) {
+            alert(!currentState ? "Sito disattivato (Modalità Manutenzione attiva)." : "Sito riattivato online!");
+          }
+        });
       });
     }
 
@@ -1557,6 +1567,20 @@
         if (d) Object.values(d).forEach(r => { if (r && r.info) count++; });
         if (document.getElementById("statActiveRooms")) document.getElementById("statActiveRooms").textContent = count;
         if (document.getElementById("statActiveRoomsModal")) document.getElementById("statActiveRoomsModal").textContent = count;
+      });
+
+      // Sincronizzazione stato pulsante manutenzione in tempo reale
+      db.ref('system/maintenance').on('value', s => {
+        const isMaint = s.val();
+        const btnInline = document.getElementById("killSwitchBtn");
+        const btnModal = document.getElementById("killSwitchModalBtn");
+        if (isMaint) {
+          if (btnInline) { btnInline.textContent = "🟢 Riattiva Sito Online"; btnInline.style.background = "#4ade80"; btnInline.style.color = "#000"; }
+          if (btnModal) { btnModal.textContent = "🟢 Riattiva Sito Online"; btnModal.style.background = "#4ade80"; btnModal.style.color = "#000"; }
+        } else {
+          if (btnInline) { btnInline.textContent = "🔴 Disattiva Sito (Manutenzione)"; btnInline.style.background = ""; btnInline.style.color = ""; }
+          if (btnModal) { btnModal.textContent = "🔴 Disattiva Sito (Manutenzione)"; btnModal.style.background = ""; btnModal.style.color = ""; }
+        }
       });
 
       // Tabelle Inline (in Chat Live)
