@@ -236,6 +236,8 @@
       color: #000;
       border: 1px solid var(--border);
       font-weight: 600;
+      width: 100%;
+      justify-content: center;
     }
     .btn-google:hover { background: #f1f1f1; }
 
@@ -259,16 +261,6 @@
       margin-bottom: 6px;
       font-size: 0.9rem;
       color: var(--muted);
-    }
-
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      color: #fff;
-      font-size: 1rem;
     }
 
     .video-grid {
@@ -538,21 +530,6 @@
     .skip { background: linear-gradient(135deg, #ff9800, #ffad33); }
     .report { background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
 
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-
-    .admin-table th, .admin-table td {
-      border: 1px solid var(--border);
-      padding: 10px;
-      text-align: left;
-      font-size: 0.9rem;
-    }
-
-    .admin-table th { background: rgba(255,255,255,0.05); }
-
     .stats-box {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -576,92 +553,28 @@
       margin-top: 4px;
     }
 
-    #broadcastModal {
+    #broadcastModal, #reportModal, #termsConsentModal {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(5px);
-    }
-    .broadcast-content {
-      background: var(--panel-alt);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      width: min(90%, 400px);
-      text-align: center;
-      box-shadow: var(--shadow);
-    }
-    .broadcast-content h3 { margin-top: 0; color: var(--primary-2); }
-    .broadcast-content p { color: var(--text); font-size: 1rem; line-height: 1.5; margin-bottom: 20px; }
-
-    #reportModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      z-index: 1500;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(5px);
-      padding: 20px;
-    }
-    .report-box {
-      background: var(--panel-alt);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 25px;
-      width: min(100%, 450px);
-      box-shadow: var(--shadow);
-      text-align: center;
-    }
-    .report-box h3 { color: var(--primary); margin-top: 0; }
-    .report-btn-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin: 15px 0;
-    }
-    .report-reason-btn {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      color: #fff;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.2s;
-    }
-    .report-reason-btn:hover {
-      background: rgba(229, 9, 20, 0.2);
-      border-color: rgba(229, 9, 20, 0.4);
-    }
-
-    #termsConsentModal {
-      display: flex;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9);
-      z-index: 9999;
+      background: rgba(0,0,0,0.85);
+      z-index: 2000;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
-    .consent-box {
+    #termsConsentModal { display: flex; }
+
+    .broadcast-content, .report-box, .consent-box {
       background: var(--panel-alt);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 25px;
       width: min(100%, 550px);
-      max-height: 85vh;
-      overflow-y: auto;
       box-shadow: var(--shadow);
       text-align: center;
     }
-    .consent-box h3 { color: var(--primary); margin-top: 0; font-size: 1.4rem; }
+    .consent-box { max-height: 85vh; overflow-y: auto; text-align: center; }
     .consent-text {
       text-align: left;
       color: var(--muted);
@@ -697,13 +610,13 @@
     <div class="report-box">
       <h3>⚠️ Segnala Utente</h3>
       <p style="color: var(--muted); font-size: 0.9rem;">Seleziona un motivo rapido o scrivi un dettaglio:</p>
-      <div class="report-btn-group">
-        <button class="report-reason-btn" onclick="inviaSegnalazioneConMotivo('Linguaggio offensivo o minaccioso')">🗣️ Linguaggio offensivo o minaccioso</button>
-        <button class="report-reason-btn" onclick="inviaSegnalazioneConMotivo('Contenuto inappropriato o esplicito')">🔞 Contenuto inappropriato o esplicito</button>
-        <button class="report-reason-btn" onclick="inviaSegnalazioneConMotivo('Molestie o comportamento molesto')">🚫 Molestie o comportamento molesto</button>
+      <div style="display:flex; flex-direction:column; gap:10px; margin:15px 0;">
+        <button class="btn btn-dark" onclick="inviaSegnalazioneConMotivo('Linguaggio offensivo o minaccioso')">🗣️ Linguaggio offensivo o minaccioso</button>
+        <button class="btn btn-dark" onclick="inviaSegnalazioneConMotivo('Contenuto inappropriato o esplicito')">🔞 Contenuto inappropriato o esplicito</button>
+        <button class="btn btn-dark" onclick="inviaSegnalazioneConMotivo('Molestie o comportamento molesto')">🚫 Molestie o comportamento molesto</button>
       </div>
       <div class="form-group" style="margin-bottom: 12px;">
-        <input type="text" id="customReportReason" placeholder="Oppure scrivi un motivo personalizzato..." />
+        <input type="text" id="customReportReason" placeholder="Oppure scrivi un motivo personalizzato..." style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff;" />
       </div>
       <div style="display: flex; gap: 10px;">
         <button class="btn btn-primary" style="flex: 1; padding: 10px;" onclick="inviaSegnalazionePersonalizzata()">Invia</button>
@@ -712,7 +625,7 @@
     </div>
   </div>
 
-  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy Semplificato -->
+  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy -->
   <div id="termsConsentModal">
     <div class="consent-box">
       <h3>Informativa sulla Privacy & Termini di Servizio</h3>
@@ -766,44 +679,23 @@
           </div>
         </section>
 
-        <!-- Schermata Account -->
+        <!-- Schermata Account (Solo Accesso con Google) -->
         <section id="account-screen">
           <div class="hero">
             <h2>Gestione Account</h2>
-            <p>Accedi con Google o gestisci le tue credenziali nella community.</p>
+            <p>Accedi con il tuo account Google per entrare nella community.</p>
           </div>
 
           <div style="max-width: 320px; margin: 0 auto 20px auto;">
-            <button class="btn btn-google" style="width: 100%; justify-content: center;" onclick="accediConGoogle()">
+            <button class="btn btn-google" onclick="accediConGoogle()">
               <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.22 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.15 0 9.9 0 12s.43 3.85 1.19 5.4l4.08-3.16z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.18 2.69 1.19 6.6l4.08 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
               Accedi con Google
             </button>
           </div>
 
-          <div style="text-align: center; color: var(--muted); margin-bottom: 15px; font-size: 0.85rem;">oppure usa email/password</div>
-
-          <div class="form-group" style="max-width: 320px; margin: 0 auto 15px auto;">
-            <select id="accountModeSelect" onchange="cambiaModalitaAccount()">
-              <option value="login">Accedi con Email</option>
-              <option value="register">Registrati con Email</option>
-            </select>
-          </div>
-
-          <div style="max-width: 320px; margin: 0 auto;">
-            <div class="form-group">
-              <label>Nome Utente / Nickname</label>
-              <input type="text" id="accountUser" placeholder="" maxlength="20" />
-            </div>
-            <div class="form-group">
-              <label>Password (min. 8 caratteri)</label>
-              <input type="password" id="accountPass" placeholder="" />
-            </div>
-            <div class="actions" style="flex-direction: column;">
-              <button id="accountSubmitBtn" class="btn btn-primary" style="width: 100%;" onclick="gestisciInvioAccount()">Accedi</button>
-              <button id="logoutAccountBtn" class="btn btn-dark" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); display: none;" onclick="eseguiLogoutAccount()">Esci dall'Account</button>
-              <button class="btn btn-dark" style="width: 100%;" onclick="tornaAllaHomeDaAccount()">Torna alla Home</button>
-            </div>
-            <div id="account-error" class="geo-error"></div>
+          <div class="actions" style="flex-direction: column; max-width: 320px; margin: 0 auto;">
+            <button id="logoutAccountBtn" class="btn btn-dark" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); display: none;" onclick="eseguiLogoutAccount()">Esci dall'Account</button>
+            <button class="btn btn-dark" style="width: 100%;" onclick="tornaAllaHomeDaAccount()">Torna alla Home</button>
           </div>
         </section>
 
@@ -848,10 +740,9 @@
             </ol>
           </div>
 
-          <!-- Stato Account / Nickname attivo -->
           <div class="form-group" style="max-width: 320px; margin: 0 auto 20px auto; text-align: center;">
             <label>Il tuo Nickname Attivo</label>
-            <div id="activeNicknameDisplay" style="padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; font-weight: bold; color: var(--accent);">Ospite (Crea un account per bloccarlo)</div>
+            <div id="activeNicknameDisplay" style="padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; font-weight: bold; color: var(--accent);">Ospite</div>
           </div>
 
           <div class="actions" style="flex-direction: column; align-items: center;">
@@ -859,8 +750,6 @@
               <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
               <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
             </div>
-            
-            <button class="btn btn-dark" style="margin-top: 10px; width: 100%; max-width: 320px; background: rgba(255,152,0,0.15); border-color: rgba(255,152,0,0.4); color: #ffad33;" onclick="bypassaGpsPerTest()">💻 Entra subito (Bypass GPS PC)</button>
           </div>
 
           <div id="geo-error" class="geo-error"></div>
@@ -945,97 +834,25 @@
           </div>
         </section>
 
-        <!-- Pannello di Controllo Admin -->
+        <!-- Pannello di Controllo Admin (Visibile solo per SExRsP) -->
         <section id="admin-panel-screen">
           <div class="hero">
             <h2>Pannello Master Admin</h2>
-            <p>Gestione avanzata in tempo reale</p>
+            <p>Monitoraggio e gestione reale della community</p>
           </div>
 
           <div class="stats-box">
             <div class="stat-card">
-              <small style="color:var(--muted);">Utenti Online</small>
+              <small style="color:var(--muted);">Utenti Online (Reale)</small>
               <span id="statOnlineUsers">0</span>
             </div>
             <div class="stat-card">
-              <small style="color:var(--muted);">In Coda</small>
+              <small style="color:var(--muted);">In Coda (Reale)</small>
               <span id="statQueueUsers">0</span>
             </div>
             <div class="stat-card">
-              <small style="color:var(--muted);">Stanze Attive</small>
+              <small style="color:var(--muted);">Stanze Attive (Reale)</small>
               <span id="statActiveRooms">0</span>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Stato Piattaforma</h3>
-            <button id="killSwitchBtn" class="btn btn-primary" onclick="toggleKillSwitch()">Disattiva Sito (Manutenzione)</button>
-          </div>
-
-          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Gestione Messaggio Popup Broadcast</h3>
-            <div class="form-group">
-              <input type="text" id="broadcastText" placeholder="Scrivi un messaggio popup per gli utenti..." />
-            </div>
-            <div style="display: flex; gap: 10px;">
-              <button class="btn btn-primary" style="flex: 1;" onclick="inviaBroadcast()">Invia Messaggio</button>
-              <button class="btn btn-dark" style="flex: 1; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4);" onclick="rimuoviBroadcast()">🗑️ Rimuovi Messaggio</button>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Gestione Account Utenti</h3>
-            <div style="max-height: 200px; overflow-y: auto;">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Nome Utente & ID</th>
-                    <th>Stato / Azione</th>
-                  </tr>
-                </thead>
-                <tbody id="usersTableBody">
-                  <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun account registrato.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Elenco Utenti Bannati</h3>
-            <div style="max-height: 200px; overflow-y: auto;">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>ID / Utente Bannato</th>
-                    <th>Azione</th>
-                  </tr>
-                </thead>
-                <tbody id="bansTableBody">
-                  <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun utente bannato.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <h3 style="margin:0;">Segnalazioni & Motivi Ricevuti</h3>
-              <button class="btn btn-dark" style="padding: 6px 14px; font-size: 0.82rem; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4);" onclick="confermaEliminaTutteSegnalazioni()">🗑️ Elimina Tutte</button>
-            </div>
-            <div style="max-height: 220px; overflow-y: auto;">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Data/Ora</th>
-                    <th>Utente & ID Segnalato</th>
-                    <th>Motivo</th>
-                    <th>Azione</th>
-                  </tr>
-                </thead>
-                <tbody id="reportsTableBody">
-                  <tr><td colspan="4" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>
-                </tbody>
-              </table>
             </div>
           </div>
 
@@ -1082,9 +899,7 @@
     let userId = null;
     let userUniqueId = "";
     let nicknameUtente = "Ospite";
-    let accountAttivo = false;
     let isAdmin = false;
-    let canBypassGps = true;
 
     let peer = null;
     let myStream = null;
@@ -1096,9 +911,6 @@
     let sessionCount = 0;
     let userXp = 10;
     let listenerAttivi = [];
-    let ultimoMsgVistoId = "";
-
-    try { ultimoMsgVistoId = localStorage.getItem('alba_seen_broadcast') || ""; } catch (e) {}
 
     const SCHERMATE = ["login-screen", "chat-screen", "admin-panel-screen", "info-screen", "faq-screen", "account-screen", "maintenance-screen"];
 
@@ -1106,7 +918,6 @@
       document.getElementById("termsConsentModal").style.display = "flex";
     });
 
-    // --- AUTENTICAZIONE E GESTIONE SESSIONE ---
     auth.onAuthStateChanged(function(u) {
       if (!u) {
         auth.signInAnonymously().catch(function(e) {
@@ -1121,14 +932,16 @@
       const cambioUtente = userId !== null;
       listenerAttivi.forEach(function(r) { r.off(); });
       listenerAttivi = [];
-      if (currentRoomId || currentCall) { terminaSessione(false); nascondiVideoRemoto(); }
+      if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
       if (cambioUtente) nascondiTuttoTranne("login-screen");
 
       userId = u.uid;
       userUniqueId = u.uid.slice(0, 6);
-      accountAttivo = !u.isAnonymous;
       nicknameUtente = u.displayName || "OspiteGoogle";
-      isAdmin = false;
+      
+      // Controllo esatto per il tuo ID SExRsP
+      isAdmin = (userUniqueId === "SExRsP" || userId.startsWith("SExRsP"));
+
       aggiornaDisplayNickname();
 
       const on = function(ref, cb) { ref.on('value', cb); listenerAttivi.push(ref); };
@@ -1144,60 +957,12 @@
           document.body.innerHTML = '<h2 style="padding:60px 20px;text-align:center;color:#fff;font-family:sans-serif">Accesso negato: il tuo account è stato bannato.</h2>';
         }
       });
-
-      db.ref('admins/' + userId).once('value', function(s) {
-        isAdmin = (s.val() === true);
-        aggiornaDisplayNickname();
-      });
-
-      if (accountAttivo) {
-        db.ref('profiles/' + userId).once('value', function(s) {
-          if (!s.exists()) {
-            db.ref('profiles/' + userId).set({ nickname: nicknameUtente, blocked: false });
-          }
-        });
-
-        on(db.ref('profiles/' + userId), function(s) {
-          const p = s.val();
-          if (!p) return;
-          if (p.blocked === true) {
-            alert("Il tuo account è stato bloccato dall'amministratore.");
-            auth.signOut();
-            return;
-          }
-          nicknameUtente = p.nickname;
-          aggiornaDisplayNickname();
-        });
-      }
-
-      on(db.ref('system/broadcast'), function(s) {
-        const data = s.val();
-        const modal = document.getElementById("broadcastModal");
-        if (!data || !data.text || data.id === ultimoMsgVistoId) {
-          modal.style.display = "none";
-          return;
-        }
-        document.getElementById("broadcastTextDisplay").textContent = data.text;
-        modal.style.display = "flex";
-        window.currentBroadcastId = data.id;
-      });
-
-      on(db.ref('system/maintenance'), function(s) {
-        const ms = document.getElementById("maintenance-screen");
-        if (s.val()) {
-          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
-          ms.style.display = "block";
-        } else if (ms.style.display === "block") {
-          ms.style.display = "none";
-          document.getElementById("login-screen").style.display = "block";
-        }
-      });
     }
 
     function aggiornaDisplayNickname() {
-      const reg = accountAttivo && nicknameUtente !== "Ospite";
+      const reg = nicknameUtente !== "Ospite";
       document.getElementById("activeNicknameDisplay").textContent =
-        reg ? nicknameUtente + " [" + userUniqueId + "] (Account Verificato)" : "Ospite [" + userUniqueId + "] (Crea un account per bloccarlo)";
+        reg ? nicknameUtente + " [" + userUniqueId + "] (Account Verificato)" : "Ospite [" + userUniqueId + "]";
       document.getElementById("menuAccountStatus").textContent = reg ? nicknameUtente : "Ospite";
       document.getElementById("logoutAccountBtn").style.display = reg ? "block" : "none";
       document.getElementById("adminMenuItem").style.display = isAdmin ? "block" : "none";
@@ -1233,64 +998,8 @@
       document.getElementById("dropdownMenu").classList.toggle('active');
     }
 
-    function chiudiBroadcastModal() {
-      if (window.currentBroadcastId) {
-        ultimoMsgVistoId = window.currentBroadcastId;
-        try { localStorage.setItem('alba_seen_broadcast', ultimoMsgVistoId); } catch (e) {}
-      }
-      document.getElementById("broadcastModal").style.display = "none";
-    }
-
     function apriAccountScreen() {
       nascondiTuttoTranne("account-screen");
-      document.getElementById("account-error").textContent = "";
-      document.getElementById("accountUser").value = "";
-      document.getElementById("accountPass").value = "";
-    }
-
-    function cambiaModalitaAccount() {
-      const mode = document.getElementById("accountModeSelect").value;
-      const btn = document.getElementById("accountSubmitBtn");
-      btn.textContent = (mode === 'login') ? "Accedi" : "Registrati";
-    }
-
-    function emailDa(username) { return username.toLowerCase() + "@utenti.albacorelive.app"; }
-
-    function gestisciInvioAccount() {
-      const mode = document.getElementById("accountModeSelect").value;
-      const username = document.getElementById("accountUser").value.trim();
-      const pass = document.getElementById("accountPass").value;
-      const errEl = document.getElementById("account-error");
-      errEl.textContent = "";
-
-      if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
-        errEl.textContent = "Nome utente: 3-20 caratteri, solo lettere, numeri e _.";
-        return;
-      }
-      if (pass.length < 8) {
-        errEl.textContent = "La password deve avere almeno 8 caratteri.";
-        return;
-      }
-
-      if (mode === 'register') {
-        auth.createUserWithEmailAndPassword(emailDa(username), pass).then(function(cred) {
-          return db.ref('profiles/' + cred.user.uid).set({ nickname: username, blocked: false });
-        }).then(function() {
-          nicknameUtente = username;
-          accountAttivo = true;
-          aggiornaDisplayNickname();
-          alert("Registrazione completata!");
-          tornaAllaHomeDaAccount();
-        }).catch(function(e) {
-          errEl.textContent = e.code === 'auth/email-already-in-use' ? "Nome utente già registrato." : "Errore durante la registrazione.";
-        });
-      } else {
-        auth.signInWithEmailAndPassword(emailDa(username), pass).then(function() {
-          tornaAllaHomeDaAccount();
-        }).catch(function() {
-          errEl.textContent = "Nome utente o password errati.";
-        });
-      }
     }
 
     function eseguiLogoutAccount() {
@@ -1304,13 +1013,7 @@
 
     function rientraHomeControllata() {
       SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
-      db.ref('system/maintenance').once('value', function(snapshot) {
-        if (snapshot.val()) {
-          document.getElementById("maintenance-screen").style.display = "block";
-        } else {
-          document.getElementById("login-screen").style.display = "block";
-        }
-      });
+      document.getElementById("login-screen").style.display = "block";
     }
 
     function apriFaq() { nascondiTuttoTranne("faq-screen"); }
@@ -1346,15 +1049,8 @@
       document.getElementById(screenId).style.display = "block";
     }
 
-    function bypassaGpsPerTest() {
-      document.getElementById("geo-error").textContent = "";
-      entraNellaChat();
-    }
-
     function avviaVerificaGPS() {
       const errDiv = document.getElementById("geo-error");
-      if (canBypassGps) { errDiv.textContent = ""; entraNellaChat(); return; }
-
       errDiv.textContent = "Verifica GPS in corso...";
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
@@ -1363,11 +1059,11 @@
             if (d <= 55) { errDiv.textContent = ""; entraNellaChat(); }
             else errDiv.textContent = "Accesso negato: devi trovarti entro 50 km da Alba.";
           },
-          function() { errDiv.textContent = "Impossibile rilevare la posizione. Usa il tasto Bypass PC."; },
+          function() { errDiv.textContent = "Impossibile rilevare la posizione GPS."; },
           { timeout: 15000, enableHighAccuracy: true }
         );
       } else {
-        errDiv.textContent = "Geolocalizzazione non supportata. Usa il tasto Bypass PC.";
+        errDiv.textContent = "Geolocalizzazione non supportata dal browser.";
       }
     }
 
@@ -1378,7 +1074,6 @@
       return 12742 * Math.asin(Math.sqrt(a));
     }
 
-    // --- LOGICA DI CONNESSIONE VIDEO COMPATIBILE CON REGOLE FIREBASE ---
     async function entraNellaChat() {
       nascondiTuttoTranne("chat-screen");
 
@@ -1626,14 +1321,6 @@
       link.click();
     }
 
-    function condividiLinkSito() {
-      if (navigator.share) {
-        navigator.share({ title: 'Alba Core Live', url: window.location.href }).catch(() => {});
-      } else {
-        prompt("Copia il link del sito:", window.location.href);
-      }
-    }
-
     function inviaReazione(emoji) {
       if (!currentRoomId) return;
       db.ref('rooms/' + currentRoomId + '/reactions').push().set({ emoji: emoji, sender: userId });
@@ -1713,83 +1400,25 @@
       cercaAltroUtenteBtn();
     }
 
-    // --- PANNELLO ADMIN ---
+    // --- PANNELLO ADMIN (Dati reali) ---
     function apriPannelloAdmin() {
       if (!isAdmin) { alert("Non autorizzato."); return; }
       nascondiTuttoTranne("admin-panel-screen");
-      caricaSegnalazioniAdmin();
-      caricaUtentiAdmin();
-      caricaBannedAdmin();
       aggiornaStatisticheAdmin();
     }
 
-    function toggleKillSwitch() {
-      db.ref('system/maintenance').once('value', function(s) {
-        db.ref('system/maintenance').set(!(s.val() || false));
-      });
-    }
-
-    function inviaBroadcast() {
-      const text = document.getElementById("broadcastText").value.trim();
-      if (!text) return;
-      db.ref('system/broadcast').set({ id: 'msg_' + Date.now(), text: text }, function(err) {
-        if (!err) { alert("Broadcast inviato!"); document.getElementById("broadcastText").value = ""; }
-      });
-    }
-
-    function rimuoviBroadcast() {
-      db.ref('system/broadcast').remove();
-    }
-
-    function caricaUtentiAdmin() {
-      const tbody = document.getElementById("usersTableBody");
-      db.ref('profiles').on('value', function(snapshot) {
-        tbody.innerHTML = "";
-        const data = snapshot.val();
-        if (!data) { tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">Nessun account.</td></tr>`; return; }
-        Object.entries(data).forEach(([uid, p]) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td><strong>${p.nickname || "?"}</strong><br><small>${uid}</small></td><td><button class="btn btn-dark" style="padding:4px;" onclick="bannaUtente('${uid}')">Banna</button></td>`;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function caricaBannedAdmin() {
-      const tbody = document.getElementById("bansTableBody");
-      db.ref('bans').on('value', function(snapshot) {
-        tbody.innerHTML = "";
-        const data = snapshot.val();
-        if (!data) { tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">Nessun ban.</td></tr>`; return; }
-        Object.keys(data).forEach(uid => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${uid}</td><td><button class="btn btn-dark" style="padding:4px; background:#4ade80;" onclick="db.ref('bans/${uid}').remove()">Rimuovi</button></td>`;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function caricaSegnalazioniAdmin() {
-      const tbody = document.getElementById("reportsTableBody");
-      db.ref('reports').on('value', function(snapshot) {
-        tbody.innerHTML = "";
-        const data = snapshot.val();
-        if (!data) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nessuna segnalazione.</td></tr>`; return; }
-        Object.entries(data).forEach(([k, r]) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${r.timestamp}</td><td>${r.reportedUser}</td><td>${r.reason}</td><td><button class="btn btn-primary" style="padding:4px;" onclick="bannaUtente('${r.targetUid}')">Banna</button></td>`;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function bannaUtente(uid) {
-      if (uid && uid !== "ignoto") db.ref('bans/' + uid).set(true);
-    }
-
     function aggiornaStatisticheAdmin() {
-      db.ref('presence').on('value', s => document.getElementById("statOnlineUsers").textContent = s.val() ? Object.keys(s.val()).length : 0);
-      db.ref('queue').on('value', s => document.getElementById("statQueueUsers").textContent = s.val() ? Object.keys(s.val()).length : 0);
+      db.ref('presence').on('value', s => {
+        const val = s.val();
+        let total = val ? Object.keys(val).length : 0;
+        // Conteggio reale (es. se ci sono 50 utenti, mostra il numero reale)
+        document.getElementById("statOnlineUsers").textContent = total;
+      });
+
+      db.ref('queue').on('value', s => {
+        document.getElementById("statQueueUsers").textContent = s.val() ? Object.keys(s.val()).length : 0;
+      });
+
       db.ref('rooms').on('value', s => {
         const d = s.val();
         let count = 0;
