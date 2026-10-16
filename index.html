@@ -237,9 +237,7 @@
       border: 1px solid var(--border);
       font-weight: 600;
     }
-    .btn-google:hover {
-      background: #f1f1f1;
-    }
+    .btn-google:hover { background: #f1f1f1; }
 
     .geo-error {
       min-height: 22px;
@@ -642,6 +640,7 @@
       border-color: rgba(229, 9, 20, 0.4);
     }
 
+    /* Modale Termini Ottimizzato con Scrolling Interno e Pulsante Fisso */
     #termsConsentModal {
       display: flex;
       position: fixed;
@@ -651,31 +650,36 @@
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(8px);
-      padding: 20px;
+      padding: 15px;
     }
     .consent-box {
       background: var(--panel-alt);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 30px;
-      width: min(100%, 650px);
-      max-height: 85vh;
+      padding: 24px;
+      width: min(100%, 600px);
+      max-height: 90vh;
       display: flex;
       flex-direction: column;
       box-shadow: var(--shadow);
     }
-    .consent-box h3 { margin-top: 0; color: var(--primary); font-size: 1.6rem; text-align: center; }
+    .consent-box h3 { margin-top: 0; color: var(--primary); font-size: 1.4rem; text-align: center; flex-shrink: 0; }
     .consent-scroll {
       flex: 1;
       overflow-y: auto;
-      margin: 15px 0;
-      padding-right: 10px;
+      margin: 12px 0;
+      padding-right: 8px;
       color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.6;
+      font-size: 0.9rem;
+      line-height: 1.5;
       text-align: left;
     }
-    .consent-scroll h4 { color: var(--accent); margin: 15px 0 5px; font-size: 1.1rem; }
+    .consent-scroll h4 { color: var(--accent); margin: 12px 0 4px; font-size: 1rem; }
+    .consent-footer {
+      flex-shrink: 0;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
 
     footer {
       text-align: center;
@@ -718,7 +722,7 @@
     </div>
   </div>
 
-  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy -->
+  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy (Corretto con pulsante sempre visibile) -->
   <div id="termsConsentModal">
     <div class="consent-box">
       <h3>Informativa sulla Privacy & Termini di Servizio</h3>
@@ -729,7 +733,9 @@
         <h4>2. Termini di Servizio e Proprietà Intellettuale</h4>
         <p>Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. <strong>Tutti i contenuti, il design, la grafica e i codici sorgente di Alba Core Live sono di proprietà esclusiva dell'amministrazione. Ne è severamente vietata la copia, la riproduzione, l'ispezione non autorizzata o la ridistribuzione con qualsiasi mezzo.</strong> L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.</p>
       </div>
-      <button class="btn btn-primary" onclick="accettaTerminiPrivacy()" style="width: 100%; padding: 14px; font-size: 1.1rem;">Accetta e Continua</button>
+      <div class="consent-footer">
+        <button class="btn btn-primary" onclick="accettaTerminiPrivacy()" style="width: 100%; padding: 12px; font-size: 1.05rem;">Accetta e Continua</button>
+      </div>
     </div>
   </div>
 
@@ -779,7 +785,6 @@
             <p>Accedi con Google o gestisci le tue credenziali nella community.</p>
           </div>
 
-          <!-- Pulsante Accesso con Google integrato -->
           <div style="max-width: 320px; margin: 0 auto 20px auto;">
             <button class="btn btn-google" style="width: 100%; justify-content: center;" onclick="accediConGoogle()">
               <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.22 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.15 0 9.9 0 12s.43 3.85 1.19 5.4l4.08-3.16z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.18 2.69 1.19 6.6l4.08 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
@@ -1391,4 +1396,419 @@
 
       try {
         if (!myStream) {
-          myStream = await navigator.mediaDevices.getUserMedia({
+          myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        }
+        document.getElementById("localVideo").srcObject = myStream;
+      } catch (err) {
+        console.error("Errore webcam:", err);
+        alert("Impossibile accedere alla webcam o al microfono. Verifica i permessi.");
+        tornaAllaHomeDaFaq();
+        return;
+      }
+
+      if (!peer) {
+        peer = new Peer({
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          }
+        });
+
+        peer.on('open', function(id) {
+          cercaAltroUtente(id);
+        });
+
+        peer.on('call', function(call) {
+          currentCall = call;
+          const activeAudioTrack = myStream.getAudioTracks()[0];
+          const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+          
+          call.answer(callStream);
+          
+          call.on('stream', function(remoteStream) {
+            mostraVideoRemoto(remoteStream);
+          });
+          call.on('close', function() {
+            nascondiVideoRemoto();
+          });
+        });
+      } else {
+        cercaAltroUtente(peer.id);
+      }
+    }
+
+    function mostraVideoRemoto(stream) {
+      const remoteVideo = document.getElementById("remoteVideo");
+      const placeholder = document.getElementById("remotePlaceholder");
+      
+      remoteVideo.srcObject = stream;
+      remoteVideo.play().catch(e => console.log("Autoplay preventito:", e));
+      placeholder.style.display = "none";
+
+      sessionCount++;
+      userXp += 5;
+      document.getElementById("sessionCounter").textContent = sessionCount;
+      document.getElementById("userXpScore").textContent = userXp;
+      ascoltaReazioni();
+    }
+
+    function nascondiVideoRemoto() {
+      const remoteVideo = document.getElementById("remoteVideo");
+      const placeholder = document.getElementById("remotePlaceholder");
+      remoteVideo.srcObject = null;
+      placeholder.style.display = "flex";
+      placeholder.innerHTML = `<span>In attesa di un utente...</span><small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>`;
+      document.getElementById("chatMessages").innerHTML = `<div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>`;
+      currentRemoteUserId = null;
+      currentRemoteUsername = null;
+      currentRemoteFullUid = null;
+    }
+
+    function cercaAltroUtente(peerIdOverride) {
+      const activePeerId = peerIdOverride || (peer ? peer.id : null);
+      if (!activePeerId || !userId) return;
+
+      nascondiVideoRemoto();
+      
+      if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+      }
+
+      if (currentRoomId) {
+        db.ref('rooms/' + currentRoomId).off();
+        db.ref('rooms/' + currentRoomId).remove();
+        currentRoomId = null;
+      }
+
+      const queueRef = db.ref('queue');
+      queueRef.once('value', function(snapshot) {
+        const waitingUsers = snapshot.val();
+        let targetKey = null;
+        let targetItem = null;
+
+        if (waitingUsers) {
+          const keys = Object.keys(waitingUsers);
+          for (let i = 0; i < keys.length; i++) {
+            if (keys[i] !== userId) {
+              targetKey = keys[i];
+              targetItem = waitingUsers[targetKey];
+              break;
+            }
+          }
+        }
+
+        if (!targetItem) {
+          currentRoomId = 'room_' + userId + '_' + Math.random().toString(36).substring(2, 7);
+          const myQueueRef = db.ref('queue/' + userId);
+          
+          myQueueRef.set({
+            userId: userId,
+            peerId: activePeerId,
+            roomId: currentRoomId,
+            nickname: nicknameUtente,
+            uid: userUniqueId
+          });
+          myQueueRef.onDisconnect().remove();
+
+          db.ref('rooms/' + currentRoomId).on('value', function(roomSnap) {
+            const roomData = roomSnap.val();
+            if (!roomData) return;
+
+            if (roomData.info && roomData.info.peer2 && roomData.info.guestId) {
+              currentRemoteUsername = roomData.info.nick2 || "Utente";
+              currentRemoteUserId = roomData.info.uid2 || "Sconosciuto";
+              currentRemoteFullUid = roomData.info.guestId;
+              document.getElementById("remoteLabel").textContent = currentRemoteUsername + " [" + currentRemoteUserId + "]";
+              
+              const activeAudioTrack = myStream.getAudioTracks()[0];
+              const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+
+              const call = peer.call(roomData.info.peer2, callStream);
+              currentCall = call;
+              
+              call.on('stream', function(remoteStream) {
+                mostraVideoRemoto(remoteStream);
+              });
+              call.on('close', function() {
+                nascondiVideoRemoto();
+              });
+            }
+          });
+
+          ascoltaMessaggiChat();
+        } else {
+          currentRoomId = targetItem.roomId;
+          const hostPeerId = targetItem.peerId;
+          const hostUserId = targetItem.userId;
+          
+          currentRemoteUsername = targetItem.nickname || "Utente";
+          currentRemoteUserId = targetItem.uid || "Sconosciuto";
+          currentRemoteFullUid = hostUserId;
+          document.getElementById("remoteLabel").textContent = currentRemoteUsername + " [" + currentRemoteUserId + "]";
+          
+          db.ref('queue/' + hostUserId).remove();
+
+          db.ref('rooms/' + currentRoomId + '/info').set({
+            peer2: activePeerId,
+            guestId: userId,
+            nick2: nicknameUtente,
+            uid2: userUniqueId
+          });
+
+          const activeAudioTrack = myStream.getAudioTracks()[0];
+          const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+
+          const call = peer.call(hostPeerId, callStream);
+          currentCall = call;
+          
+          call.on('stream', function(remoteStream) {
+            mostraVideoRemoto(remoteStream);
+          });
+          call.on('close', function() {
+            nascondiVideoRemoto();
+          });
+
+          ascoltaMessaggiChat();
+        }
+      });
+    }
+
+    function cercaAltroUtenteBtn() {
+      if (peer) {
+        cercaAltroUtente(peer.id);
+      }
+    }
+
+    function toggleMuteAudio() {
+      if (myStream) {
+        const audioTrack = myStream.getAudioTracks()[0];
+        audioTrack.enabled = !audioTrack.enabled;
+        const btn = document.getElementById("muteBtn");
+        btn.textContent = audioTrack.enabled ? "🎤 Silenzia Audio" : "🎤 Audio Silenziato";
+        btn.classList.toggle("active-off", !audioTrack.enabled);
+      }
+    }
+
+    function toggleCamVideo() {
+      if (myStream) {
+        const videoTrack = myStream.getVideoTracks()[0];
+        videoTrack.enabled = !videoTrack.enabled;
+        const btn = document.getElementById("camBtn");
+        btn.textContent = videoTrack.enabled ? "📷 Disattiva Camera" : "📷 Camera Disattivata";
+        btn.classList.toggle("active-off", !videoTrack.enabled);
+      }
+    }
+
+    function attivaFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+
+    function scambiaInstagram() {
+      const ig = prompt("Inserisci il tuo contatto Instagram o Social:");
+      if (ig && currentRoomId) {
+        db.ref('rooms/' + currentRoomId + '/messages').push().set({
+          sender: userId,
+          name: nicknameUtente,
+          text: "📱 Contatto Social condiviso: " + ig
+        });
+      }
+    }
+
+    function scattaSnapshot() {
+      const videoEl = document.getElementById("remoteVideo");
+      if (!videoEl.srcObject) {
+        alert("Nessun utente connesso!");
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = videoEl.videoWidth || 640;
+      canvas.height = videoEl.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const link = document.createElement("a");
+      link.download = "AlbaCoreLive_Snapshot.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function condividiLinkSito() {
+      if (navigator.share) {
+        navigator.share({ title: 'Alba Core Live', url: window.location.href }).catch(() => {});
+      } else {
+        prompt("Copia il link del sito:", window.location.href);
+      }
+    }
+
+    function inviaReazione(emoji) {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/reactions').push().set({ emoji: emoji, sender: userId });
+    }
+
+    function ascoltaReazioni() {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/reactions').on('child_added', function(snapshot) {
+        const data = snapshot.val();
+        if (data && data.sender !== userId) {
+          mostraAnimazioneEmoji(data.emoji);
+        }
+      });
+    }
+
+    function mostraAnimazioneEmoji(emoji) {
+      const box = document.querySelectorAll(".video-box")[1];
+      if (!box) return;
+      const span = document.createElement("div");
+      span.className = "flying-emoji";
+      span.textContent = emoji;
+      span.style.left = Math.random() * 70 + 15 + "%";
+      box.appendChild(span);
+      setTimeout(() => span.remove(), 2000);
+    }
+
+    function inviaMessaggioChat() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text || !currentRoomId) return;
+
+      db.ref('rooms/' + currentRoomId + '/messages').push().set({
+        sender: userId,
+        name: nicknameUtente,
+        text: text
+      });
+      input.value = "";
+    }
+
+    function controllaInvioChat(e) {
+      if (e.key === 'Enter') inviaMessaggioChat();
+    }
+
+    function ascoltaMessaggiChat() {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/messages').on('child_added', function(snapshot) {
+        const msg = snapshot.val();
+        if (!msg) return;
+        const chatBox = document.getElementById("chatMessages");
+        const div = document.createElement("div");
+        div.className = "chat-message" + (msg.sender === userId ? " me" : "");
+        div.textContent = (msg.name ? msg.name + ": " : "") + msg.text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+
+    function apriReportModal() { document.getElementById("reportModal").style.display = "flex"; }
+    function chiudiReportModal() { document.getElementById("reportModal").style.display = "none"; }
+
+    function inviaSegnalazioneConMotivo(motivo) { inviaSegnalazioneEffettiva(motivo); }
+    function inviaSegnalazionePersonalizzata() {
+      const custom = document.getElementById("customReportReason").value.trim();
+      inviaSegnalazioneEffettiva(custom || "Segnalazione generica");
+    }
+
+    function inviaSegnalazioneEffettiva(motivo) {
+      db.ref('reports').push().set({
+        timestamp: new Date().toLocaleString(),
+        reportedUser: currentRemoteUsername ? (currentRemoteUsername + " [" + (currentRemoteUserId || "?") + "]") : "Utente Sconosciuto",
+        targetUid: currentRemoteFullUid || "ignoto",
+        reason: motivo,
+        reporter: nicknameUtente + " [" + userUniqueId + "]"
+      });
+      alert("Segnalazione inviata.");
+      chiudiReportModal();
+      cercaAltroUtenteBtn();
+    }
+
+    // --- PANNELLO ADMIN ---
+    function apriPannelloAdmin() {
+      if (!isAdmin) { alert("Non autorizzato."); return; }
+      nascondiTuttoTranne("admin-panel-screen");
+      caricaSegnalazioniAdmin();
+      caricaUtentiAdmin();
+      caricaBannedAdmin();
+      aggiornaStatisticheAdmin();
+    }
+
+    function toggleKillSwitch() {
+      db.ref('system/maintenance').once('value', function(s) {
+        db.ref('system/maintenance').set(!(s.val() || false));
+      });
+    }
+
+    function inviaBroadcast() {
+      const text = document.getElementById("broadcastText").value.trim();
+      if (!text) return;
+      db.ref('system/broadcast').set({ id: 'msg_' + Date.now(), text: text }, function(err) {
+        if (!err) { alert("Broadcast inviato!"); document.getElementById("broadcastText").value = ""; }
+      });
+    }
+
+    function rimuoviBroadcast() {
+      db.ref('system/broadcast').remove();
+    }
+
+    function caricaUtentiAdmin() {
+      const tbody = document.getElementById("usersTableBody");
+      db.ref('profiles').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) { tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">Nessun account.</td></tr>`; return; }
+        Object.entries(data).forEach(([uid, p]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><strong>${p.nickname || "?"}</strong><br><small>${uid}</small></td><td><button class="btn btn-dark" style="padding:4px;" onclick="bannaUtente('${uid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function caricaBannedAdmin() {
+      const tbody = document.getElementById("bansTableBody");
+      db.ref('bans').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) { tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">Nessun ban.</td></tr>`; return; }
+        Object.keys(data).forEach(uid => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${uid}</td><td><button class="btn btn-dark" style="padding:4px; background:#4ade80;" onclick="db.ref('bans/${uid}').remove()">Rimuovi</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function caricaSegnalazioniAdmin() {
+      const tbody = document.getElementById("reportsTableBody");
+      db.ref('reports').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nessuna segnalazione.</td></tr>`; return; }
+        Object.entries(data).forEach(([k, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r.timestamp}</td><td>${r.reportedUser}</td><td>${r.reason}</td><td><button class="btn btn-primary" style="padding:4px;" onclick="bannaUtente('${r.targetUid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function bannaUtente(uid) {
+      if (uid && uid !== "ignoto") db.ref('bans/' + uid).set(true);
+    }
+
+    function aggiornaStatisticheAdmin() {
+      db.ref('presence').on('value', s => document.getElementById("statOnlineUsers").textContent = s.val() ? Object.keys(s.val()).length : 0);
+      db.ref('queue').on('value', s => document.getElementById("statQueueUsers").textContent = s.val() ? Object.keys(s.val()).length : 0);
+      db.ref('rooms').on('value', s => {
+        const d = s.val();
+        let count = 0;
+        if (d) Object.values(d).forEach(r => { if (r && r.info) count++; });
+        document.getElementById("statActiveRooms").textContent = count;
+      });
+    }
+  </script>
+</body>
+</html>
