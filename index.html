@@ -269,17 +269,22 @@
       font-size: 1rem;
     }
 
-    /* Layout Video in alto e Chat sotto */
     .video-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
+    }
+
+    .video-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .video-box {
       position: relative;
-      height: 340px;
+      height: 320px;
       border-radius: 16px;
       overflow: hidden;
       background: linear-gradient(135deg, #20242b, #121418);
@@ -333,6 +338,35 @@
       z-index: 3;
     }
 
+    /* Pulsanti sotto la propria cam (Mute / Cam Off) */
+    .local-media-controls {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .media-toggle-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .media-toggle-btn:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .media-toggle-btn.active-off {
+      background: rgba(229, 9, 20, 0.25);
+      border-color: rgba(229, 9, 20, 0.4);
+      color: #ffccd0;
+    }
+
     .session-badge {
       background: rgba(255,255,255,0.05);
       border: 1px solid var(--border);
@@ -378,7 +412,6 @@
       margin-bottom: 14px;
     }
 
-    /* Emoji / Reazioni esterne al riquadro video */
     .reactions-bar-external {
       display: flex;
       justify-content: center;
@@ -416,14 +449,13 @@
       100% { transform: translateY(-180px) scale(1.4); opacity: 0; }
     }
 
-    /* Chat testuale posizionata sotto */
     .text-chat-box {
       background: rgba(255,255,255,0.02);
       border: 1px solid var(--border);
       border-radius: 16px;
       display: flex;
       flex-direction: column;
-      height: 220px;
+      height: 200px;
       overflow: hidden;
       margin-bottom: 18px;
     }
@@ -554,7 +586,7 @@
         grid-template-columns: 1fr;
       }
       .video-box {
-        height: 240px;
+        height: 220px;
       }
       .actions {
         flex-direction: column;
@@ -573,8 +605,6 @@
   <div class="top-menu-container">
     <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">☰ Menu</button>
     <div id="dropdownMenu" class="dropdown-menu">
-      <a class="dropdown-item" onclick="toggleMuteAudio()">🎤 Silenzia Audio</a>
-      <a class="dropdown-item" onclick="toggleCamVideo()">📷 Disattiva Camera</a>
       <a class="dropdown-item" onclick="attivaFullscreen()">📺 Schermo Intero</a>
       <div class="dropdown-divider"></div>
       <a class="dropdown-item" href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">🎵 Segui @albacore26</a>
@@ -723,28 +753,38 @@
             💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
           </div>
 
-          <!-- Video griglia grande in alto -->
+          <!-- Video griglia con controlli audio/video subito sotto la propria cam -->
           <div class="video-grid">
-            <div class="video-box">
-              <video id="localVideo" autoplay muted playsinline></video>
-              <div class="video-label" id="localVideoLabel">Tu</div>
+            <div class="video-column">
+              <div class="video-box">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <div class="video-label" id="localVideoLabel">Tu</div>
+              </div>
+              <!-- Controlli microfono e camera subito sotto la cam -->
+              <div class="local-media-controls">
+                <button id="muteBtn" class="media-toggle-btn" onclick="toggleMuteAudio()">🎤 Silenzia Audio</button>
+                <button id="camBtn" class="media-toggle-btn" onclick="toggleCamVideo()">📷 Disattiva Camera</button>
+              </div>
             </div>
 
-            <div class="video-box">
-              <div class="network-indicator">
-                <div class="net-dot" id="netDot"></div>
-                <span id="netText" style="color:#fff;">Ottima</span>
+            <div class="video-column">
+              <div class="video-box">
+                <div class="network-indicator">
+                  <div class="net-dot" id="netDot"></div>
+                  <span id="netText" style="color:#fff;">Ottima</span>
+                </div>
+                <div id="remotePlaceholder" class="remote-placeholder">
+                  <span>In attesa di un utente...</span>
+                  <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
+                </div>
+                <video id="remoteVideo" autoplay playsinline></video>
+                <div id="remoteLabel" class="video-label">Utente Online</div>
               </div>
-              <div id="remotePlaceholder" class="remote-placeholder">
-                <span>In attesa di un utente...</span>
-                <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
-              </div>
-              <video id="remoteVideo" autoplay playsinline></video>
-              <div id="remoteLabel" class="video-label">Utente Online</div>
+              <div style="height: 35px;"></div> <!-- Spaziatore per allineare l'altezza con la colonna sinistra -->
             </div>
           </div>
 
-          <!-- Reazioni / Emoji FUORI dal riquadro video (sotto) -->
+          <!-- Reazioni / Emoji FUORI dal riquadro video -->
           <div class="reactions-bar-external">
             <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️ Cuore</button>
             <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥 Fuoco</button>
@@ -974,7 +1014,14 @@
         const audioTrack = myStream.getAudioTracks()[0];
         if (audioTrack) {
           audioTrack.enabled = !audioTrack.enabled;
-          alert(audioTrack.enabled ? "Microfono riattivato" : "Microfono silenziato");
+          const btn = document.getElementById("muteBtn");
+          if (audioTrack.enabled) {
+            btn.textContent = "🎤 Silenzia Audio";
+            btn.classList.remove("active-off");
+          } else {
+            btn.textContent = "🎤 Audio Silenziato";
+            btn.classList.add("active-off");
+          }
         }
       } else {
         alert("Entra prima in chat!");
@@ -986,7 +1033,14 @@
         const videoTrack = myStream.getVideoTracks()[0];
         if (videoTrack) {
           videoTrack.enabled = !videoTrack.enabled;
-          alert(videoTrack.enabled ? "Telecamera riattivata" : "Telecamera disattivata");
+          const btn = document.getElementById("camBtn");
+          if (videoTrack.enabled) {
+            btn.textContent = "📷 Disattiva Camera";
+            btn.classList.remove("active-off");
+          } else {
+            btn.textContent = "📷 Camera Disattivata";
+            btn.classList.add("active-off");
+          }
         }
       } else {
         alert("Entra prima in chat!");
