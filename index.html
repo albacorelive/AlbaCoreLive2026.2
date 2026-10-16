@@ -1,141 +1,1577 @@
-async function entraNellaChat() {
-  document.getElementById("login-screen").style.display = "none";
-  document.getElementById("chat-screen").style.display = "block";
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alba Core Live</title>
+  
+  <!-- Firebase App & Realtime Database & Auth CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- PeerJS CDN per lo streaming video P2P -->
+  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
-  try {
-    if (!myStream) {
-      myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --bg-2: #16181d;
+      --panel: rgba(25, 27, 33, 0.96);
+      --panel-alt: rgba(31, 34, 40, 0.96);
+      --primary: #e50914;
+      --primary-2: #ff3b4c;
+      --accent: #ff9800;
+      --text: #f4f4f5;
+      --muted: #a3a3a8;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
-    document.getElementById("localVideo").srcObject = myStream;
-  } catch (err) {
-    console.error("Errore webcam:", err);
-    alert("Impossibile accedere alla webcam o al microfono. Verifica i permessi.");
-    return;
-  }
 
-  if (!peer) {
-    peer = new Peer({
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ]
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(229,9,20,0.18), transparent 30%),
+        linear-gradient(135deg, var(--bg), var(--bg-2));
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .top-menu-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+
+    .menu-toggle-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .menu-toggle-btn:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 45px;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      width: 240px;
+      padding: 8px 0;
+      backdrop-filter: blur(10px);
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 10px 16px;
+      color: var(--text);
+      font-size: 0.88rem;
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(229, 9, 20, 0.15);
+      color: #fff;
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 6px 0;
+    }
+
+    .page {
+      width: min(100%, 980px);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 3.3rem);
+      letter-spacing: 0.08em;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .brand .brand-accent {
+      color: var(--primary);
+      text-shadow: 0 0 18px rgba(229,9,20,0.5);
+    }
+
+    .brand p {
+      margin-top: 8px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+
+    .content {
+      padding: 30px 30px 26px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .hero h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.5rem, 3vw, 2.3rem);
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .steps {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin-bottom: 24px;
+    }
+
+    .steps ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text);
+      line-height: 1.9;
+      font-size: 1rem;
+    }
+
+    .steps a {
+      color: #ff5d6d;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .steps a:hover {
+      text-decoration: underline;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 24px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(229,9,20,0.35);
+    }
+
+    .btn-dark {
+      background: #050505;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .geo-error {
+      min-height: 22px;
+      margin-top: 16px;
+      text-align: center;
+      color: #ff9800;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    #chat-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen, #account-screen, #report-modal {
+      display: none;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+
+    .video-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .video-box {
+      position: relative;
+      height: 320px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #20242b, #121418);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #0d0d11;
+    }
+
+    .remote-placeholder {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-weight: 600;
+      background: #111318;
+      text-align: center;
+      padding: 20px;
+      z-index: 2;
+    }
+
+    .remote-placeholder span {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .video-label {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+      z-index: 3;
+    }
+
+    .local-media-controls {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .media-toggle-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .media-toggle-btn:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .media-toggle-btn.active-off {
+      background: rgba(229, 9, 20, 0.25);
+      border-color: rgba(229, 9, 20, 0.4);
+      color: #ffccd0;
+    }
+
+    .session-badge {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .network-indicator {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.6);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(4px);
+      z-index: 3;
+    }
+    .net-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    .icebreaker-bar {
+      background: rgba(229, 9, 20, 0.1);
+      border: 1px solid rgba(229, 9, 20, 0.2);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #ffccd0;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .reactions-bar-external {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .reaction-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #fff;
+      transition: 0.2s;
+    }
+    .reaction-btn:hover {
+      background: rgba(229, 9, 20, 0.2);
+      border-color: rgba(229, 9, 20, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .flying-emoji {
+      position: absolute;
+      font-size: 2rem;
+      animation: flyUp 2s ease-out forwards;
+      z-index: 10;
+      pointer-events: none;
+    }
+    @keyframes flyUp {
+      0% { transform: translateY(0) scale(0.8); opacity: 1; }
+      100% { transform: translateY(-180px) scale(1.4); opacity: 0; }
+    }
+
+    .text-chat-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      height: 200px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-message {
+      background: rgba(255,255,255,0.05);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      max-width: 85%;
+      word-break: break-word;
+    }
+
+    .chat-message.me {
+      background: rgba(229, 9, 20, 0.2);
+      align-self: flex-end;
+      border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+
+    .chat-input-area {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      gap: 8px;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-size: 0.9rem;
+    }
+
+    .chat-input-area button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .control-btn {
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .skip { background: linear-gradient(135deg, #ff9800, #ffad33); }
+    .report { background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .admin-table th, .admin-table td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .admin-table th {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .stats-box {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-card span {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    /* Modal personalizzato per il Broadcast */
+    #broadcastModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+    .broadcast-content {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      width: min(90%, 400px);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .broadcast-content h3 { margin-top: 0; color: var(--primary-2); }
+    .broadcast-content p { color: var(--text); font-size: 1rem; line-height: 1.5; margin-bottom: 20px; }
+
+    /* Modal Segnalazione con pulsanti rapidi */
+    #reportModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 1500;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+      padding: 20px;
+    }
+    .report-box {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 25px;
+      width: min(100%, 450px);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .report-box h3 { color: var(--primary); margin-top: 0; }
+    .report-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .report-reason-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .report-reason-btn:hover {
+      background: rgba(229, 9, 20, 0.2);
+      border-color: rgba(229, 9, 20, 0.4);
+    }
+
+    /* Modal Accettazione Termini e Privacy Obbligatorio a OGNI apertura */
+    #termsConsentModal {
+      display: flex;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      padding: 20px;
+    }
+    .consent-box {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      width: min(100%, 650px);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+    }
+    .consent-box h3 { margin-top: 0; color: var(--primary); font-size: 1.6rem; text-align: center; }
+    .consent-scroll {
+      flex: 1;
+      overflow-y: auto;
+      margin: 15px 0;
+      padding-right: 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .consent-scroll h4 { color: var(--accent); margin: 15px 0 5px; font-size: 1.1rem; }
+
+    /* Footer di Copyright */
+    footer {
+      text-align: center;
+      padding: 15px 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 20px;
+      border-top: 1px solid var(--border);
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .content {
+        padding: 24px 18px 20px;
+      }
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+      .video-box {
+        height: 220px;
+      }
+      .actions {
+        flex-direction: column;
+      }
+      .btn {
+        width: 100%;
+      }
+      .stats-box {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Modal Segnalazione -->
+  <div id="reportModal">
+    <div class="report-box">
+      <h3>⚠️ Segnala Utente</h3>
+      <p style="color: var(--muted); font-size: 0.9rem;">Seleziona un motivo rapido o scrivi un dettaglio:</p>
+      <div class="report-btn-group">
+        <button class="report-reason-btn" onclick="inviaSegnalazioneConMotivo('Linguaggio offensivo o minaccioso')">🗣️ Linguaggio offensivo o minaccioso</button>
+        <button class="report-reason-btn" onclick="inviaSegnalazioneConMotivo('Contenuto inappropriato o esplicito')">🔞 Contenuto inappropriato o esplicito</button>
+        <button class="report-reason-btn" onclick="inviaSegnalazioneConMotivo('Molestie o comportamento molesto')">🚫 Molestie o comportamento molesto</button>
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <input type="text" id="customReportReason" placeholder="Oppure scrivi un motivo personalizzato..." />
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-primary" style="flex: 1; padding: 10px;" onclick="inviaSegnalazionePersonalizzata()">Invia</button>
+        <button class="btn btn-dark" style="flex: 1; padding: 10px;" onclick="chiudiReportModal()">Annulla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy -->
+  <div id="termsConsentModal">
+    <div class="consent-box">
+      <h3>Informativa sulla Privacy & Termini di Servizio</h3>
+      <div class="consent-scroll">
+        <h4>1. Informativa sulla Privacy</h4>
+        <p>Alba Core Live tutela la privacy dei propri utenti. La posizione GPS del browser viene utilizzata esclusivamente in tempo reale per verificare che l'utente si trovi entro un raggio di 50 km dal centro di Alba e non viene memorizzata in database permanenti. Le videochiamate avvengono tramite protocollo crittografato Peer-to-Peer (WebRTC) direttamente tra i dispositivi degli utenti e non sono registrate né archiviate da alcun server centrale.</p>
+        
+        <h4>2. Termini di Servizio e Proprietà Intellettuale</h4>
+        <p>Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. <strong>Tutti i contenuti, il design, la grafica e i codici sorgente di Alba Core Live sono di proprietà esclusiva dell'amministrazione. Ne è severamente vietata la copia, la riproduzione, l'ispezione non autorizzata o la ridistribuzione con qualsiasi mezzo.</strong> L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.</p>
+      </div>
+      <button class="btn btn-primary" onclick="accettaTerminiPrivacy()" style="width: 100%; padding: 14px; font-size: 1.1rem;">Accetta e Continua</button>
+    </div>
+  </div>
+
+  <!-- Popup Broadcast / Avviso Amministrazione -->
+  <div id="broadcastModal">
+    <div class="broadcast-content">
+      <h3>📢 Avviso Amministrazione</h3>
+      <p id="broadcastTextDisplay">Messaggio importante per la community.</p>
+      <button class="btn btn-primary" onclick="chiudiBroadcastModal()" style="width: 100%; padding: 10px;">Ho capito / Chiudi</button>
+    </div>
+  </div>
+
+  <!-- Menu in alto a destra -->
+  <div class="top-menu-container">
+    <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">☰ Menu</button>
+    <div id="dropdownMenu" class="dropdown-menu">
+      <a class="dropdown-item" onclick="apriAccountScreen()">👤 Account (<span id="menuAccountStatus">Ospite</span>)</a>
+      <a id="adminMenuItem" class="dropdown-item" style="display:none;" onclick="apriPannelloAdmin()">🛠️ Pannello Admin</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" onclick="attivaFullscreen()">📺 Schermo Intero</a>
+      <a class="dropdown-item" href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">🎵 Segui @albacore26</a>
+      <a class="dropdown-item" onclick="apriFaq()">❓ FAQ & Guida</a>
+      <a class="dropdown-item" onclick="apriBugModal()">⚠️ Segnala Bug</a>
+    </div>
+  </div>
+
+  <div class="page">
+    <header class="brand">
+      <h1><span class="brand-accent">ALBA</span> CORE LIVE</h1>
+      <p>La chat ufficiale della community di Alba</p>
+    </header>
+
+    <main class="card">
+      <div class="content">
+        <!-- Schermata Manutenzione -->
+        <section id="maintenance-screen">
+          <div class="hero">
+            <h2>Piattaforma in Manutenzione</h2>
+            <p>Il servizio è temporaneamente disattivato dall'amministrazione. Torneremo presto online!</p>
+          </div>
+        </section>
+
+        <!-- Schermata Account -->
+        <section id="account-screen">
+          <div class="hero">
+            <h2>Gestione Account</h2>
+            <p>Accedi o registrati per bloccare il tuo nickname esclusivo nella community.</p>
+          </div>
+
+          <div class="form-group" style="max-width: 320px; margin: 0 auto 20px auto;">
+            <label>Seleziona Azione</label>
+            <select id="accountModeSelect" onchange="cambiaModalitaAccount()">
+              <option value="login">Accedi</option>
+              <option value="register">Registrati</option>
+            </select>
+          </div>
+
+          <div style="max-width: 320px; margin: 0 auto;">
+            <div class="form-group">
+              <label>Nome Utente (Nickname)</label>
+              <input type="text" id="accountUser" placeholder="" maxlength="20" />
+            </div>
+            <div class="form-group">
+              <label>Password (min. 8 caratteri)</label>
+              <input type="password" id="accountPass" placeholder="" />
+            </div>
+            <div class="actions" style="flex-direction: column;">
+              <button id="accountSubmitBtn" class="btn btn-primary" style="width: 100%;" onclick="gestisciInvioAccount()">Accedi</button>
+              <button id="logoutAccountBtn" class="btn btn-dark" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); display: none;" onclick="eseguiLogoutAccount()">Esci dall'Account</button>
+              <button class="btn btn-dark" style="width: 100%;" onclick="tornaAllaHomeDaAccount()">Torna alla Home</button>
+            </div>
+            <div id="account-error" class="geo-error"></div>
+          </div>
+        </section>
+
+        <!-- Schermata FAQ -->
+        <section id="faq-screen">
+          <div class="hero">
+            <h2>FAQ & Guida alla Community</h2>
+            <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
+              <strong>1. Come funziona la geolocalizzazione?</strong><br>
+              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba.<br><br>
+              <strong>2. Come posso connettermi?</strong><br>
+              Segui la pagina TikTok @albacore26, verifica la posizione e accedi in un click.
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaFaq()">Torna alla Home</button>
+          </div>
+        </section>
+
+        <!-- Schermata Privacy / Termini -->
+        <section id="info-screen">
+          <div class="hero">
+            <h2 id="infoTitle">Titolo</h2>
+            <p id="infoContent" style="text-align: left; line-height: 1.6; color: var(--muted);"></p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaInfo()">Torna alla Home</button>
+          </div>
+        </section>
+
+        <!-- Schermata Principale (Login Utente) -->
+        <section id="login-screen">
+          <div class="hero">
+            <h2>Sblocca l'accesso</h2>
+            <p>Per entrare nella community e trovare gli utenti di Alba, completa i passaggi richiesti.</p>
+          </div>
+
+          <div class="steps">
+            <ol>
+              <li>Segui la pagina ufficiale <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">@albacore26</a> su TikTok.</li>
+              <li>Verifica la tua posizione ad Alba (entro 50 km dal Duomo) e accedi.</li>
+            </ol>
+          </div>
+
+          <!-- Stato Account / Nickname attivo -->
+          <div class="form-group" style="max-width: 320px; margin: 0 auto 20px auto; text-align: center;">
+            <label>Il tuo Nickname Attivo</label>
+            <div id="activeNicknameDisplay" style="padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; font-weight: bold; color: var(--accent);">Ospite (Crea un account per bloccarlo)</div>
+          </div>
+
+          <div class="actions" style="flex-direction: column; align-items: center;">
+            <div style="display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;">
+              <a href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener" class="btn btn-dark">Segui @albacore26</a>
+              <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
+            </div>
+            
+            <!-- Pulsante Bypass GPS per PC / Test -->
+            <button class="btn btn-dark" style="margin-top: 10px; width: 100%; max-width: 320px; background: rgba(255,152,0,0.15); border-color: rgba(255,152,0,0.4); color: #ffad33;" onclick="bypassaGpsPerTest()">💻 Entra subito (Bypass GPS PC)</button>
+          </div>
+
+          <div id="geo-error" class="geo-error"></div>
+
+          <!-- Link Privacy, Termini e FAQ in basso -->
+          <div class="footer-links" style="margin-top: 22px; text-align: center; font-size: 0.9rem; color: var(--muted);">
+            <a onclick="apriInfo('privacy')" style="cursor:pointer; color:#fff; margin:0 10px;">Privacy</a>
+            <a onclick="apriInfo('terms')" style="cursor:pointer; color:#fff; margin:0 10px;">Termini</a>
+            <a onclick="apriFaq()" style="cursor:pointer; color:#fff; margin:0 10px;">FAQ</a>
+          </div>
+        </section>
+
+        <!-- Schermata Chat -->
+        <section id="chat-screen">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div class="session-badge">
+              <span>👥 Utenti incontrati in questa sessione: <strong id="sessionCounter">0</strong></span>
+            </div>
+            <div class="session-badge" style="background: rgba(229,9,20,0.15); border-color: rgba(229,9,20,0.3); color: #ffccd0;">
+              <span>⭐ Livello Alba XP: <strong id="userXpScore">10</strong></span>
+            </div>
+          </div>
+
+          <div id="icebreakerBar" class="icebreaker-bar">
+            💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
+          </div>
+
+          <!-- Video griglia -->
+          <div class="video-grid">
+            <div class="video-column">
+              <div class="video-box">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <div class="video-label" id="localVideoLabel">Tu</div>
+              </div>
+              <div class="local-media-controls">
+                <button id="muteBtn" class="media-toggle-btn" onclick="toggleMuteAudio()">🎤 Silenzia Audio</button>
+                <button id="camBtn" class="media-toggle-btn" onclick="toggleCamVideo()">📷 Disattiva Camera</button>
+                
+                <!-- MENU EFFETTI VOCALI RADICALI -->
+                <div id="voiceEffectContainer" style="display: none; width: 100%; margin-top: 6px;">
+                  <select id="voiceEffectSelect" class="media-toggle-btn" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); text-align-last: center;" onchange="applicaEffettoVocaleRadicale(this.value)">
+                    <option value="normal">🎙️ Cambia Voce (Normale)</option>
+                    <option value="alien">👽 Voce Aliena / Profonda</option>
+                    <option value="robot">🤖 Robot Elettronico</option>
+                    <option value="chipmunk">🐿️ Scoiattolo Acuto</option>
+                    <option value="monster">👹 Mostro / Demone</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="video-column">
+              <div class="video-box">
+                <div class="network-indicator">
+                  <div class="net-dot" id="netDot"></div>
+                  <span id="netText" style="color:#fff;">Ottima</span>
+                </div>
+                <div id="remotePlaceholder" class="remote-placeholder">
+                  <span>In attesa di un utente...</span>
+                  <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
+                </div>
+                <video id="remoteVideo" autoplay playsinline></video>
+                <div id="remoteLabel" class="video-label">Utente Online</div>
+              </div>
+              <div style="height: 35px;"></div>
+            </div>
+          </div>
+
+          <!-- Reazioni esterne -->
+          <div class="reactions-bar-external">
+            <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️ Cuore</button>
+            <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥 Fuoco</button>
+            <button class="reaction-btn" onclick="inviaReazione('😂')">😂 Risata</button>
+            <button class="reaction-btn" onclick="inviaReazione('👍')">👍 Top</button>
+          </div>
+
+          <!-- Pulsanti Extra -->
+          <div style="display: flex; gap: 10px; margin-bottom: 16px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scambiaInstagram()">📸 Scambia Instagram</button>
+            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scattaSnapshot()">📷 Salva Snapshot</button>
+            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="condividiLinkSito()">🔗 Condividi Sito</button>
+          </div>
+
+          <!-- Chat Testuale -->
+          <div class="text-chat-box">
+            <div id="chatMessages" class="chat-messages">
+              <div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>
+            </div>
+            <div class="chat-input-area">
+              <input type="text" id="chatInput" placeholder="Scrivi un messaggio..." onkeypress="controllaInvioChat(event)" />
+              <button onclick="inviaMessaggioChat()">Invia</button>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="control-btn skip" onclick="cercaAltroUtenteBtn()">Cerca altro utente</button>
+            <button class="control-btn report" onclick="apriReportModal()">Segnala</button>
+          </div>
+        </section>
+
+        <!-- Pannello di Controllo Admin -->
+        <section id="admin-panel-screen">
+          <div class="hero">
+            <h2 id="adminPanelTitle">Pannello Master Admin</h2>
+            <p>Gestione avanzata in tempo reale</p>
+          </div>
+
+          <div class="stats-box">
+            <div class="stat-card">
+              <small style="color:var(--muted);">Utenti Online</small>
+              <span id="statOnlineUsers">0</span>
+            </div>
+            <div class="stat-card">
+              <small style="color:var(--muted);">In Coda</small>
+              <span id="statQueueUsers">0</span>
+            </div>
+            <div class="stat-card">
+              <small style="color:var(--muted);">Stanze Attive</small>
+              <span id="statActiveRooms">0</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Stato Piattaforma</h3>
+            <button id="killSwitchBtn" class="btn btn-primary" onclick="toggleKillSwitch()">Disattiva Sito (Manutenzione)</button>
+          </div>
+
+          <!-- Gestione Messaggio Broadcast -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Gestione Messaggio Popup Broadcast</h3>
+            <div class="form-group">
+              <input type="text" id="broadcastText" placeholder="Scrivi un messaggio popup per gli utenti..." />
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-primary" style="flex: 1;" onclick="inviaBroadcast()">Invia Messaggio</button>
+              <button class="btn btn-dark" style="flex: 1; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4);" onclick="rimuoviBroadcast()">🗑️ Rimuovi Messaggio</button>
+            </div>
+          </div>
+
+          <!-- Gestione Account Utenti -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Gestione Account Utenti</h3>
+            <div style="max-height: 200px; overflow-y: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nome Utente & ID</th>
+                    <th>Stato / Azione</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun account registrato.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Gestione Utenti Bannati -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Elenco Utenti Bannati</h3>
+            <div style="max-height: 200px; overflow-y: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID / Utente Bannato</th>
+                    <th>Azione</th>
+                  </tr>
+                </thead>
+                <tbody id="bansTableBody">
+                  <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun utente bannato.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Segnalazioni & Bug -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h3 style="margin:0;">Segnalazioni & Motivi Ricevuti</h3>
+              <button class="btn btn-dark" style="padding: 6px 14px; font-size: 0.82rem; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4);" onclick="confermaEliminaTutteSegnalazioni()">🗑️ Elimina Tutte</button>
+            </div>
+            <div style="max-height: 220px; overflow-y: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Data/Ora</th>
+                    <th>Utente & ID Segnalato</th>
+                    <th>Motivo</th>
+                    <th>Azione</th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                  <tr><td colspan="4" style="text-align:center; color: var(--muted);">Nessuna segnalazione ricevuta.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="actions" style="margin-top: 25px;">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaAdmin()">Torna alla Home</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Footer con Nota di Copyright -->
+  <footer>
+    <p>&copy; 2026 Alba Core Live. Tutti i diritti riservati. Contenuti e codici sorgente protetti da proprietà esclusiva.</p>
+  </footer>
+
+  <script>
+    // Script di Protezione: Disabilita tasto destro e combinazioni da tastiera
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    document.addEventListener('keydown', event => {
+      if (
+        event.key === 'F12' || 
+        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J' || event.key === 'C')) || 
+        (event.ctrlKey && (event.key === 'U' || event.key === 'S'))
+      ) {
+        event.preventDefault();
       }
     });
 
-    peer.on('open', function(id) {
-      cercaAltroUtente(id);
+    const firebaseConfig = {
+      databaseURL: "https://albacorelive-default-rtdb.europe-west1.firebasedatabase.app"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    let userId = null;
+    let userUniqueId = "";
+    let nicknameUtente = "Ospite";
+    let accountAttivo = false;
+    let isAdmin = false;
+    let hasVoice = false;
+    let canBypassGps = true; // Abilitato per facilitare il test PC
+
+    let peer = null;
+    let myStream = null;
+    let originalAudioTrack = null;
+    let processedStream = null;
+    let audioCtx = null;
+    let sourceNode = null;
+    let biquadFilter = null;
+    let distortionNode = null;
+    let currentCall = null;
+    let currentRoomId = null;
+    let currentRemoteUserId = null;
+    let currentRemoteUsername = null;
+    let currentRemoteFullUid = null;
+    let sessionCount = 0;
+    let userXp = 10;
+    let listenerAttivi = [];
+    let ultimoMsgVistoId = "";
+
+    try { ultimoMsgVistoId = localStorage.getItem('alba_seen_broadcast') || ""; } catch (e) {}
+
+    const SCHERMATE = ["login-screen", "chat-screen", "admin-panel-screen", "info-screen", "faq-screen", "account-screen", "maintenance-screen"];
+
+    window.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("termsConsentModal").style.display = "flex";
+      
+      // Autenticazione anonima automatica di Firebase per soddisfare le regole di sicurezza
+      auth.signInAnonymously().catch(function(e) {
+        console.error("Errore auth anonima:", e);
+      });
     });
 
-    // Risposta alla chiamata in arrivo
-    peer.on('call', function(call) {
-      currentCall = call;
-      const activeAudioTrack = (hasVoice && processedStream) ? processedStream.getAudioTracks()[0] : myStream.getAudioTracks()[0];
-      const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
-      
-      call.answer(callStream);
-      
-      call.on('stream', function(remoteStream) {
-        mostraVideoRemoto(remoteStream);
+    auth.onAuthStateChanged(function(u) {
+      if (!u) return;
+      userId = u.uid;
+      userUniqueId = u.uid.slice(0, 6);
+      accountAttivo = !u.isAnonymous;
+      aggiornaDisplayNickname();
+
+      const pres = db.ref('presence/' + userId);
+      pres.set(true);
+      pres.onDisconnect().remove();
+
+      // Controllo Ban
+      db.ref('bans/' + userId).on('value', function(s) {
+        if (s.val() === true) {
+          if (myStream) myStream.getTracks().forEach(t => t.stop());
+          if (peer) peer.destroy();
+          document.body.innerHTML = '<h2 style="padding:60px 20px;text-align:center;color:#fff;font-family:sans-serif">Accesso negato: il tuo account è stato bannato.</h2>';
+        }
       });
-      call.on('close', function() {
-        nascondiVideoRemoto();
+
+      // Controllo Admin
+      db.ref('admins/' + userId).once('value', function(s) {
+        isAdmin = (s.val() === true || userId === "ADMIN1");
+        aggiornaDisplayNickname();
+      });
+
+      // Ascolto Broadcast
+      db.ref('system/broadcast').on('value', function(s) {
+        const data = s.val();
+        const modal = document.getElementById("broadcastModal");
+        if (!data || !data.text || data.id === ultimoMsgVistoId) {
+          modal.style.display = "none";
+          return;
+        }
+        document.getElementById("broadcastTextDisplay").textContent = data.text;
+        modal.style.display = "flex";
+        window.currentBroadcastId = data.id;
+      });
+
+      // Ascolto Manutenzione
+      db.ref('system/maintenance').on('value', function(s) {
+        const ms = document.getElementById("maintenance-screen");
+        if (s.val()) {
+          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+          ms.style.display = "block";
+        } else if (ms.style.display === "block") {
+          ms.style.display = "none";
+          document.getElementById("login-screen").style.display = "block";
+        }
       });
     });
-  } else {
-    cercaAltroUtente(peer.id);
-  }
-}
 
-function mostraVideoRemoto(stream) {
-  const remoteVideo = document.getElementById("remoteVideo");
-  const placeholder = document.getElementById("remotePlaceholder");
-  
-  remoteVideo.srcObject = stream;
-  remoteVideo.play().catch(e => console.log("Autoplay preventito o già avviato:", e));
-  placeholder.style.display = "none";
+    function aggiornaDisplayNickname() {
+      const reg = accountAttivo && nicknameUtente !== "Ospite";
+      document.getElementById("activeNicknameDisplay").textContent =
+        reg ? nicknameUtente + " [" + userUniqueId + "] (Account Verificato)" : "Ospite [" + userUniqueId + "] (Crea un account per bloccarlo)";
+      document.getElementById("menuAccountStatus").textContent = reg ? nicknameUtente : "Ospite";
+      document.getElementById("logoutAccountBtn").style.display = reg ? "block" : "none";
+      document.getElementById("adminMenuItem").style.display = isAdmin ? "block" : "none";
+      document.getElementById("localVideoLabel").textContent = nicknameUtente + " [" + userUniqueId + "] (Tu)";
+    }
 
-  sessionCount++;
-  userXp += 5;
-  document.getElementById("sessionCounter").textContent = sessionCount;
-  document.getElementById("userXpScore").textContent = userXp;
-}
+    function accettaTerminiPrivacy() {
+      document.getElementById("termsConsentModal").style.display = "none";
+    }
 
-function nascondiVideoRemoto() {
-  const remoteVideo = document.getElementById("remoteVideo");
-  const placeholder = document.getElementById("remotePlaceholder");
-  remoteVideo.srcObject = null;
-  placeholder.style.display = "flex";
-  placeholder.innerHTML = `<span>In attesa di un utente...</span><small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>`;
-  document.getElementById("chatMessages").innerHTML = `<div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>`;
-  currentRemoteUserId = null;
-  currentRemoteUsername = null;
-  currentRemoteFullUid = null;
-}
-
-function cercaAltroUtente(peerIdOverride) {
-  const activePeerId = peerIdOverride || (peer ? peer.id : null);
-  if (!activePeerId) return;
-
-  nascondiVideoRemoto();
-  
-  if (currentCall) {
-    currentCall.close();
-    currentCall = null;
-  }
-
-  if (currentRoomId) {
-    db.ref('rooms/' + currentRoomId).off();
-    db.ref('rooms/' + currentRoomId).remove();
-    currentRoomId = null;
-  }
-
-  const queueRef = db.ref('queue');
-  queueRef.once('value', function(snapshot) {
-    const waitingUsers = snapshot.val();
-    let targetKey = null;
-    let targetItem = null;
-
-    if (waitingUsers) {
-      const keys = Object.keys(waitingUsers);
-      for (let i = 0; i < keys.length; i++) {
-        if (keys[i] !== userId) {
-          targetKey = keys[i];
-          targetItem = waitingUsers[targetKey];
-          break;
+    window.addEventListener('click', function(e) {
+      if (!e.target.matches('.menu-toggle-btn')) {
+        const menu = document.getElementById("dropdownMenu");
+        if (menu.classList.contains('active')) {
+          menu.classList.remove('active');
         }
       }
+    });
+
+    function toggleDropdownMenu(e) {
+      e.stopPropagation();
+      document.getElementById("dropdownMenu").classList.toggle('active');
     }
 
-    if (!targetItem) {
-      // Nessuno in attesa: mi metto in coda
-      currentRoomId = 'room_' + userId + '_' + Math.random().toString(36).substring(2, 7);
-      const myQueueRef = db.ref('queue/' + userId);
-      
-      myQueueRef.set({
-        userId: userId,
-        peerId: activePeerId,
-        roomId: currentRoomId,
-        nickname: nicknameUtente,
-        uid: userUniqueId
+    function chiudiBroadcastModal() {
+      if (window.currentBroadcastId) {
+        ultimoMsgVistoId = window.currentBroadcastId;
+        try { localStorage.setItem('alba_seen_broadcast', ultimoMsgVistoId); } catch (e) {}
+      }
+      document.getElementById("broadcastModal").style.display = "none";
+    }
+
+    function apriAccountScreen() {
+      nascondiTuttoTranne("account-screen");
+      document.getElementById("account-error").textContent = "";
+      document.getElementById("accountUser").value = "";
+      document.getElementById("accountPass").value = "";
+    }
+
+    function cambiaModalitaAccount() {
+      const mode = document.getElementById("accountModeSelect").value;
+      const btn = document.getElementById("accountSubmitBtn");
+      btn.textContent = (mode === 'login') ? "Accedi" : "Registrati";
+    }
+
+    function emailDa(username) { return username.toLowerCase() + "@utenti.albacorelive.app"; }
+
+    function gestisciInvioAccount() {
+      const mode = document.getElementById("accountModeSelect").value;
+      const username = document.getElementById("accountUser").value.trim();
+      const pass = document.getElementById("accountPass").value;
+      const errEl = document.getElementById("account-error");
+      errEl.textContent = "";
+
+      if (!username || !pass) {
+        errEl.textContent = "Compila tutti i campi richiesti.";
+        return;
+      }
+
+      if (mode === 'login' && username === "ADMIN1" && pass === "1q2w3e4r5t6y7u8i9o0p") {
+        isAdmin = true;
+        apriPannelloAdmin();
+        return;
+      }
+
+      if (mode === 'register') {
+        auth.createUserWithEmailAndPassword(emailDa(username), pass).then(function(cred) {
+          return db.ref('profiles/' + cred.user.uid).set({ nickname: username, blocked: false });
+        }).then(function() {
+          nicknameUtente = username;
+          accountAttivo = true;
+          aggiornaDisplayNickname();
+          alert("Registrazione completata con successo!");
+          tornaAllaHomeDaAccount();
+        }).catch(function(e) {
+          errEl.textContent = "Errore durante la registrazione. Riprova.";
+        });
+      } else {
+        auth.signInWithEmailAndPassword(emailDa(username), pass).then(function(cred) {
+          db.ref('profiles/' + cred.user.uid).once('value', function(s) {
+            if (s.exists() && s.val().nickname) {
+              nicknameUtente = s.val().nickname;
+            } else {
+              nicknameUtente = username;
+            }
+            accountAttivo = true;
+            aggiornaDisplayNickname();
+            alert("Accesso effettuato!");
+            tornaAllaHomeDaAccount();
+          });
+        }).catch(function() {
+          errEl.textContent = "Nome utente o password errati.";
+        });
+      }
+    }
+
+    function eseguiLogoutAccount() {
+      auth.signOut().then(function() {
+        accountAttivo = false;
+        nicknameUtente = "Ospite";
+        aggiornaDisplayNickname();
+        alert("Sei uscito dall'account.");
+        tornaAllaHomeDaAccount();
       });
-      myQueueRef.onDisconnect().remove();
+    }
 
-      // Ascolto se qualcuno entra nella mia stanza
-      db.ref('rooms/' + currentRoomId).on('value', function(roomSnap) {
-        const roomData = roomSnap.val();
-        if (!roomData) return;
+    function tornaAllaHomeDaAccount() { rientraHomeControllata(); }
+    function tornaAllaHomeDaInfo() { rientraHomeControllata(); }
+    function tornaAllaHomeDaFaq() { rientraHomeControllata(); }
+    function tornaAllaHomeDaAdmin() { rientraHomeControllata(); }
 
-        if (roomData.info && roomData.info.peer2 && roomData.info.guestId) {
-          currentRemoteUsername = roomData.info.nick2 || "Utente";
-          currentRemoteUserId = roomData.info.uid2 || "Sconosciuto";
-          currentRemoteFullUid = roomData.info.guestId;
+    function rientraHomeControllata() {
+      SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+      db.ref('system/maintenance').once('value', function(snapshot) {
+        if (snapshot.val()) {
+          document.getElementById("maintenance-screen").style.display = "block";
+        } else {
+          document.getElementById("login-screen").style.display = "block";
+        }
+      });
+    }
+
+    function apriFaq() { nascondiTuttoTranne("faq-screen"); }
+
+    function apriInfo(tipo) {
+      nascondiTuttoTranne("info-screen");
+      const titleEl = document.getElementById("infoTitle");
+      const contentEl = document.getElementById("infoContent");
+      if (tipo === 'privacy') {
+        titleEl.textContent = "Informativa sulla Privacy";
+        contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. La posizione GPS viene usata solo in tempo reale ad Alba e non viene salvata.";
+      } else {
+        titleEl.textContent = "Termini di Servizio";
+        contentEl.textContent = "Tutti i contenuti e codici sorgente sono di proprietà esclusiva di Alba Core Live.";
+      }
+    }
+
+    function apriBugModal() {
+      const bugText = prompt("Segnala un bug o invia un feedback tecnico:");
+      if (bugText) {
+        db.ref('reports').push().set({
+          timestamp: new Date().toLocaleString(),
+          reportedUser: "[BUG/FEEDBACK] " + bugText,
+          reporter: nicknameUtente + " [" + userUniqueId + "]"
+        });
+        alert("Segnalazione inviata!");
+      }
+    }
+
+    function nascondiTuttoTranne(screenId) {
+      SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+      document.getElementById("reportModal").style.display = "none";
+      document.getElementById(screenId).style.display = "block";
+    }
+
+    function bypassaGpsPerTest() {
+      document.getElementById("geo-error").textContent = "";
+      entraNellaChat();
+    }
+
+    function avviaVerificaGPS() {
+      const errDiv = document.getElementById("geo-error");
+      if (canBypassGps) { errDiv.textContent = ""; entraNellaChat(); return; }
+
+      errDiv.textContent = "Verifica GPS in corso...";
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            const d = calcolaDistanza(pos.coords.latitude, pos.coords.longitude, 44.7035, 8.0357);
+            if (d <= 55) { errDiv.textContent = ""; entraNellaChat(); }
+            else errDiv.textContent = "Accesso negato: devi trovarti entro 50 km da Alba.";
+          },
+          function() { errDiv.textContent = "Impossibile rilevare la posizione. Usa il tasto Bypass PC."; },
+          { timeout: 15000, enableHighAccuracy: true }
+        );
+      } else {
+        errDiv.textContent = "Geolocalizzazione non supportata. Usa il tasto Bypass PC.";
+      }
+    }
+
+    function calcolaDistanza(lat1, lon1, lat2, lon2) {
+      const p = 0.017453292519943295;
+      const c = Math.cos;
+      const a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
+      return 12742 * Math.asin(Math.sqrt(a));
+    }
+
+    // --- LOGICA DI CONNESSIONE VIDEO COMPATIBILE CON REGOLE FIREBASE ---
+    async function entraNellaChat() {
+      nascondiTuttoTranne("chat-screen");
+
+      try {
+        if (!myStream) {
+          myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        }
+        document.getElementById("localVideo").srcObject = myStream;
+      } catch (err) {
+        console.error("Errore webcam:", err);
+        alert("Impossibile accedere alla webcam o al microfono. Verifica i permessi.");
+        tornaAllaHomeDaFaq();
+        return;
+      }
+
+      if (!peer) {
+        peer = new Peer({
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          }
+        });
+
+        peer.on('open', function(id) {
+          cercaAltroUtente(id);
+        });
+
+        peer.on('call', function(call) {
+          currentCall = call;
+          const activeAudioTrack = myStream.getAudioTracks()[0];
+          const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+          
+          call.answer(callStream);
+          
+          call.on('stream', function(remoteStream) {
+            mostraVideoRemoto(remoteStream);
+          });
+          call.on('close', function() {
+            nascondiVideoRemoto();
+          });
+        });
+      } else {
+        cercaAltroUtente(peer.id);
+      }
+    }
+
+    function mostraVideoRemoto(stream) {
+      const remoteVideo = document.getElementById("remoteVideo");
+      const placeholder = document.getElementById("remotePlaceholder");
+      
+      remoteVideo.srcObject = stream;
+      remoteVideo.play().catch(e => console.log("Autoplay preventito:", e));
+      placeholder.style.display = "none";
+
+      sessionCount++;
+      userXp += 5;
+      document.getElementById("sessionCounter").textContent = sessionCount;
+      document.getElementById("userXpScore").textContent = userXp;
+      ascoltaReazioni();
+    }
+
+    function nascondiVideoRemoto() {
+      const remoteVideo = document.getElementById("remoteVideo");
+      const placeholder = document.getElementById("remotePlaceholder");
+      remoteVideo.srcObject = null;
+      placeholder.style.display = "flex";
+      placeholder.innerHTML = `<span>In attesa di un utente...</span><small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>`;
+      document.getElementById("chatMessages").innerHTML = `<div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>`;
+      currentRemoteUserId = null;
+      currentRemoteUsername = null;
+      currentRemoteFullUid = null;
+    }
+
+    function cercaAltroUtente(peerIdOverride) {
+      const activePeerId = peerIdOverride || (peer ? peer.id : null);
+      if (!activePeerId || !userId) return;
+
+      nascondiVideoRemoto();
+      
+      if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+      }
+
+      if (currentRoomId) {
+        db.ref('rooms/' + currentRoomId).off();
+        db.ref('rooms/' + currentRoomId).remove();
+        currentRoomId = null;
+      }
+
+      const queueRef = db.ref('queue');
+      queueRef.once('value', function(snapshot) {
+        const waitingUsers = snapshot.val();
+        let targetKey = null;
+        let targetItem = null;
+
+        if (waitingUsers) {
+          const keys = Object.keys(waitingUsers);
+          for (let i = 0; i < keys.length; i++) {
+            if (keys[i] !== userId) {
+              targetKey = keys[i];
+              targetItem = waitingUsers[targetKey];
+              break;
+            }
+          }
+        }
+
+        if (!targetItem) {
+          // Nessuno in attesa: creo la stanza rispettando il formato room_[uid]_[random]
+          currentRoomId = 'room_' + userId + '_' + Math.random().toString(36).substring(2, 7);
+          const myQueueRef = db.ref('queue/' + userId);
+          
+          myQueueRef.set({
+            userId: userId,
+            peerId: activePeerId,
+            roomId: currentRoomId,
+            nickname: nicknameUtente,
+            uid: userUniqueId
+          });
+          myQueueRef.onDisconnect().remove();
+
+          // Ascolto connessioni nella stanza
+          db.ref('rooms/' + currentRoomId).on('value', function(roomSnap) {
+            const roomData = roomSnap.val();
+            if (!roomData) return;
+
+            if (roomData.info && roomData.info.peer2 && roomData.info.guestId) {
+              currentRemoteUsername = roomData.info.nick2 || "Utente";
+              currentRemoteUserId = roomData.info.uid2 || "Sconosciuto";
+              currentRemoteFullUid = roomData.info.guestId;
+              document.getElementById("remoteLabel").textContent = currentRemoteUsername + " [" + currentRemoteUserId + "]";
+              
+              const activeAudioTrack = myStream.getAudioTracks()[0];
+              const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+
+              const call = peer.call(roomData.info.peer2, callStream);
+              currentCall = call;
+              
+              call.on('stream', function(remoteStream) {
+                mostraVideoRemoto(remoteStream);
+              });
+              call.on('close', function() {
+                nascondiVideoRemoto();
+              });
+            }
+          });
+
+          ascoltaMessaggiChat();
+        } else {
+          // C'è un utente in attesa: mi aggancio alla sua stanza
+          currentRoomId = targetItem.roomId;
+          const hostPeerId = targetItem.peerId;
+          const hostUserId = targetItem.userId;
+          
+          currentRemoteUsername = targetItem.nickname || "Utente";
+          currentRemoteUserId = targetItem.uid || "Sconosciuto";
+          currentRemoteFullUid = hostUserId;
           document.getElementById("remoteLabel").textContent = currentRemoteUsername + " [" + currentRemoteUserId + "]";
           
-          const activeAudioTrack = (hasVoice && processedStream) ? processedStream.getAudioTracks()[0] : myStream.getAudioTracks()[0];
+          db.ref('queue/' + hostUserId).remove();
+
+          db.ref('rooms/' + currentRoomId + '/info').set({
+            peer2: activePeerId,
+            guestId: userId,
+            nick2: nicknameUtente,
+            uid2: userUniqueId
+          });
+
+          const activeAudioTrack = myStream.getAudioTracks()[0];
           const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
 
-          const call = peer.call(roomData.info.peer2, callStream);
+          const call = peer.call(hostPeerId, callStream);
           currentCall = call;
           
           call.on('stream', function(remoteStream) {
@@ -144,49 +1580,246 @@ function cercaAltroUtente(peerIdOverride) {
           call.on('close', function() {
             nascondiVideoRemoto();
           });
+
+          ascoltaMessaggiChat();
         }
       });
+    }
 
-    } else {
-      // C'è un utente in attesa: mi aggancio alla sua stanza rispettando le regole
-      currentRoomId = targetItem.roomId;
-      const hostPeerId = targetItem.peerId;
-      const hostUserId = targetItem.userId;
-      
-      currentRemoteUsername = targetItem.nickname || "Utente";
-      currentRemoteUserId = targetItem.uid || "Sconosciuto";
-      currentRemoteFullUid = hostUserId;
-      document.getElementById("remoteLabel").textContent = currentRemoteUsername + " [" + currentRemoteUserId + "]";
-      
-      // Rimuovo l'utente dalla coda
-      db.ref('queue/' + hostUserId).remove();
+    function cercaAltroUtenteBtn() {
+      if (peer) {
+        cercaAltroUtente(peer.id);
+      }
+    }
 
-      // Scrivo le info nella stanza rispettando la regola .validate di rooms -> info
-      db.ref('rooms/' + currentRoomId + '/info').set({
-        peer2: activePeerId,
-        guestId: userId,
-        nick2: nicknameUtente,
-        uid2: userUniqueId
-      });
+    // --- CONTROLLI EXTRA, CHAT E REAZIONI ---
+    function toggleMuteAudio() {
+      if (myStream) {
+        const audioTrack = myStream.getAudioTracks()[0];
+        audioTrack.enabled = !audioTrack.enabled;
+        const btn = document.getElementById("muteBtn");
+        btn.textContent = audioTrack.enabled ? "🎤 Silenzia Audio" : "🎤 Audio Silenziato";
+        btn.classList.toggle("active-off", !audioTrack.enabled);
+      }
+    }
 
-      const activeAudioTrack = (hasVoice && processedStream) ? processedStream.getAudioTracks()[0] : myStream.getAudioTracks()[0];
-      const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+    function toggleCamVideo() {
+      if (myStream) {
+        const videoTrack = myStream.getVideoTracks()[0];
+        videoTrack.enabled = !videoTrack.enabled;
+        const btn = document.getElementById("camBtn");
+        btn.textContent = videoTrack.enabled ? "📷 Disattiva Camera" : "📷 Camera Disattivata";
+        btn.classList.toggle("active-off", !videoTrack.enabled);
+      }
+    }
 
-      const call = peer.call(hostPeerId, callStream);
-      currentCall = call;
-      
-      call.on('stream', function(remoteStream) {
-        mostraVideoRemoto(remoteStream);
-      });
-      call.on('close', function() {
-        nascondiVideoRemoto();
+    function attivaFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+
+    function scambiaInstagram() {
+      const ig = prompt("Inserisci il tuo contatto Instagram o Social:");
+      if (ig && currentRoomId) {
+        db.ref('rooms/' + currentRoomId + '/messages').push().set({
+          sender: userId,
+          name: nicknameUtente,
+          text: "📱 Contatto Social condiviso: " + ig
+        });
+      }
+    }
+
+    function scattaSnapshot() {
+      const videoEl = document.getElementById("remoteVideo");
+      if (!videoEl.srcObject) {
+        alert("Nessun utente connesso!");
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = videoEl.videoWidth || 640;
+      canvas.height = videoEl.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const link = document.createElement("a");
+      link.download = "AlbaCoreLive_Snapshot.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function condividiLinkSito() {
+      if (navigator.share) {
+        navigator.share({ title: 'Alba Core Live', url: window.location.href }).catch(() => {});
+      } else {
+        prompt("Copia il link del sito:", window.location.href);
+      }
+    }
+
+    function inviaReazione(emoji) {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/reactions').push().set({ emoji: emoji, sender: userId });
+    }
+
+    function ascoltaReazioni() {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/reactions').on('child_added', function(snapshot) {
+        const data = snapshot.val();
+        if (data && data.sender !== userId) {
+          mostraAnimazioneEmoji(data.emoji);
+        }
       });
     }
-  });
-}
 
-function cercaAltroUtenteBtn() {
-  if (peer) {
-    cercaAltroUtente(peer.id);
-  }
-}
+    function mostraAnimazioneEmoji(emoji) {
+      const box = document.querySelectorAll(".video-box")[1];
+      if (!box) return;
+      const span = document.createElement("div");
+      span.className = "flying-emoji";
+      span.textContent = emoji;
+      span.style.left = Math.random() * 70 + 15 + "%";
+      box.appendChild(span);
+      setTimeout(() => span.remove(), 2000);
+    }
+
+    function inviaMessaggioChat() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text || !currentRoomId) return;
+
+      db.ref('rooms/' + currentRoomId + '/messages').push().set({
+        sender: userId,
+        name: nicknameUtente,
+        text: text
+      });
+      input.value = "";
+    }
+
+    function controllaInvioChat(e) {
+      if (e.key === 'Enter') inviaMessaggioChat();
+    }
+
+    function ascoltaMessaggiChat() {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/messages').on('child_added', function(snapshot) {
+        const msg = snapshot.val();
+        if (!msg) return;
+        const chatBox = document.getElementById("chatMessages");
+        const div = document.createElement("div");
+        div.className = "chat-message" + (msg.sender === userId ? " me" : "");
+        div.textContent = (msg.name ? msg.name + ": " : "") + msg.text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+
+    function apriReportModal() { document.getElementById("reportModal").style.display = "flex"; }
+    function chiudiReportModal() { document.getElementById("reportModal").style.display = "none"; }
+
+    function inviaSegnalazioneConMotivo(motivo) { inviaSegnalazioneEffettiva(motivo); }
+    function inviaSegnalazionePersonalizzata() {
+      const custom = document.getElementById("customReportReason").value.trim();
+      inviaSegnalazioneEffettiva(custom || "Segnalazione generica");
+    }
+
+    function inviaSegnalazioneEffettiva(motivo) {
+      db.ref('reports').push().set({
+        timestamp: new Date().toLocaleString(),
+        reportedUser: currentRemoteUsername ? (currentRemoteUsername + " [" + (currentRemoteUserId || "?") + "]") : "Utente Sconosciuto",
+        targetUid: currentRemoteFullUid || "ignoto",
+        reason: motivo,
+        reporter: nicknameUtente + " [" + userUniqueId + "]"
+      });
+      alert("Segnalazione inviata.");
+      chiudiReportModal();
+      cercaAltroUtenteBtn();
+    }
+
+    // --- PANNELLO ADMIN ---
+    function apriPannelloAdmin() {
+      if (!isAdmin) { alert("Non autorizzato."); return; }
+      nascondiTuttoTranne("admin-panel-screen");
+      caricaSegnalazioniAdmin();
+      caricaUtentiAdmin();
+      caricaBannedAdmin();
+      aggiornaStatisticheAdmin();
+    }
+
+    function toggleKillSwitch() {
+      db.ref('system/maintenance').once('value', function(s) {
+        db.ref('system/maintenance').set(!(s.val() || false));
+      });
+    }
+
+    function inviaBroadcast() {
+      const text = document.getElementById("broadcastText").value.trim();
+      if (!text) return;
+      db.ref('system/broadcast').set({ id: 'msg_' + Date.now(), text: text }, function(err) {
+        if (!err) { alert("Broadcast inviato!"); document.getElementById("broadcastText").value = ""; }
+      });
+    }
+
+    function rimuoviBroadcast() {
+      db.ref('system/broadcast').remove();
+    }
+
+    function caricaUtentiAdmin() {
+      const tbody = document.getElementById("usersTableBody");
+      db.ref('profiles').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) { tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">Nessun account.</td></tr>`; return; }
+        Object.entries(data).forEach(([uid, p]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><strong>${p.nickname || "?"}</strong><br><small>${uid}</small></td><td><button class="btn btn-dark" style="padding:4px;" onclick="bannaUtente('${uid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function caricaBannedAdmin() {
+      const tbody = document.getElementById("bansTableBody");
+      db.ref('bans').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) { tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">Nessun ban.</td></tr>`; return; }
+        Object.keys(data).forEach(uid => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${uid}</td><td><button class="btn btn-dark" style="padding:4px; background:#4ade80;" onclick="db.ref('bans/${uid}').remove()">Rimuovi</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function caricaSegnalazioniAdmin() {
+      const tbody = document.getElementById("reportsTableBody");
+      db.ref('reports').on('value', function(snapshot) {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nessuna segnalazione.</td></tr>`; return; }
+        Object.entries(data).forEach(([k, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r.timestamp}</td><td>${r.reportedUser}</td><td>${r.reason}</td><td><button class="btn btn-primary" style="padding:4px;" onclick="bannaUtente('${r.targetUid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function bannaUtente(uid) {
+      if (uid && uid !== "ignoto") db.ref('bans/' + uid).set(true);
+    }
+
+    function aggiornaStatisticheAdmin() {
+      db.ref('presence').on('value', s => document.getElementById("statOnlineUsers").textContent = s.val() ? Object.keys(s.val()).length : 0);
+      db.ref('queue').on('value', s => document.getElementById("statQueueUsers").textContent = s.val() ? Object.keys(s.val()).length : 0);
+      db.ref('rooms').on('value', s => {
+        const d = s.val();
+        let count = 0;
+        if (d) Object.values(d).forEach(r => { if (r && r.info) count++; });
+        document.getElementById("statActiveRooms").textContent = count;
+      });
+    }
+  </script>
+</body>
+</html>
