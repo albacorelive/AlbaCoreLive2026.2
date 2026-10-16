@@ -40,6 +40,7 @@
 
     body {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 30px 20px;
@@ -110,6 +111,10 @@
 
     .page {
       width: min(100%, 980px);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .brand {
@@ -680,6 +685,17 @@
     }
     .consent-scroll h4 { color: var(--accent); margin: 15px 0 5px; font-size: 1.1rem; }
 
+    /* Footer di Copyright */
+    footer {
+      text-align: center;
+      padding: 15px 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 20px;
+      border-top: 1px solid var(--border);
+      width: 100%;
+    }
+
     @media (max-width: 640px) {
       .content {
         padding: 24px 18px 20px;
@@ -731,8 +747,8 @@
         <h4>1. Informativa sulla Privacy</h4>
         <p>Alba Core Live tutela la privacy dei propri utenti. La posizione GPS del browser viene utilizzata esclusivamente in tempo reale per verificare che l'utente si trovi entro un raggio di 50 km dal centro di Alba e non viene memorizzata in database permanenti. Le videochiamate avvengono tramite protocollo crittografato Peer-to-Peer (WebRTC) direttamente tra i dispositivi degli utenti e non sono registrate né archiviate da alcun server centrale.</p>
         
-        <h4>2. Termini di Servizio</h4>
-        <p>Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.</p>
+        <h4>2. Termini di Servizio e Proprietà Intellettuale</h4>
+        <p>Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. <strong>Tutti i contenuti, il design, la grafica e i codici sorgente di Alba Core Live sono di proprietà esclusiva dell'amministrazione. Ne è severamente vietata la copia, la riproduzione, l'ispezione non autorizzata o la ridistribuzione con qualsiasi mezzo.</strong> L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.</p>
       </div>
       <button class="btn btn-primary" onclick="accettaTerminiPrivacy()" style="width: 100%; padding: 14px; font-size: 1.1rem;">Accetta e Continua</button>
     </div>
@@ -815,7 +831,7 @@
             <h2>FAQ & Guida alla Community</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
               <strong>1. Come funziona la geolocalizzazione?</strong><br>
-              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba.<br><br>
+              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba (eccetto account autorizzati).<br><br>
               <strong>2. Come posso connettermi?</strong><br>
               Segui la pagina TikTok @albacore26, verifica la posizione e accedi in un click.
             </p>
@@ -1065,7 +1081,25 @@
     </main>
   </div>
 
+  <!-- Footer con Nota di Copyright -->
+  <footer>
+    <p>&copy; 2026 Alba Core Live. Tutti i diritti riservati. Contenuti e codici sorgente protetti da proprietà esclusiva.</p>
+  </footer>
+
   <script>
+    // Script di Protezione: Disabilita tasto destro e combinazioni da tastiera (F12, Ctrl+U, Ctrl+S, ecc.)
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    document.addEventListener('keydown', event => {
+      if (
+        event.key === 'F12' || 
+        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J' || event.key === 'C')) || 
+        (event.ctrlKey && (event.key === 'U' || event.key === 'S'))
+      ) {
+        event.preventDefault();
+      }
+    });
+
     const firebaseConfig = {
       databaseURL: "https://albacorelive-default-rtdb.europe-west1.firebasedatabase.app"
     };
@@ -1086,8 +1120,6 @@
     let sourceNode = null;
     let biquadFilter = null;
     let distortionNode = null;
-    let modulatorOsc = null;
-    let modulatorGain = null;
     let currentCall = null;
     let currentRoomId = null;
     let currentRemoteUserId = null;
@@ -1096,7 +1128,7 @@
     let userXp = 10;
 
     window.addEventListener('DOMContentLoaded', function() {
-      // Il pop-up termini compare sempre all'avvio senza alcuna memorizzazione
+      // Il pop-up termini compare sempre all'avvio a ogni apertura/ricarica del sito
       document.getElementById("termsConsentModal").style.display = "flex";
       aggiornaDisplayNickname();
       verificaAccessoFiltriVocali();
@@ -1327,7 +1359,6 @@
         audioCtx.resume();
       }
 
-      // Configurazione curve di distorsione e filtri per alterare completamente il timbro vocale
       if (effetto === 'alien') {
         biquadFilter.type = "lowpass";
         biquadFilter.frequency.value = 450;
@@ -1349,14 +1380,12 @@
         biquadFilter.Q.value = 10;
         distortionNode.curve = makeDistortionCurve(80);
       } else {
-        // Normale
         biquadFilter.type = "peaking";
         biquadFilter.frequency.value = 1000;
         biquadFilter.gain.value = 0;
         distortionNode.curve = null;
       }
 
-      // Sostituzione traccia audio in tempo reale nella chiamata P2P
       if (currentCall && processedStream) {
         const newAudioTrack = effetto === 'normal' ? originalAudioTrack : processedStream.getAudioTracks()[0];
         const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'audio');
@@ -1507,7 +1536,7 @@
         contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. La posizione GPS del browser viene utilizzata esclusivamente in tempo reale per verificare che l'utente si trovi entro un raggio di 50 km dal centro di Alba e non viene memorizzata in database permanenti. Le videochiamate avvengono tramite protocollo crittografato Peer-to-Peer (WebRTC) direttamente tra i dispositivi degli utenti e non sono registrate né archiviate da alcun server centrale.";
       } else {
         titleEl.textContent = "Termini e Condizioni di Servizio";
-        contentEl.textContent = "Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.";
+        contentEl.textContent = "Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. Tutti i contenuti, il design, la grafica e i codici sorgente di Alba Core Live sono di proprietà esclusiva dell'amministrazione. Ne è severamente vietata la copia, la riproduzione, l'ispezione non autorizzata o la ridistribuzione. L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.";
       }
     }
 
@@ -1558,6 +1587,14 @@
       document.getElementById("localVideoLabel").textContent = nicknameUtente + " [" + userUniqueId + "] (Tu)";
 
       const errDiv = document.getElementById("geo-error");
+      
+      // BYPASS GPS PER L'ID SPECIFICO usr_f2u3ix
+      if (userUniqueId === "usr_f2u3ix") {
+        errDiv.textContent = "";
+        entraNellaChat();
+        return;
+      }
+
       errDiv.textContent = "Verifica della posizione GPS in corso...";
 
       if ("geolocation" in navigator) {
