@@ -244,7 +244,7 @@
       line-height: 1.4;
     }
 
-    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen {
+    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen, #account-screen {
       display: none;
     }
 
@@ -683,12 +683,13 @@
     </div>
   </div>
 
-  <!-- Menu in alto a destra (Rimosse sezioni non richieste) -->
+  <!-- Menu in alto a destra -->
   <div class="top-menu-container">
     <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">☰ Menu</button>
     <div id="dropdownMenu" class="dropdown-menu">
-      <a class="dropdown-item" onclick="attivaFullscreen()">📺 Schermo Intero</a>
+      <a class="dropdown-item" onclick="apriAccountScreen()">👤 Account (<span id="menuAccountStatus">Ospite</span>)</a>
       <div class="dropdown-divider"></div>
+      <a class="dropdown-item" onclick="attivaFullscreen()">📺 Schermo Intero</a>
       <a class="dropdown-item" href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">🎵 Segui @albacore26</a>
       <a class="dropdown-item" onclick="apriFaq()">❓ FAQ & Guida</a>
       <a class="dropdown-item" onclick="apriBugModal()">⚠️ Segnala Bug</a>
@@ -710,6 +711,38 @@
           <div class="hero">
             <h2>Piattaforma in Manutenzione</h2>
             <p>Il servizio è temporaneamente disattivato dall'amministrazione. Torneremo presto online!</p>
+          </div>
+        </section>
+
+        <!-- Schermata Account (Accedi / Registrati) -->
+        <section id="account-screen">
+          <div class="hero">
+            <h2>Gestione Account</h2>
+            <p>Accedi o registrati per bloccare il tuo nickname esclusivo nella community.</p>
+          </div>
+
+          <div class="form-group" style="max-width: 320px; margin: 0 auto 20px auto;">
+            <label>Seleziona Azione</label>
+            <select id="accountModeSelect" onchange="cambiaModalitaAccount()">
+              <option value="login">Accedi</option>
+              <option value="register">Registrati</option>
+            </select>
+          </div>
+
+          <div style="max-width: 320px; margin: 0 auto;">
+            <div class="form-group">
+              <label>Nome Utente (Nickname)</label>
+              <input type="text" id="accountUser" placeholder="Es. filippo" maxlength="20" />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="accountPass" placeholder="Inserisci password" />
+            </div>
+            <div class="actions" style="flex-direction: column;">
+              <button id="accountSubmitBtn" class="btn btn-primary" style="width: 100%;" onclick="gestisciInvioAccount()">Accedi</button>
+              <button class="btn btn-dark" style="width: 100%;" onclick="tornaAllaHomeDaAccount()">Torna alla Home</button>
+            </div>
+            <div id="account-error" class="geo-error"></div>
           </div>
         </section>
 
@@ -754,10 +787,10 @@
             </ol>
           </div>
 
-          <!-- Bio / Nickname Opzionale -->
-          <div class="form-group" style="max-width: 320px; margin: 0 auto 20px auto;">
-            <label>Il tuo Nickname (Opzionale)</label>
-            <input type="text" id="userNickname" placeholder="Es. Mario_Alba" maxlength="20" />
+          <!-- Stato Account / Nickname attivo -->
+          <div class="form-group" style="max-width: 320px; margin: 0 auto 20px auto; text-align: center;">
+            <label>Il tuo Nickname Attivo</label>
+            <div id="activeNicknameDisplay" style="padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; font-weight: bold; color: var(--accent);">Ospite (Crea un account per bloccarlo)</div>
           </div>
 
           <div class="actions">
@@ -767,7 +800,7 @@
 
           <div id="geo-error" class="geo-error"></div>
 
-          <!-- Link Privacy, Termini e FAQ in basso come da richiesta -->
+          <!-- Link Privacy, Termini e FAQ in basso -->
           <div class="footer-links" style="margin-top: 22px; text-align: center; font-size: 0.9rem; color: var(--muted);">
             <a onclick="apriInfo('privacy')" style="cursor:pointer; color:#fff; margin:0 10px;">Privacy</a>
             <a onclick="apriInfo('terms')" style="cursor:pointer; color:#fff; margin:0 10px;">Termini</a>
@@ -990,7 +1023,7 @@
     const db = firebase.database();
 
     const userId = 'user_' + Math.random().toString(36).substring(2, 9);
-    let nicknameUtente = "Ospite";
+    let nicknameUtente = localStorage.getItem('alba_logged_user') || "Ospite";
     let peer = null;
     let myStream = null;
     let currentCall = null;
@@ -998,12 +1031,25 @@
     let sessionCount = 0;
     let userXp = 10;
 
-    // Controllo se l'utente ha già accettato termini e privacy
+    // Aggiorna stato account all'avvio
     window.addEventListener('DOMContentLoaded', function() {
       if (localStorage.getItem('alba_terms_accepted') === 'true') {
         document.getElementById("termsConsentModal").style.display = "none";
       }
+      aggiornaDisplayNickname();
     });
+
+    function aggiornaDisplayNickname() {
+      const disp = document.getElementById("activeNicknameDisplay");
+      const menuStat = document.getElementById("menuAccountStatus");
+      if (nicknameUtente && nicknameUtente !== "Ospite") {
+        disp.textContent = nicknameUtente + " (Account Verificato)";
+        menuStat.textContent = nicknameUtente;
+      } else {
+        disp.textContent = "Ospite (Crea un account per bloccarlo)";
+        menuStat.textContent = "Ospite";
+      }
+    }
 
     function accettaTerminiPrivacy() {
       localStorage.setItem('alba_terms_accepted', 'true');
@@ -1069,6 +1115,7 @@
         document.getElementById("admin-panel-screen").style.display = "none";
         document.getElementById("info-screen").style.display = "none";
         document.getElementById("faq-screen").style.display = "none";
+        document.getElementById("account-screen").style.display = "none";
         document.getElementById("maintenance-screen").style.display = "block";
       } else {
         if (document.getElementById("maintenance-screen").style.display === "block") {
@@ -1077,6 +1124,80 @@
         }
       }
     });
+
+    // --- LOGICA GESTIONE ACCOUNT (REGISTRAZIONE E ACCESSO) ---
+    function apriAccountScreen() {
+      nascondiTuttoTranne("account-screen");
+      document.getElementById("account-error").textContent = "";
+      document.getElementById("accountUser").value = "";
+      document.getElementById("accountPass").value = "";
+    }
+
+    function cambiaModalitaAccount() {
+      const mode = document.getElementById("accountModeSelect").value;
+      const btn = document.getElementById("accountSubmitBtn");
+      if (mode === 'login') {
+        btn.textContent = "Accedi";
+      } else {
+        btn.textContent = "Registrati";
+      }
+    }
+
+    function gestisciInvioAccount() {
+      const mode = document.getElementById("accountModeSelect").value;
+      const username = document.getElementById("accountUser").value.trim();
+      const pass = document.getElementById("accountPass").value.trim();
+      const errEl = document.getElementById("account-error");
+
+      if (!username || !pass) {
+        errEl.textContent = "Compila tutti i campi richiesti.";
+        return;
+      }
+
+      const userRef = db.ref('users/' + username);
+
+      if (mode === 'register') {
+        // Verifica unicità del nome utente
+        userRef.once('value', function(snapshot) {
+          if (snapshot.exists()) {
+            errEl.textContent = "Il nome utente '" + username + "' è già registrato. Scegline un altro.";
+          } else {
+            // Registra il nuovo utente (password duplicabili tranquillamente)
+            userRef.set({ password: pass }, function(err) {
+              if (!err) {
+                nicknameUtente = username;
+                localStorage.setItem('alba_logged_user', username);
+                aggiornaDisplayNickname();
+                alert("Registrazione completata con successo!");
+                tornaAllaHomeDaAccount();
+              } else {
+                errEl.textContent = "Errore durante la registrazione.";
+              }
+            });
+          }
+        });
+      } else {
+        // Accesso
+        userRef.once('value', function(snapshot) {
+          const data = snapshot.val();
+          if (!data) {
+            errEl.textContent = "Nome utente non trovato.";
+          } else if (data.password !== pass) {
+            errEl.textContent = "Password errata.";
+          } else {
+            nicknameUtente = username;
+            localStorage.setItem('alba_logged_user', username);
+            aggiornaDisplayNickname();
+            alert("Accesso effettuato con successo!");
+            tornaAllaHomeDaAccount();
+          }
+        });
+      }
+    }
+
+    function tornaAllaHomeDaAccount() {
+      rientraHomeControllata();
+    }
 
     function toggleMuteAudio() {
       if (myStream) {
@@ -1230,6 +1351,7 @@
       document.getElementById("admin-panel-screen").style.display = "none";
       document.getElementById("info-screen").style.display = "none";
       document.getElementById("faq-screen").style.display = "none";
+      document.getElementById("account-screen").style.display = "none";
       document.getElementById(screenId).style.display = "block";
     }
 
@@ -1239,6 +1361,7 @@
     function rientraHomeControllata() {
       document.getElementById("info-screen").style.display = "none";
       document.getElementById("faq-screen").style.display = "none";
+      document.getElementById("account-screen").style.display = "none";
       
       db.ref('system/maintenance').once('value', function(snapshot) {
         if (snapshot.val()) {
@@ -1250,8 +1373,6 @@
     }
 
     function avviaVerificaGPS() {
-      const nickInput = document.getElementById("userNickname").value.trim();
-      if (nickInput) nicknameUtente = nickInput;
       document.getElementById("localVideoLabel").textContent = nicknameUtente + " (Tu)";
 
       const errDiv = document.getElementById("geo-error");
