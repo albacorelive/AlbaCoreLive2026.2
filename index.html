@@ -779,7 +779,7 @@
               <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
             </div>
             
-            <!-- Tasto Pannello Admin in Home -->
+            <!-- Tasto Pannello Admin in Home visibile SOLO per RV94LX -->
             <button id="homeAdminBtn" class="btn btn-dark" style="display:none; margin-top: 12px; width: 100%; max-width: 320px; background: rgba(229,9,20,0.25); border-color: rgba(229,9,20,0.5); color: #ffccd0;" onclick="apriPannelloAdmin()">🛠️ Pannello Admin</button>
           </div>
 
@@ -868,7 +868,7 @@
               </div>
             </div>
 
-            <!-- Pannello Admin Affiancato a Destra -->
+            <!-- Pannello Admin Affiancato a Destra (Solo per RV94LX) -->
             <div id="inlineAdminPanel" style="display: none; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
               <h3 style="margin-top:0; color:var(--primary-2);">🛠️ Pannello Admin Live</h3>
               
@@ -1074,8 +1074,8 @@
       if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
       if (cambioUtente) nascondiTuttoTranne("login-screen");
 
-      // ATTENZIONE: Nessun ID admin impostato finché non mi comunicherai il tuo esatto ID
-      isAdmin = false;
+      // CONTROLLO ADMIN: Autorizzazione concessa SOLO se l'ID univoco generato è esattamente RV94LX
+      isAdmin = (userUniqueId === "RV94LX");
 
       aggiornaDisplayNickname();
 
