@@ -644,7 +644,7 @@
       border-color: rgba(229, 9, 20, 0.4);
     }
 
-    /* Modal Accettazione Termini e Privacy Obbligatorio all'avvio */
+    /* Modal Accettazione Termini e Privacy Obbligatorio a OGNI apertura */
     #termsConsentModal {
       display: flex;
       position: fixed;
@@ -723,7 +723,7 @@
     </div>
   </div>
 
-  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy -->
+  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy (Compaie sempre ad ogni apertura) -->
   <div id="termsConsentModal">
     <div class="consent-box">
       <h3>Informativa sulla Privacy & Termini di Servizio</h3>
@@ -897,14 +897,14 @@
                 <button id="muteBtn" class="media-toggle-btn" onclick="toggleMuteAudio()">🎤 Silenzia Audio</button>
                 <button id="camBtn" class="media-toggle-btn" onclick="toggleCamVideo()">📷 Disattiva Camera</button>
                 
-                <!-- MENU EFFETTI VOCALI ESCLUSIVO PER usr_a70wv1 -->
+                <!-- MENU EFFETTI VOCALI RADICALI ESCLUSIVO PER usr_a70wv1 -->
                 <div id="voiceEffectContainer" style="display: none; width: 100%; margin-top: 6px;">
-                  <select id="voiceEffectSelect" class="media-toggle-btn" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); text-align-last: center;" onchange="applicaEffettoVocale(this.value)">
-                    <option value="normal">🎙️ Effetti Voce (Normale)</option>
-                    <option value="acuta">👶 Voce Acuta</option>
-                    <option value="bassa">👹 Voce Bassa (Demon)</option>
-                    <option value="robot">🤖 Voce Robotica</option>
-                    <option value="megafono">📢 Megafono</option>
+                  <select id="voiceEffectSelect" class="media-toggle-btn" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); text-align-last: center;" onchange="applicaEffettoVocaleRadicale(this.value)">
+                    <option value="normal">🎙️ Cambia Voce (Normale)</option>
+                    <option value="alien">👽 Voce Aliena / Profonda</option>
+                    <option value="robot">🤖 Robot Elettronico</option>
+                    <option value="chipmunk">🐿️ Scoiattolo Acuto</option>
+                    <option value="monster">👹 Mostro / Demone</option>
                   </select>
                 </div>
               </div>
@@ -1085,6 +1085,9 @@
     let audioCtx = null;
     let sourceNode = null;
     let biquadFilter = null;
+    let distortionNode = null;
+    let modulatorOsc = null;
+    let modulatorGain = null;
     let currentCall = null;
     let currentRoomId = null;
     let currentRemoteUserId = null;
@@ -1093,9 +1096,8 @@
     let userXp = 10;
 
     window.addEventListener('DOMContentLoaded', function() {
-      if (localStorage.getItem('alba_terms_accepted') === 'true') {
-        document.getElementById("termsConsentModal").style.display = "none";
-      }
+      // Il pop-up termini compare sempre all'avvio senza alcuna memorizzazione
+      document.getElementById("termsConsentModal").style.display = "flex";
       aggiornaDisplayNickname();
       verificaAccessoFiltriVocali();
     });
@@ -1117,7 +1119,6 @@
       verificaAccessoFiltriVocali();
     }
 
-    // CONTROLLO ID ESCLUSIVO: usr_a70wv1
     function verificaAccessoFiltriVocali() {
       const container = document.getElementById("voiceEffectContainer");
       if (userUniqueId === "usr_a70wv1") {
@@ -1128,7 +1129,6 @@
     }
 
     function accettaTerminiPrivacy() {
-      localStorage.setItem('alba_terms_accepted', 'true');
       document.getElementById("termsConsentModal").style.display = "none";
     }
 
@@ -1303,19 +1303,23 @@
       rientraHomeControllata();
     }
 
-    // --- GESTIONE EFFETTI VOCALI ESCLUSIVI ---
-    function applicaEffettoVocale(effetto) {
+    // --- EFFETTI VOCALI RADICALI E PROFONDI (ESCLUSIVO usr_a70wv1) ---
+    function applicaEffettoVocaleRadicale(effetto) {
       if (userUniqueId !== "usr_a70wv1" || !myStream) return;
 
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         originalAudioTrack = myStream.getAudioTracks()[0];
         sourceNode = audioCtx.createMediaStreamSource(new MediaStream([originalAudioTrack]));
+        
         biquadFilter = audioCtx.createBiquadFilter();
+        distortionNode = audioCtx.createWaveShaper();
+        
         sourceNode.connect(biquadFilter);
+        biquadFilter.connect(distortionNode);
 
         const dest = audioCtx.createMediaStreamDestination();
-        biquadFilter.connect(dest);
+        distortionNode.connect(dest);
         processedStream = dest.stream;
       }
 
@@ -1323,38 +1327,55 @@
         audioCtx.resume();
       }
 
-      biquadFilter.type = "peaking";
-      biquadFilter.gain.value = 0;
-      biquadFilter.Q.value = 1;
-
-      if (effetto === 'acuta') {
-        biquadFilter.type = "highpass";
-        biquadFilter.frequency.value = 1200;
-      } else if (effetto === 'bassa') {
+      // Configurazione curve di distorsione e filtri per alterare completamente il timbro vocale
+      if (effetto === 'alien') {
         biquadFilter.type = "lowpass";
-        biquadFilter.frequency.value = 300;
+        biquadFilter.frequency.value = 450;
+        biquadFilter.Q.value = 6;
+        distortionNode.curve = makeDistortionCurve(40);
       } else if (effetto === 'robot') {
         biquadFilter.type = "bandpass";
-        biquadFilter.frequency.value = 800;
-        biquadFilter.Q.value = 8;
-      } else if (effetto === 'megafono') {
-        biquadFilter.type = "bandpass";
-        biquadFilter.frequency.value = 1500;
-        biquadFilter.Q.value = 3;
+        biquadFilter.frequency.value = 1000;
+        biquadFilter.Q.value = 12;
+        distortionNode.curve = makeDistortionCurve(100);
+      } else if (effetto === 'chipmunk') {
+        biquadFilter.type = "highpass";
+        biquadFilter.frequency.value = 2000;
+        biquadFilter.Q.value = 4;
+        distortionNode.curve = makeDistortionCurve(10);
+      } else if (effetto === 'monster') {
+        biquadFilter.type = "lowpass";
+        biquadFilter.frequency.value = 220;
+        biquadFilter.Q.value = 10;
+        distortionNode.curve = makeDistortionCurve(80);
       } else {
+        // Normale
         biquadFilter.type = "peaking";
         biquadFilter.frequency.value = 1000;
+        biquadFilter.gain.value = 0;
+        distortionNode.curve = null;
       }
 
-      // Sostituisce la traccia audio in corso nella chiamata PeerJS
+      // Sostituzione traccia audio in tempo reale nella chiamata P2P
       if (currentCall && processedStream) {
-        const videoTrack = myStream.getVideoTracks()[0];
         const newAudioTrack = effetto === 'normal' ? originalAudioTrack : processedStream.getAudioTracks()[0];
         const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'audio');
         if (sender) {
           sender.replaceTrack(newAudioTrack);
         }
       }
+    }
+
+    function makeDistortionCurve(amount) {
+      const k = typeof amount === 'number' ? amount : 50;
+      const n_samples = 44100;
+      const curve = new Float32Array(n_samples);
+      const deg = Math.PI / 180;
+      for (let i = 0; i < n_samples; ++i) {
+        const x = (i * 2) / n_samples - 1;
+        curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+      }
+      return curve;
     }
 
     function toggleMuteAudio() {
