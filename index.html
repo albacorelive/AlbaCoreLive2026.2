@@ -779,7 +779,7 @@
               <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
             </div>
             
-            <!-- Tasto Pannello Admin in Home visibile SOLO per RV94LX -->
+            <!-- Tasto Pannello Admin in Home -->
             <button id="homeAdminBtn" class="btn btn-dark" style="display:none; margin-top: 12px; width: 100%; max-width: 320px; background: rgba(229,9,20,0.25); border-color: rgba(229,9,20,0.5); color: #ffccd0;" onclick="apriPannelloAdmin()">🛠️ Pannello Admin</button>
           </div>
 
@@ -792,7 +792,7 @@
           </div>
         </section>
 
-        <!-- Schermata Chat (Layout affiancato se RV94LX) -->
+        <!-- Schermata Chat -->
         <section id="chat-screen">
           <div class="chat-admin-layout" id="chatAdminLayout">
             <!-- Colonna Chat Live -->
@@ -868,7 +868,7 @@
               </div>
             </div>
 
-            <!-- Pannello Admin Affiancato a Destra (Solo per RV94LX) -->
+            <!-- Pannello Admin Affiancato a Destra -->
             <div id="inlineAdminPanel" style="display: none; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
               <h3 style="margin-top:0; color:var(--primary-2);">🛠️ Pannello Admin Live</h3>
               
@@ -919,7 +919,7 @@
           </div>
         </section>
 
-        <!-- Pannello di Controllo Admin Dedicato (Se aperto da menu) -->
+        <!-- Pannello di Controllo Admin Dedicato -->
         <section id="admin-panel-screen">
           <div class="hero">
             <h2>Pannello Master Admin</h2>
@@ -941,7 +941,6 @@
             </div>
           </div>
 
-          <!-- Pulsante Manutenzione aggiunto qui nel Pannello Admin Principale -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Stato Piattaforma</h3>
             <button id="killSwitchModalBtn" class="btn btn-primary" style="width:100%;" onclick="toggleKillSwitch()">Disattiva Sito / Attiva Sito (Manutenzione)</button>
@@ -1058,15 +1057,8 @@
           userUniqueId = snapshot.val();
           finalizzaAvvioSessione(u);
         } else {
-          // Controlla se è il tuo account admin tramite email o ID Google, altrimenti assegna ID univoco casuale fisso
-          let generatedId = "";
-          if (u.email === "albacore26@gmail.com" || (u.displayName && u.displayName.toLowerCase().includes("alba"))) {
-            generatedId = "RV94LX";
-          } else {
-            // Genera una stringa casuale di 6 caratteri maiuscoli fissa per questo utente
-            generatedId = Math.random().toString(36).substring(2, 8).toUpperCase();
-          }
-
+          // Genera un ID casuale univoco e diverso per ogni nuovo utente
+          let generatedId = Math.random().toString(36).substring(2, 8).toUpperCase();
           refCustomId.set(generatedId).then(function() {
             userUniqueId = generatedId;
             finalizzaAvvioSessione(u);
@@ -1082,7 +1074,8 @@
       if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
       if (cambioUtente) nascondiTuttoTranne("login-screen");
 
-      isAdmin = (userUniqueId === "RV94LX");
+      // ATTENZIONE: Nessun ID admin impostato finché non mi comunicherai il tuo esatto ID
+      isAdmin = false;
 
       aggiornaDisplayNickname();
 
