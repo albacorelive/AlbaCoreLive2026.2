@@ -244,7 +244,7 @@
       line-height: 1.4;
     }
 
-    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen, #stories-screen, #gallery-screen, #radar-screen {
+    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen {
       display: none;
     }
 
@@ -600,6 +600,42 @@
     .broadcast-content h3 { margin-top: 0; color: var(--primary-2); }
     .broadcast-content p { color: var(--text); font-size: 1rem; line-height: 1.5; margin-bottom: 20px; }
 
+    /* Modal Accettazione Termini e Privacy Obbligatorio all'avvio */
+    #termsConsentModal {
+      display: flex;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      padding: 20px;
+    }
+    .consent-box {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      width: min(100%, 650px);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+    }
+    .consent-box h3 { margin-top: 0; color: var(--primary); font-size: 1.6rem; text-align: center; }
+    .consent-scroll {
+      flex: 1;
+      overflow-y: auto;
+      margin: 15px 0;
+      padding-right: 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .consent-scroll h4 { color: var(--accent); margin: 15px 0 5px; font-size: 1.1rem; }
+
     @media (max-width: 640px) {
       .content {
         padding: 24px 18px 20px;
@@ -623,6 +659,21 @@
   </style>
 </head>
 <body>
+  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy -->
+  <div id="termsConsentModal">
+    <div class="consent-box">
+      <h3>Informativa sulla Privacy & Termini di Servizio</h3>
+      <div class="consent-scroll">
+        <h4>1. Informativa sulla Privacy</h4>
+        <p>Alba Core Live tutela la privacy dei propri utenti. La posizione GPS del browser viene utilizzata esclusivamente in tempo reale per verificare che l'utente si trovi entro un raggio di 50 km dal centro di Alba e non viene memorizzata in database permanenti. Le videochiamate avvengono tramite protocollo crittografato Peer-to-Peer (WebRTC) direttamente tra i dispositivi degli utenti e non sono registrate né archiviate da alcun server centrale.</p>
+        
+        <h4>2. Termini di Servizio</h4>
+        <p>Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.</p>
+      </div>
+      <button class="btn btn-primary" onclick="accettaTerminiPrivacy()" style="width: 100%; padding: 14px; font-size: 1.1rem;">Accetta e Continua</button>
+    </div>
+  </div>
+
   <!-- Popup Broadcast / Avviso Amministrazione -->
   <div id="broadcastModal">
     <div class="broadcast-content">
@@ -632,7 +683,7 @@
     </div>
   </div>
 
-  <!-- Menu in alto a destra -->
+  <!-- Menu in alto a destra (Rimosse sezioni non richieste) -->
   <div class="top-menu-container">
     <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">☰ Menu</button>
     <div id="dropdownMenu" class="dropdown-menu">
@@ -640,12 +691,6 @@
       <div class="dropdown-divider"></div>
       <a class="dropdown-item" href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">🎵 Segui @albacore26</a>
       <a class="dropdown-item" onclick="apriFaq()">❓ FAQ & Guida</a>
-      <a class="dropdown-item" onclick="apriStories()">📰 Storie Community</a>
-      <a class="dropdown-item" onclick="apriGallery()">🖼️ Galleria Meme</a>
-      <a class="dropdown-item" onclick="apriRadar()">🗺️ Radar d'Alba</a>
-      <div class="dropdown-divider"></div>
-      <a class="dropdown-item" onclick="apriInfo('privacy')">🔒 Privacy</a>
-      <a class="dropdown-item" onclick="apriInfo('terms')">📄 Termini e Condizioni</a>
       <a class="dropdown-item" onclick="apriBugModal()">⚠️ Segnala Bug</a>
       <div class="dropdown-divider"></div>
       <a class="dropdown-item" onclick="mostraLoginAdmin()" style="font-weight: bold; color: var(--primary-2);">⚙️ Pannello Admin</a>
@@ -681,46 +726,6 @@
           </div>
           <div class="actions">
             <button class="btn btn-dark" onclick="tornaAllaHomeDaFaq()">Torna alla Home</button>
-          </div>
-        </section>
-
-        <!-- Schermata Storie / Bacheca -->
-        <section id="stories-screen">
-          <div class="hero">
-            <h2>Storie & Annunci</h2>
-            <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
-              📌 <strong>Benvenuti su Alba Core Live!</strong><br>
-              Questa è la bacheca ufficiale della community targa @albacore26.
-            </p>
-          </div>
-          <div class="actions">
-            <button class="btn btn-dark" onclick="tornaAllaHomeDaSubScreens()">Torna alla Home</button>
-          </div>
-        </section>
-
-        <!-- Schermata Galleria Meme -->
-        <section id="gallery-screen">
-          <div class="hero">
-            <h2>Galleria della Community</h2>
-            <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
-              📸 Spazio dedicato ai momenti più divertenti e ai meme di Alba Core.
-            </p>
-          </div>
-          <div class="actions">
-            <button class="btn btn-dark" onclick="tornaAllaHomeDaSubScreens()">Torna alla Home</button>
-          </div>
-        </section>
-
-        <!-- Schermata Radar d'Alba -->
-        <section id="radar-screen">
-          <div class="hero">
-            <h2>Radar d'Alba</h2>
-            <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
-              🗺️ Il radar geolocalizzato unisce tutti gli utenti attivi nel raggio dei 50 km intorno al Duomo.
-            </p>
-          </div>
-          <div class="actions">
-            <button class="btn btn-dark" onclick="tornaAllaHomeDaSubScreens()">Torna alla Home</button>
           </div>
         </section>
 
@@ -762,10 +767,11 @@
 
           <div id="geo-error" class="geo-error"></div>
 
-          <div class="footer-links" style="margin-top: 18px; text-align: center; font-size: 0.9rem; color: var(--muted);">
-            <a onclick="apriInfo('privacy')" style="cursor:pointer; color:#fff; margin:0 8px;">Privacy</a>
-            <a onclick="apriInfo('terms')" style="cursor:pointer; color:#fff; margin:0 8px;">Termini</a>
-            <a onclick="apriFaq()" style="cursor:pointer; color:#fff; margin:0 8px;">FAQ</a>
+          <!-- Link Privacy, Termini e FAQ in basso come da richiesta -->
+          <div class="footer-links" style="margin-top: 22px; text-align: center; font-size: 0.9rem; color: var(--muted);">
+            <a onclick="apriInfo('privacy')" style="cursor:pointer; color:#fff; margin:0 10px;">Privacy</a>
+            <a onclick="apriInfo('terms')" style="cursor:pointer; color:#fff; margin:0 10px;">Termini</a>
+            <a onclick="apriFaq()" style="cursor:pointer; color:#fff; margin:0 10px;">FAQ</a>
           </div>
         </section>
 
@@ -992,6 +998,18 @@
     let sessionCount = 0;
     let userXp = 10;
 
+    // Controllo se l'utente ha già accettato termini e privacy
+    window.addEventListener('DOMContentLoaded', function() {
+      if (localStorage.getItem('alba_terms_accepted') === 'true') {
+        document.getElementById("termsConsentModal").style.display = "none";
+      }
+    });
+
+    function accettaTerminiPrivacy() {
+      localStorage.setItem('alba_terms_accepted', 'true');
+      document.getElementById("termsConsentModal").style.display = "none";
+    }
+
     // Registrazione presenza online in tempo reale con pulizia automatica onDisconnect()
     const presenceRef = db.ref('presence/' + userId);
     presenceRef.set(true);
@@ -1051,9 +1069,6 @@
         document.getElementById("admin-panel-screen").style.display = "none";
         document.getElementById("info-screen").style.display = "none";
         document.getElementById("faq-screen").style.display = "none";
-        document.getElementById("stories-screen").style.display = "none";
-        document.getElementById("gallery-screen").style.display = "none";
-        document.getElementById("radar-screen").style.display = "none";
         document.getElementById("maintenance-screen").style.display = "block";
       } else {
         if (document.getElementById("maintenance-screen").style.display === "block") {
@@ -1181,9 +1196,6 @@
     }
 
     function apriFaq() { nascondiTuttoTranne("faq-screen"); }
-    function apriStories() { nascondiTuttoTranne("stories-screen"); }
-    function apriGallery() { nascondiTuttoTranne("gallery-screen"); }
-    function apriRadar() { nascondiTuttoTranne("radar-screen"); }
 
     function apriInfo(tipo) {
       nascondiTuttoTranne("info-screen");
@@ -1192,10 +1204,10 @@
 
       if (tipo === 'privacy') {
         titleEl.textContent = "Informativa sulla Privacy";
-        contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. I flussi video avvengono in modalità Peer-to-Peer diretta.";
+        contentEl.textContent = "Alba Core Live tutela la privacy dei propri utenti. La posizione GPS del browser viene utilizzata esclusivamente in tempo reale per verificare che l'utente si trovi entro un raggio di 50 km dal centro di Alba e non viene memorizzata in database permanenti. Le videochiamate avvengono tramite protocollo crittografato Peer-to-Peer (WebRTC) direttamente tra i dispositivi degli utenti e non sono registrate né archiviate da alcun server centrale.";
       } else {
-        titleEl.textContent = "Termini e Condizioni";
-        contentEl.textContent = "L'utilizzo della piattaforma Alba Core Live è riservato alla community. È vietato avere comportamenti offensivi o molesti.";
+        titleEl.textContent = "Termini e Condizioni di Servizio";
+        contentEl.textContent = "Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.";
       }
     }
 
@@ -1218,22 +1230,15 @@
       document.getElementById("admin-panel-screen").style.display = "none";
       document.getElementById("info-screen").style.display = "none";
       document.getElementById("faq-screen").style.display = "none";
-      document.getElementById("stories-screen").style.display = "none";
-      document.getElementById("gallery-screen").style.display = "none";
-      document.getElementById("radar-screen").style.display = "none";
       document.getElementById(screenId).style.display = "block";
     }
 
-    function tornaAllaHomeDaSubScreens() { rientraHomeControllata(); }
     function tornaAllaHomeDaInfo() { rientraHomeControllata(); }
     function tornaAllaHomeDaFaq() { rientraHomeControllata(); }
 
     function rientraHomeControllata() {
       document.getElementById("info-screen").style.display = "none";
       document.getElementById("faq-screen").style.display = "none";
-      document.getElementById("stories-screen").style.display = "none";
-      document.getElementById("gallery-screen").style.display = "none";
-      document.getElementById("radar-screen").style.display = "none";
       
       db.ref('system/maintenance').once('value', function(snapshot) {
         if (snapshot.val()) {
@@ -1357,7 +1362,6 @@
       if (currentRoomId) {
         db.ref('rooms/' + currentRoomId + '/skip').set(userId);
         db.ref('rooms/' + currentRoomId).off();
-        // Rimuove la stanza se l'utente la abbandona
         db.ref('rooms/' + currentRoomId).remove();
         currentRoomId = null;
       }
@@ -1399,12 +1403,10 @@
 
           ascoltaMessaggiChat();
         } else {
-          // Se c'è un utente in coda (e non siamo noi stessi)
           const waitingKeys = Object.keys(waitingUser);
           const firstKey = waitingKeys.find(k => waitingUser[k].userId !== userId);
 
           if (!firstKey) {
-            // Nessun altro in coda tranne forse noi, rimettiamoci in coda
             currentRoomId = 'room_' + userId;
             const myQueueRef = db.ref('queue/' + userId);
             myQueueRef.set({ userId: userId, peerId: activePeerId, roomId: currentRoomId, nickname: nicknameUtente });
@@ -1679,23 +1681,19 @@
       });
     }
 
-    // --- AGGIORNAMENTO STATistiche LIVE REALI AL 100% ---
     function aggiornaStatisticheLiveReali() {
-      // 1. Utenti Online Reali (nodi in /presence)
       db.ref('presence').on('value', function(snapshot) {
         const data = snapshot.val();
         const count = data ? Object.keys(data).length : 0;
         document.getElementById("statOnlineUsers").textContent = count;
       });
 
-      // 2. Utenti in Coda Reali (nodi in /queue)
       db.ref('queue').on('value', function(snapshot) {
         const data = snapshot.val();
         const count = data ? Object.keys(data).length : 0;
         document.getElementById("statQueueUsers").textContent = count;
       });
 
-      // 3. Stanze Attive Reali (stanze con status === 'connected')
       db.ref('rooms').on('value', function(snapshot) {
         const data = snapshot.val();
         let activeCount = 0;
