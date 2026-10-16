@@ -67,9 +67,7 @@
       transition: 0.2s;
     }
 
-    .menu-toggle-btn:hover {
-      background: rgba(255,255,255,0.12);
-    }
+    .menu-toggle-btn:hover { background: rgba(255,255,255,0.12); }
 
     .dropdown-menu {
       display: none;
@@ -85,9 +83,7 @@
       backdrop-filter: blur(10px);
     }
 
-    .dropdown-menu.active {
-      display: block;
-    }
+    .dropdown-menu.active { display: block; }
 
     .dropdown-item {
       padding: 10px 16px;
@@ -153,9 +149,7 @@
       backdrop-filter: blur(8px);
     }
 
-    .content {
-      padding: 30px 30px 26px;
-    }
+    .content { padding: 30px 30px 26px; }
 
     .hero {
       text-align: center;
@@ -194,10 +188,6 @@
       color: #ff5d6d;
       text-decoration: none;
       font-weight: 700;
-    }
-
-    .steps a:hover {
-      text-decoration: underline;
     }
 
     .actions {
@@ -254,9 +244,7 @@
       display: none;
     }
 
-    .form-group {
-      margin-bottom: 16px;
-    }
+    .form-group { margin-bottom: 16px; }
 
     .form-group label {
       display: block;
@@ -363,9 +351,7 @@
       transition: 0.2s;
     }
 
-    .media-toggle-btn:hover {
-      background: rgba(255,255,255,0.12);
-    }
+    .media-toggle-btn:hover { background: rgba(255,255,255,0.12); }
 
     .media-toggle-btn.active-off {
       background: rgba(229, 9, 20, 0.25);
@@ -557,9 +543,7 @@
       font-size: 0.9rem;
     }
 
-    .admin-table th {
-      background: rgba(255,255,255,0.05);
-    }
+    .admin-table th { background: rgba(255,255,255,0.05); }
 
     .stats-box {
       display: grid;
@@ -584,7 +568,6 @@
       margin-top: 4px;
     }
 
-    /* Modal personalizzato per il Broadcast */
     #broadcastModal {
       display: none;
       position: fixed;
@@ -607,7 +590,6 @@
     .broadcast-content h3 { margin-top: 0; color: var(--primary-2); }
     .broadcast-content p { color: var(--text); font-size: 1rem; line-height: 1.5; margin-bottom: 20px; }
 
-    /* Modal Segnalazione con pulsanti rapidi */
     #reportModal {
       display: none;
       position: fixed;
@@ -650,7 +632,6 @@
       border-color: rgba(229, 9, 20, 0.4);
     }
 
-    /* Modal Accettazione Termini e Privacy Obbligatorio a OGNI apertura */
     #termsConsentModal {
       display: flex;
       position: fixed;
@@ -686,7 +667,6 @@
     }
     .consent-scroll h4 { color: var(--accent); margin: 15px 0 5px; font-size: 1.1rem; }
 
-    /* Footer di Copyright */
     footer {
       text-align: center;
       padding: 15px 0;
@@ -698,24 +678,12 @@
     }
 
     @media (max-width: 640px) {
-      .content {
-        padding: 24px 18px 20px;
-      }
-      .video-grid {
-        grid-template-columns: 1fr;
-      }
-      .video-box {
-        height: 220px;
-      }
-      .actions {
-        flex-direction: column;
-      }
-      .btn {
-        width: 100%;
-      }
-      .stats-box {
-        grid-template-columns: 1fr;
-      }
+      .content { padding: 24px 18px 20px; }
+      .video-grid { grid-template-columns: 1fr; }
+      .video-box { height: 220px; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; }
+      .stats-box { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -755,7 +723,7 @@
     </div>
   </div>
 
-  <!-- Popup Broadcast / Avviso Amministrazione -->
+  <!-- Popup Broadcast -->
   <div id="broadcastModal">
     <div class="broadcast-content">
       <h3>📢 Avviso Amministrazione</h3>
@@ -811,7 +779,7 @@
 
           <div style="max-width: 320px; margin: 0 auto;">
             <div class="form-group">
-              <label>Nome Utente (Nickname)</label>
+              <label>Nome Utente (Nickname, 3-20 caratteri)</label>
               <input type="text" id="accountUser" placeholder="" maxlength="20" />
             </div>
             <div class="form-group">
@@ -880,13 +848,11 @@
               <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
             </div>
             
-            <!-- Pulsante Bypass GPS per PC / Test -->
             <button class="btn btn-dark" style="margin-top: 10px; width: 100%; max-width: 320px; background: rgba(255,152,0,0.15); border-color: rgba(255,152,0,0.4); color: #ffad33;" onclick="bypassaGpsPerTest()">💻 Entra subito (Bypass GPS PC)</button>
           </div>
 
           <div id="geo-error" class="geo-error"></div>
 
-          <!-- Link Privacy, Termini e FAQ in basso -->
           <div class="footer-links" style="margin-top: 22px; text-align: center; font-size: 0.9rem; color: var(--muted);">
             <a onclick="apriInfo('privacy')" style="cursor:pointer; color:#fff; margin:0 10px;">Privacy</a>
             <a onclick="apriInfo('terms')" style="cursor:pointer; color:#fff; margin:0 10px;">Termini</a>
@@ -909,7 +875,6 @@
             💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
           </div>
 
-          <!-- Video griglia -->
           <div class="video-grid">
             <div class="video-column">
               <div class="video-box">
@@ -919,17 +884,6 @@
               <div class="local-media-controls">
                 <button id="muteBtn" class="media-toggle-btn" onclick="toggleMuteAudio()">🎤 Silenzia Audio</button>
                 <button id="camBtn" class="media-toggle-btn" onclick="toggleCamVideo()">📷 Disattiva Camera</button>
-                
-                <!-- MENU EFFETTI VOCALI RADICALI -->
-                <div id="voiceEffectContainer" style="display: none; width: 100%; margin-top: 6px;">
-                  <select id="voiceEffectSelect" class="media-toggle-btn" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); text-align-last: center;" onchange="applicaEffettoVocaleRadicale(this.value)">
-                    <option value="normal">🎙️ Cambia Voce (Normale)</option>
-                    <option value="alien">👽 Voce Aliena / Profonda</option>
-                    <option value="robot">🤖 Robot Elettronico</option>
-                    <option value="chipmunk">🐿️ Scoiattolo Acuto</option>
-                    <option value="monster">👹 Mostro / Demone</option>
-                  </select>
-                </div>
               </div>
             </div>
 
@@ -950,7 +904,6 @@
             </div>
           </div>
 
-          <!-- Reazioni esterne -->
           <div class="reactions-bar-external">
             <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️ Cuore</button>
             <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥 Fuoco</button>
@@ -958,14 +911,12 @@
             <button class="reaction-btn" onclick="inviaReazione('👍')">👍 Top</button>
           </div>
 
-          <!-- Pulsanti Extra -->
           <div style="display: flex; gap: 10px; margin-bottom: 16px; justify-content: center; flex-wrap: wrap;">
             <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scambiaInstagram()">📸 Scambia Instagram</button>
             <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scattaSnapshot()">📷 Salva Snapshot</button>
             <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="condividiLinkSito()">🔗 Condividi Sito</button>
           </div>
 
-          <!-- Chat Testuale -->
           <div class="text-chat-box">
             <div id="chatMessages" class="chat-messages">
               <div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>
@@ -985,7 +936,7 @@
         <!-- Pannello di Controllo Admin -->
         <section id="admin-panel-screen">
           <div class="hero">
-            <h2 id="adminPanelTitle">Pannello Master Admin</h2>
+            <h2>Pannello Master Admin</h2>
             <p>Gestione avanzata in tempo reale</p>
           </div>
 
@@ -1009,7 +960,6 @@
             <button id="killSwitchBtn" class="btn btn-primary" onclick="toggleKillSwitch()">Disattiva Sito (Manutenzione)</button>
           </div>
 
-          <!-- Gestione Messaggio Broadcast -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Gestione Messaggio Popup Broadcast</h3>
             <div class="form-group">
@@ -1021,7 +971,6 @@
             </div>
           </div>
 
-          <!-- Gestione Account Utenti -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Gestione Account Utenti</h3>
             <div style="max-height: 200px; overflow-y: auto;">
@@ -1039,7 +988,6 @@
             </div>
           </div>
 
-          <!-- Gestione Utenti Bannati -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Elenco Utenti Bannati</h3>
             <div style="max-height: 200px; overflow-y: auto;">
@@ -1057,7 +1005,6 @@
             </div>
           </div>
 
-          <!-- Segnalazioni & Bug -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
               <h3 style="margin:0;">Segnalazioni & Motivi Ricevuti</h3>
@@ -1088,13 +1035,11 @@
     </main>
   </div>
 
-  <!-- Footer con Nota di Copyright -->
   <footer>
     <p>&copy; 2026 Alba Core Live. Tutti i diritti riservati. Contenuti e codici sorgente protetti da proprietà esclusiva.</p>
   </footer>
 
   <script>
-    // Script di Protezione: Disabilita tasto destro e combinazioni da tastiera
     document.addEventListener('contextmenu', event => event.preventDefault());
 
     document.addEventListener('keydown', event => {
@@ -1108,7 +1053,10 @@
     });
 
     const firebaseConfig = {
-      databaseURL: "https://albacorelive-default-rtdb.europe-west1.firebasedatabase.app"
+      apiKey: "INSERISCI_LA_TUA_API_KEY",
+      authDomain: "albacorelive.firebaseapp.com",
+      databaseURL: "https://albacorelive-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "albacorelive"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -1120,17 +1068,10 @@
     let nicknameUtente = "Ospite";
     let accountAttivo = false;
     let isAdmin = false;
-    let hasVoice = false;
-    let canBypassGps = true; // Abilitato per facilitare il test PC
+    let canBypassGps = true;
 
     let peer = null;
     let myStream = null;
-    let originalAudioTrack = null;
-    let processedStream = null;
-    let audioCtx = null;
-    let sourceNode = null;
-    let biquadFilter = null;
-    let distortionNode = null;
     let currentCall = null;
     let currentRoomId = null;
     let currentRemoteUserId = null;
@@ -1147,26 +1088,40 @@
 
     window.addEventListener('DOMContentLoaded', function() {
       document.getElementById("termsConsentModal").style.display = "flex";
-      
-      // Autenticazione anonima automatica di Firebase per soddisfare le regole di sicurezza
-      auth.signInAnonymously().catch(function(e) {
-        console.error("Errore auth anonima:", e);
-      });
     });
 
+    // --- AUTENTICAZIONE E GESTIONE SESSIONE ---
     auth.onAuthStateChanged(function(u) {
-      if (!u) return;
+      if (!u) {
+        auth.signInAnonymously().catch(function(e) {
+          console.error("Errore login anonimo:", e);
+        });
+        return;
+      }
+      avviaSessione(u);
+    });
+
+    function avviaSessione(u) {
+      const cambioUtente = userId !== null;
+      listenerAttivi.forEach(function(r) { r.off(); });
+      listenerAttivi = [];
+      if (currentRoomId || currentCall) { terminaSessione(false); nascondiVideoRemoto(); }
+      if (cambioUtente) nascondiTuttoTranne("login-screen");
+
       userId = u.uid;
       userUniqueId = u.uid.slice(0, 6);
       accountAttivo = !u.isAnonymous;
+      nicknameUtente = "Ospite";
+      isAdmin = false;
       aggiornaDisplayNickname();
+
+      const on = function(ref, cb) { ref.on('value', cb); listenerAttivi.push(ref); };
 
       const pres = db.ref('presence/' + userId);
       pres.set(true);
       pres.onDisconnect().remove();
 
-      // Controllo Ban
-      db.ref('bans/' + userId).on('value', function(s) {
+      on(db.ref('bans/' + userId), function(s) {
         if (s.val() === true) {
           if (myStream) myStream.getTracks().forEach(t => t.stop());
           if (peer) peer.destroy();
@@ -1174,14 +1129,26 @@
         }
       });
 
-      // Controllo Admin
       db.ref('admins/' + userId).once('value', function(s) {
-        isAdmin = (s.val() === true || userId === "ADMIN1");
+        isAdmin = (s.val() === true);
         aggiornaDisplayNickname();
       });
 
-      // Ascolto Broadcast
-      db.ref('system/broadcast').on('value', function(s) {
+      if (accountAttivo) {
+        on(db.ref('profiles/' + userId), function(s) {
+          const p = s.val();
+          if (!p) return;
+          if (p.blocked === true) {
+            alert("Il tuo account è stato bloccato dall'amministratore.");
+            auth.signOut();
+            return;
+          }
+          nicknameUtente = p.nickname;
+          aggiornaDisplayNickname();
+        });
+      }
+
+      on(db.ref('system/broadcast'), function(s) {
         const data = s.val();
         const modal = document.getElementById("broadcastModal");
         if (!data || !data.text || data.id === ultimoMsgVistoId) {
@@ -1193,8 +1160,7 @@
         window.currentBroadcastId = data.id;
       });
 
-      // Ascolto Manutenzione
-      db.ref('system/maintenance').on('value', function(s) {
+      on(db.ref('system/maintenance'), function(s) {
         const ms = document.getElementById("maintenance-screen");
         if (s.val()) {
           SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
@@ -1204,7 +1170,7 @@
           document.getElementById("login-screen").style.display = "block";
         }
       });
-    });
+    }
 
     function aggiornaDisplayNickname() {
       const reg = accountAttivo && nicknameUtente !== "Ospite";
@@ -1264,14 +1230,12 @@
       const errEl = document.getElementById("account-error");
       errEl.textContent = "";
 
-      if (!username || !pass) {
-        errEl.textContent = "Compila tutti i campi richiesti.";
+      if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
+        errEl.textContent = "Nome utente: 3-20 caratteri, solo lettere, numeri e _.";
         return;
       }
-
-      if (mode === 'login' && username === "ADMIN1" && pass === "1q2w3e4r5t6y7u8i9o0p") {
-        isAdmin = true;
-        apriPannelloAdmin();
+      if (pass.length < 8) {
+        errEl.textContent = "La password deve avere almeno 8 caratteri.";
         return;
       }
 
@@ -1282,24 +1246,14 @@
           nicknameUtente = username;
           accountAttivo = true;
           aggiornaDisplayNickname();
-          alert("Registrazione completata con successo!");
+          alert("Registrazione completata!");
           tornaAllaHomeDaAccount();
         }).catch(function(e) {
-          errEl.textContent = "Errore durante la registrazione. Riprova.";
+          errEl.textContent = e.code === 'auth/email-already-in-use' ? "Nome utente già registrato." : "Errore durante la registrazione.";
         });
       } else {
-        auth.signInWithEmailAndPassword(emailDa(username), pass).then(function(cred) {
-          db.ref('profiles/' + cred.user.uid).once('value', function(s) {
-            if (s.exists() && s.val().nickname) {
-              nicknameUtente = s.val().nickname;
-            } else {
-              nicknameUtente = username;
-            }
-            accountAttivo = true;
-            aggiornaDisplayNickname();
-            alert("Accesso effettuato!");
-            tornaAllaHomeDaAccount();
-          });
+        auth.signInWithEmailAndPassword(emailDa(username), pass).then(function() {
+          tornaAllaHomeDaAccount();
         }).catch(function() {
           errEl.textContent = "Nome utente o password errati.";
         });
@@ -1307,13 +1261,7 @@
     }
 
     function eseguiLogoutAccount() {
-      auth.signOut().then(function() {
-        accountAttivo = false;
-        nicknameUtente = "Ospite";
-        aggiornaDisplayNickname();
-        alert("Sei uscito dall'account.");
-        tornaAllaHomeDaAccount();
-      });
+      auth.signOut().then(function() { tornaAllaHomeDaAccount(); });
     }
 
     function tornaAllaHomeDaAccount() { rientraHomeControllata(); }
@@ -1508,7 +1456,6 @@
         }
 
         if (!targetItem) {
-          // Nessuno in attesa: creo la stanza rispettando il formato room_[uid]_[random]
           currentRoomId = 'room_' + userId + '_' + Math.random().toString(36).substring(2, 7);
           const myQueueRef = db.ref('queue/' + userId);
           
@@ -1521,7 +1468,6 @@
           });
           myQueueRef.onDisconnect().remove();
 
-          // Ascolto connessioni nella stanza
           db.ref('rooms/' + currentRoomId).on('value', function(roomSnap) {
             const roomData = roomSnap.val();
             if (!roomData) return;
@@ -1549,7 +1495,6 @@
 
           ascoltaMessaggiChat();
         } else {
-          // C'è un utente in attesa: mi aggancio alla sua stanza
           currentRoomId = targetItem.roomId;
           const hostPeerId = targetItem.peerId;
           const hostUserId = targetItem.userId;
@@ -1592,7 +1537,6 @@
       }
     }
 
-    // --- CONTROLLI EXTRA, CHAT E REAZIONI ---
     function toggleMuteAudio() {
       if (myStream) {
         const audioTrack = myStream.getAudioTracks()[0];
