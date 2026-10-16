@@ -739,7 +739,7 @@
     </div>
   </div>
 
-  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy (Compaie sempre ad ogni apertura) -->
+  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy -->
   <div id="termsConsentModal">
     <div class="consent-box">
       <h3>Informativa sulla Privacy & Termini di Servizio</h3>
@@ -1087,7 +1087,7 @@
   </footer>
 
   <script>
-    // Script di Protezione: Disabilita tasto destro e combinazioni da tastiera (F12, Ctrl+U, Ctrl+S, ecc.)
+    // Script di Protezione: Disabilita tasto destro e combinazioni da tastiera
     document.addEventListener('contextmenu', event => event.preventDefault());
 
     document.addEventListener('keydown', event => {
@@ -1128,7 +1128,6 @@
     let userXp = 10;
 
     window.addEventListener('DOMContentLoaded', function() {
-      // Il pop-up termini compare sempre all'avvio a ogni apertura/ricarica del sito
       document.getElementById("termsConsentModal").style.display = "flex";
       aggiornaDisplayNickname();
       verificaAccessoFiltriVocali();
@@ -1641,12 +1640,21 @@
         document.getElementById("localVideo").srcObject = myStream;
       } catch (err) {
         console.error("Errore webcam:", err);
-        alert("Impossibile accedere alla webcam o al microfono.");
+        alert("Impossibile accedere alla webcam o al microfono. Verifica i permessi.");
         return;
       }
 
       if (!peer) {
-        peer = new Peer();
+        // AGGIUNTI I SERVER STUN DI GOOGLE PER LA GESTIONE DELLE RETI E PREVENIRE SCHERMI NERI
+        peer = new Peer({
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          }
+        });
+
         peer.on('open', function(id) {
           cercaAltroUtente(id);
         });
@@ -1655,7 +1663,9 @@
           currentCall = call;
           const activeAudioTrack = (userUniqueId === "usr_a70wv1" && processedStream) ? processedStream.getAudioTracks()[0] : myStream.getAudioTracks()[0];
           const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+          
           call.answer(callStream);
+          
           call.on('stream', function(remoteStream) {
             mostraVideoRemoto(remoteStream);
           });
@@ -1671,7 +1681,9 @@
     function mostraVideoRemoto(stream) {
       const remoteVideo = document.getElementById("remoteVideo");
       const placeholder = document.getElementById("remotePlaceholder");
+      
       remoteVideo.srcObject = stream;
+      remoteVideo.play().catch(e => console.log("Autoplay preventito o già avviato:", e));
       placeholder.style.display = "none";
 
       sessionCount++;
@@ -1742,6 +1754,7 @@
 
               const call = peer.call(roomData.peer2, callStream);
               currentCall = call;
+              
               call.on('stream', function(remoteStream) {
                 mostraVideoRemoto(remoteStream);
               });
@@ -1791,6 +1804,7 @@
 
           const call = peer.call(hostPeerId, callStream);
           currentCall = call;
+          
           call.on('stream', function(remoteStream) {
             mostraVideoRemoto(remoteStream);
           });
