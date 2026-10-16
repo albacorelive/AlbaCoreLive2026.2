@@ -1058,7 +1058,15 @@
           userUniqueId = snapshot.val();
           finalizzaAvvioSessione(u);
         } else {
-          let generatedId = "RV94LX";
+          // Controlla se è il tuo account admin tramite email o ID Google, altrimenti assegna ID univoco casuale fisso
+          let generatedId = "";
+          if (u.email === "albacore26@gmail.com" || (u.displayName && u.displayName.toLowerCase().includes("alba"))) {
+            generatedId = "RV94LX";
+          } else {
+            // Genera una stringa casuale di 6 caratteri maiuscoli fissa per questo utente
+            generatedId = Math.random().toString(36).substring(2, 8).toUpperCase();
+          }
+
           refCustomId.set(generatedId).then(function() {
             userUniqueId = generatedId;
             finalizzaAvvioSessione(u);
@@ -1569,7 +1577,6 @@
         if (document.getElementById("statActiveRoomsModal")) document.getElementById("statActiveRoomsModal").textContent = count;
       });
 
-      // Sincronizzazione stato pulsante manutenzione in tempo reale
       db.ref('system/maintenance').on('value', s => {
         const isMaint = s.val();
         const btnInline = document.getElementById("killSwitchBtn");
@@ -1583,7 +1590,6 @@
         }
       });
 
-      // Tabelle Inline (in Chat Live)
       db.ref('customIds').on('value', s => {
         const tbody = document.getElementById("usersTableBody");
         if (!tbody) return;
