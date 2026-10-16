@@ -1114,7 +1114,9 @@
     }
 
     function mostraAnimazioneEmoji(emoji) {
-      const box = document.querySelector(".video-box:nth-child(2)");
+      // Seleziona correttamente il box video remoto (il secondo)
+      const box = document.querySelectorAll(".video-box")[1];
+      if (!box) return;
       const span = document.createElement("div");
       span.className = "flying-emoji";
       span.textContent = emoji;
@@ -1381,10 +1383,14 @@
 
       alert("Utente segnalato correttamente.");
       
-      // Assicuriamoci che la webcam locale rimanga attiva e riavviamo la ricerca pulita
-      if (myStream && document.getElementById("localVideo").srcObject !== myStream) {
-        document.getElementById("localVideo").srcObject = myStream;
+      // Riattiva e forza il flusso locale sulla cam se per caso si era disattivato
+      if (myStream) {
+        const localVideoEl = document.getElementById("localVideo");
+        if (localVideoEl.srcObject !== myStream) {
+          localVideoEl.srcObject = myStream;
+        }
       }
+      
       cercaAltroUtenteBtn();
     }
 
