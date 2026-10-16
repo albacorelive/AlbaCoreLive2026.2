@@ -244,7 +244,7 @@
       line-height: 1.4;
     }
 
-    #chat-screen, #admin-login-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen, #account-screen {
+    #chat-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen, #account-screen {
       display: none;
     }
 
@@ -683,7 +683,7 @@
     </div>
   </div>
 
-  <!-- Menu in alto a destra -->
+  <!-- Menu in alto a destra (Sezione admin rimossa dal menu) -->
   <div class="top-menu-container">
     <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">☰ Menu</button>
     <div id="dropdownMenu" class="dropdown-menu">
@@ -693,8 +693,6 @@
       <a class="dropdown-item" href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">🎵 Segui @albacore26</a>
       <a class="dropdown-item" onclick="apriFaq()">❓ FAQ & Guida</a>
       <a class="dropdown-item" onclick="apriBugModal()">⚠️ Segnala Bug</a>
-      <div class="dropdown-divider"></div>
-      <a class="dropdown-item" onclick="mostraLoginAdmin()" style="font-weight: bold; color: var(--primary-2);">⚙️ Pannello Admin</a>
     </div>
   </div>
 
@@ -714,7 +712,7 @@
           </div>
         </section>
 
-        <!-- Schermata Account (Accedi / Registrati) -->
+        <!-- Schermata Account (Accedi / Registrati con supporto Admin) -->
         <section id="account-screen">
           <div class="hero">
             <h2>Gestione Account</h2>
@@ -732,14 +730,15 @@
           <div style="max-width: 320px; margin: 0 auto;">
             <div class="form-group">
               <label>Nome Utente (Nickname)</label>
-              <input type="text" id="accountUser" placeholder="Es. filippo" maxlength="20" />
+              <input type="text" id="accountUser" placeholder="" maxlength="20" />
             </div>
             <div class="form-group">
               <label>Password</label>
-              <input type="password" id="accountPass" placeholder="Inserisci password" />
+              <input type="password" id="accountPass" placeholder="" />
             </div>
             <div class="actions" style="flex-direction: column;">
               <button id="accountSubmitBtn" class="btn btn-primary" style="width: 100%;" onclick="gestisciInvioAccount()">Accedi</button>
+              <button id="logoutAccountBtn" class="btn btn-dark" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); display: none;" onclick="eseguiLogoutAccount()">Esci dall'Account</button>
               <button class="btn btn-dark" style="width: 100%;" onclick="tornaAllaHomeDaAccount()">Torna alla Home</button>
             </div>
             <div id="account-error" class="geo-error"></div>
@@ -885,38 +884,10 @@
           </div>
         </section>
 
-        <!-- Schermata Login Admin -->
-        <section id="admin-login-screen">
-          <div class="hero">
-            <h2>Accesso Riservato Admin</h2>
-            <p>Seleziona il tuo ruolo e inserisci le credenziali.</p>
-          </div>
-          <div class="form-group">
-            <label>Ruolo</label>
-            <select id="adminRole">
-              <option value="admin">Admin Principale</option>
-              <option value="helper">Aiuto-Admin</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Nome Utente</label>
-            <input type="text" id="adminUser" placeholder="Inserisci username" />
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="adminPass" placeholder="Inserisci password" />
-          </div>
-          <div class="actions">
-            <button class="btn btn-primary" onclick="effettuaLoginAdmin()">Accedi al Pannello</button>
-            <button class="btn btn-dark" onclick="tornaIndietroDaLoginAdmin()">Indietro</button>
-          </div>
-          <div id="admin-error" class="geo-error"></div>
-        </section>
-
-        <!-- Pannello di Controllo Admin -->
+        <!-- Pannello di Controllo Admin (Aggiornato con gestione account utenti) -->
         <section id="admin-panel-screen">
           <div class="hero">
-            <h2 id="adminPanelTitle">Pannello di Controllo</h2>
+            <h2 id="adminPanelTitle">Pannello Master Admin</h2>
             <p>Gestione avanzata in tempo reale</p>
           </div>
 
@@ -952,35 +923,26 @@
             </div>
           </div>
 
-          <div id="masterAdminSection" style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Gestione Aiuto-Admin</h3>
-            <div class="form-group">
-              <label>Username</label>
-              <input type="text" id="newHelperUser" placeholder="Username" />
+          <!-- Nuova Sezione: Gestione e Blocco Account Utenti -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Gestione Account Utenti</h3>
+            <div style="max-height: 200px; overflow-y: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nome Utente</th>
+                    <th>Stato / Azione</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun account registrato.</td></tr>
+                </tbody>
+              </table>
             </div>
-            <div class="form-group">
-              <label>Password</label>
-              <input type="password" id="newHelperPass" placeholder="Password" />
-            </div>
-            <button class="btn btn-primary" onclick="creaAiutoAdmin()">Crea Account</button>
-            <div id="helper-msg" style="margin-top: 8px; font-weight: bold; color: #4ade80;"></div>
-
-            <h4 style="margin-bottom: 6px; margin-top: 15px;">Aiuto-Admin Esistenti</h4>
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Azione</th>
-                </tr>
-              </thead>
-              <tbody id="helpersTableBody">
-                <tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun aiuto-admin registrato.</td></tr>
-              </tbody>
-            </table>
           </div>
 
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0;">Gestione Ban Utenti</h3>
+            <h3 style="margin-top:0;">Gestione Ban Utenti (Chat)</h3>
             <div class="form-group">
               <label>ID Utente da bannare</label>
               <input type="text" id="banUserIdInput" placeholder="Es. user_abc123" />
@@ -1006,6 +968,7 @@
             </div>
           </div>
 
+          <!-- Pulsante Torna alla Home Admin correttamente funzionante -->
           <div class="actions" style="margin-top: 25px;">
             <button class="btn btn-dark" onclick="tornaAllaHomeDaAdmin()">Torna alla Home</button>
           </div>
@@ -1031,7 +994,6 @@
     let sessionCount = 0;
     let userXp = 10;
 
-    // Aggiorna stato account all'avvio
     window.addEventListener('DOMContentLoaded', function() {
       if (localStorage.getItem('alba_terms_accepted') === 'true') {
         document.getElementById("termsConsentModal").style.display = "none";
@@ -1042,12 +1004,16 @@
     function aggiornaDisplayNickname() {
       const disp = document.getElementById("activeNicknameDisplay");
       const menuStat = document.getElementById("menuAccountStatus");
+      const logoutBtn = document.getElementById("logoutAccountBtn");
+      
       if (nicknameUtente && nicknameUtente !== "Ospite") {
         disp.textContent = nicknameUtente + " (Account Verificato)";
         menuStat.textContent = nicknameUtente;
+        logoutBtn.style.display = "block";
       } else {
         disp.textContent = "Ospite (Crea un account per bloccarlo)";
         menuStat.textContent = "Ospite";
+        logoutBtn.style.display = "none";
       }
     }
 
@@ -1082,6 +1048,14 @@
       }
     });
 
+    // Controllo blocco account in tempo reale
+    db.ref('users/' + nicknameUtente + '/blocked').on('value', function(snapshot) {
+      if (snapshot.val() === true) {
+        alert("Il tuo account è stato bloccato dall'amministratore.");
+        eseguiLogoutAccount();
+      }
+    });
+
     // Gestione Broadcast Popup
     let ultimoMsgVistoId = localStorage.getItem('alba_seen_broadcast') || "";
     db.ref('system/broadcast').on('value', function(snapshot) {
@@ -1111,7 +1085,6 @@
       if (isMaintenance) {
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("chat-screen").style.display = "none";
-        document.getElementById("admin-login-screen").style.display = "none";
         document.getElementById("admin-panel-screen").style.display = "none";
         document.getElementById("info-screen").style.display = "none";
         document.getElementById("faq-screen").style.display = "none";
@@ -1125,7 +1098,7 @@
       }
     });
 
-    // --- LOGICA GESTIONE ACCOUNT (REGISTRAZIONE E ACCESSO) ---
+    // --- LOGICA GESTIONE ACCOUNT & ADMIN UNIFICATA ---
     function apriAccountScreen() {
       nascondiTuttoTranne("account-screen");
       document.getElementById("account-error").textContent = "";
@@ -1154,16 +1127,20 @@
         return;
       }
 
+      // Accesso Admin Principale tramite le credenziali richieste
+      if (mode === 'login' && username === "ADMIN1" && pass === "1q2w3e4r5t6y7u8i9o0p") {
+        apriPannelloAdmin();
+        return;
+      }
+
       const userRef = db.ref('users/' + username);
 
       if (mode === 'register') {
-        // Verifica unicità del nome utente
         userRef.once('value', function(snapshot) {
           if (snapshot.exists()) {
             errEl.textContent = "Il nome utente '" + username + "' è già registrato. Scegline un altro.";
           } else {
-            // Registra il nuovo utente (password duplicabili tranquillamente)
-            userRef.set({ password: pass }, function(err) {
+            userRef.set({ password: pass, blocked: false }, function(err) {
               if (!err) {
                 nicknameUtente = username;
                 localStorage.setItem('alba_logged_user', username);
@@ -1177,11 +1154,12 @@
           }
         });
       } else {
-        // Accesso
         userRef.once('value', function(snapshot) {
           const data = snapshot.val();
           if (!data) {
             errEl.textContent = "Nome utente non trovato.";
+          } else if (data.blocked === true) {
+            errEl.textContent = "Questo account è stato bloccato.";
           } else if (data.password !== pass) {
             errEl.textContent = "Password errata.";
           } else {
@@ -1193,6 +1171,14 @@
           }
         });
       }
+    }
+
+    function eseguiLogoutAccount() {
+      localStorage.removeItem('alba_logged_user');
+      nicknameUtente = "Ospite";
+      aggiornaDisplayNickname();
+      alert("Sei uscito dal tuo account.");
+      tornaAllaHomeDaAccount();
     }
 
     function tornaAllaHomeDaAccount() {
@@ -1347,7 +1333,6 @@
     function nascondiTuttoTranne(screenId) {
       document.getElementById("login-screen").style.display = "none";
       document.getElementById("chat-screen").style.display = "none";
-      document.getElementById("admin-login-screen").style.display = "none";
       document.getElementById("admin-panel-screen").style.display = "none";
       document.getElementById("info-screen").style.display = "none";
       document.getElementById("faq-screen").style.display = "none";
@@ -1357,11 +1342,13 @@
 
     function tornaAllaHomeDaInfo() { rientraHomeControllata(); }
     function tornaAllaHomeDaFaq() { rientraHomeControllata(); }
+    function tornaAllaHomeDaAdmin() { rientraHomeControllata(); }
 
     function rientraHomeControllata() {
       document.getElementById("info-screen").style.display = "none";
       document.getElementById("faq-screen").style.display = "none";
       document.getElementById("account-screen").style.display = "none";
+      document.getElementById("admin-panel-screen").style.display = "none";
       
       db.ref('system/maintenance').once('value', function(snapshot) {
         if (snapshot.val()) {
@@ -1629,49 +1616,10 @@
       });
     }
 
-    function mostraLoginAdmin() { nascondiTuttoTranne("admin-login-screen"); }
-    function tornaIndietroDaLoginAdmin() { rientraHomeControllata(); }
-    function tornaAllaHomeDaAdmin() { rientraHomeControllata(); }
-
-    function effettuaLoginAdmin() {
-      const role = document.getElementById("adminRole").value;
-      const user = document.getElementById("adminUser").value.trim();
-      const pass = document.getElementById("adminPass").value.trim();
-      const errEl = document.getElementById("admin-error");
-
-      if (role === 'admin') {
-        if (user === "FILLOB" && pass === "1q2w3e4r5t6y7u8i9o0p") {
-          errEl.textContent = "";
-          apriPannelloAdmin('admin');
-        } else {
-          errEl.textContent = "Credenziali Admin non valide.";
-        }
-      } else {
-        db.ref('helpers/' + user).once('value', function(snapshot) {
-          const helperData = snapshot.val();
-          if (helperData && helperData.password === pass) {
-            errEl.textContent = "";
-            apriPannelloAdmin('helper');
-          } else {
-            errEl.textContent = "Credenziali Aiuto-Admin non valide.";
-          }
-        });
-      }
-    }
-
-    function apriPannelloAdmin(role) {
+    function apriPannelloAdmin() {
       nascondiTuttoTranne("admin-panel-screen");
-
-      if (role === 'admin') {
-        document.getElementById("adminPanelTitle").textContent = "Pannello Master Admin";
-        document.getElementById("masterAdminSection").style.display = "block";
-        caricaAiutoAdminList();
-      } else {
-        document.getElementById("adminPanelTitle").textContent = "Pannello Aiuto-Admin";
-        document.getElementById("masterAdminSection").style.display = "none";
-      }
-
       caricaSegnalazioni();
+      caricaUtentiRegistratiList();
       aggiornaStatoKillSwitchBtn();
       aggiornaStatisticheLiveReali();
     }
@@ -1724,47 +1672,47 @@
       });
     }
 
-    function creaAiutoAdmin() {
-      const user = document.getElementById("newHelperUser").value.trim();
-      const pass = document.getElementById("newHelperPass").value.trim();
-      const msgEl = document.getElementById("helper-msg");
-
-      if (!user || !pass) {
-        alert("Inserisci username e password.");
-        return;
-      }
-
-      db.ref('helpers/' + user).set({ password: pass }, function(error) {
-        if (!error) {
-          msgEl.textContent = "Account aiuto-admin '" + user + "' creato!";
-          document.getElementById("newHelperUser").value = "";
-          document.getElementById("newHelperPass").value = "";
-        }
-      });
-    }
-
-    function eliminaAiutoAdmin(username) {
-      if (confirm("Vuoi davvero eliminare l'account aiuto-admin '" + username + "'?")) {
-        db.ref('helpers/' + username).remove();
-      }
-    }
-
-    function caricaAiutoAdminList() {
-      const tbody = document.getElementById("helpersTableBody");
-      db.ref('helpers').on('value', function(snapshot) {
+    // --- GESTIONE UTENTI REGISTRATI (ELIMINA / BLOCCA) NEL PANNELLO ADMIN ---
+    function caricaUtentiRegistratiList() {
+      const tbody = document.getElementById("usersTableBody");
+      db.ref('users').on('value', function(snapshot) {
         tbody.innerHTML = "";
         const data = snapshot.val();
         if (!data) {
-          tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun aiuto-admin registrato.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color: var(--muted);">Nessun account registrato.</td></tr>`;
           return;
         }
 
-        Object.keys(data).forEach(username => {
+        Object.entries(data).forEach(([username, uData]) => {
+          const isBlocked = uData.blocked === true;
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${username}</td><td><button class="btn btn-dark" style="padding:4px 10px; font-size:0.8rem;" onclick="eliminaAiutoAdmin('${username}')">Elimina</button></td>`;
+          tr.innerHTML = `
+            <td>${username}</td>
+            <td style="display: flex; gap: 8px;">
+              <button class="btn btn-dark" style="padding:4px 10px; font-size:0.8rem; background: ${isBlocked ? '#4ade80' : '#ff9800'};" onclick="toggleBloccaUtente('${username}', ${isBlocked})">${isBlocked ? 'Sblocca' : 'Blocca'}</button>
+              <button class="btn btn-dark" style="padding:4px 10px; font-size:0.8rem; background: var(--primary);" onclick="eliminaAccountUtente('${username}')">Elimina</button>
+            </td>`;
           tbody.appendChild(tr);
         });
       });
+    }
+
+    function toggleBloccaUtente(username, statoAttuale) {
+      db.ref('users/' + username + '/blocked').set(!statoAttuale, function(err) {
+        if (!err) {
+          alert("Stato dell'account '" + username + "' aggiornato.");
+        }
+      });
+    }
+
+    function eliminaAccountUtente(username) {
+      if (confirm("Vuoi davvero eliminare definitivamente l'account '" + username + "'?")) {
+        db.ref('users/' + username).remove(function(err) {
+          if (!err) {
+            alert("Account eliminato con successo.");
+          }
+        });
+      }
     }
 
     function bannaUtente(targetId) {
