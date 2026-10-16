@@ -342,6 +342,7 @@
       display: flex;
       gap: 8px;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     .media-toggle-btn {
@@ -702,7 +703,7 @@
   </style>
 </head>
 <body>
-  <!-- Modal Motivo Segnalazione -->
+  <!-- Modal Segnalazione -->
   <div id="reportModal">
     <div class="report-box">
       <h3>⚠️ Segnala Utente</h3>
@@ -775,7 +776,7 @@
           </div>
         </section>
 
-        <!-- Schermata Account (Accedi / Registrati con ID automatico) -->
+        <!-- Schermata Account -->
         <section id="account-screen">
           <div class="hero">
             <h2>Gestione Account</h2>
@@ -895,6 +896,17 @@
               <div class="local-media-controls">
                 <button id="muteBtn" class="media-toggle-btn" onclick="toggleMuteAudio()">🎤 Silenzia Audio</button>
                 <button id="camBtn" class="media-toggle-btn" onclick="toggleCamVideo()">📷 Disattiva Camera</button>
+                
+                <!-- MENU EFFETTI VOCALI ESCLUSIVO PER usr_a70wv1 -->
+                <div id="voiceEffectContainer" style="display: none; width: 100%; margin-top: 6px;">
+                  <select id="voiceEffectSelect" class="media-toggle-btn" style="width: 100%; background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); text-align-last: center;" onchange="applicaEffettoVocale(this.value)">
+                    <option value="normal">🎙️ Effetti Voce (Normale)</option>
+                    <option value="acuta">👶 Voce Acuta</option>
+                    <option value="bassa">👹 Voce Bassa (Demon)</option>
+                    <option value="robot">🤖 Voce Robotica</option>
+                    <option value="megafono">📢 Megafono</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -1022,7 +1034,7 @@
             </div>
           </div>
 
-          <!-- Segnalazioni & Bug con pulsante Elimina Tutte -->
+          <!-- Segnalazioni & Bug -->
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
               <h3 style="margin:0;">Segnalazioni & Motivi Ricevuti</h3>
@@ -1068,6 +1080,11 @@
 
     let peer = null;
     let myStream = null;
+    let originalAudioTrack = null;
+    let processedStream = null;
+    let audioCtx = null;
+    let sourceNode = null;
+    let biquadFilter = null;
     let currentCall = null;
     let currentRoomId = null;
     let currentRemoteUserId = null;
@@ -1080,6 +1097,7 @@
         document.getElementById("termsConsentModal").style.display = "none";
       }
       aggiornaDisplayNickname();
+      verificaAccessoFiltriVocali();
     });
 
     function aggiornaDisplayNickname() {
@@ -1096,6 +1114,17 @@
         menuStat.textContent = "Ospite";
         logoutBtn.style.display = "none";
       }
+      verificaAccessoFiltriVocali();
+    }
+
+    // CONTROLLO ID ESCLUSIVO: usr_a70wv1
+    function verificaAccessoFiltriVocali() {
+      const container = document.getElementById("voiceEffectContainer");
+      if (userUniqueId === "usr_a70wv1") {
+        container.style.display = "block";
+      } else {
+        container.style.display = "none";
+      }
     }
 
     function accettaTerminiPrivacy() {
@@ -1103,7 +1132,6 @@
       document.getElementById("termsConsentModal").style.display = "none";
     }
 
-    // Registrazione presenza online in tempo reale con pulizia automatica onDisconnect()
     const presenceRef = db.ref('presence/' + userId);
     presenceRef.set(true);
     presenceRef.onDisconnect().remove();
@@ -1122,7 +1150,6 @@
       document.getElementById("dropdownMenu").classList.toggle('active');
     }
 
-    // Controllo ban istantaneo basato su ID o Username
     db.ref('bans/' + userUniqueId).on('value', function(snapshot) {
       if (snapshot.val() === true) {
         alert("Sei stato bannato permanentemente dalla piattaforma.");
@@ -1139,7 +1166,6 @@
       });
     }
 
-    // Controllo blocco account in tempo reale
     db.ref('users/' + nicknameUtente + '/blocked').on('value', function(snapshot) {
       if (snapshot.val() === true) {
         alert("Il tuo account è stato bloccato dall'amministratore.");
@@ -1147,7 +1173,6 @@
       }
     });
 
-    // Gestione Broadcast Popup
     let ultimoMsgVistoId = localStorage.getItem('alba_seen_broadcast') || "";
     db.ref('system/broadcast').on('value', function(snapshot) {
       const data = snapshot.val();
@@ -1189,7 +1214,6 @@
       }
     });
 
-    // --- LOGICA GESTIONE ACCOUNT & ADMIN UNIFICATA ---
     function apriAccountScreen() {
       nascondiTuttoTranne("account-screen");
       document.getElementById("account-error").textContent = "";
@@ -1277,6 +1301,60 @@
 
     function tornaAllaHomeDaAccount() {
       rientraHomeControllata();
+    }
+
+    // --- GESTIONE EFFETTI VOCALI ESCLUSIVI ---
+    function applicaEffettoVocale(effetto) {
+      if (userUniqueId !== "usr_a70wv1" || !myStream) return;
+
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        originalAudioTrack = myStream.getAudioTracks()[0];
+        sourceNode = audioCtx.createMediaStreamSource(new MediaStream([originalAudioTrack]));
+        biquadFilter = audioCtx.createBiquadFilter();
+        sourceNode.connect(biquadFilter);
+
+        const dest = audioCtx.createMediaStreamDestination();
+        biquadFilter.connect(dest);
+        processedStream = dest.stream;
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      biquadFilter.type = "peaking";
+      biquadFilter.gain.value = 0;
+      biquadFilter.Q.value = 1;
+
+      if (effetto === 'acuta') {
+        biquadFilter.type = "highpass";
+        biquadFilter.frequency.value = 1200;
+      } else if (effetto === 'bassa') {
+        biquadFilter.type = "lowpass";
+        biquadFilter.frequency.value = 300;
+      } else if (effetto === 'robot') {
+        biquadFilter.type = "bandpass";
+        biquadFilter.frequency.value = 800;
+        biquadFilter.Q.value = 8;
+      } else if (effetto === 'megafono') {
+        biquadFilter.type = "bandpass";
+        biquadFilter.frequency.value = 1500;
+        biquadFilter.Q.value = 3;
+      } else {
+        biquadFilter.type = "peaking";
+        biquadFilter.frequency.value = 1000;
+      }
+
+      // Sostituisce la traccia audio in corso nella chiamata PeerJS
+      if (currentCall && processedStream) {
+        const videoTrack = myStream.getVideoTracks()[0];
+        const newAudioTrack = effetto === 'normal' ? originalAudioTrack : processedStream.getAudioTracks()[0];
+        const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'audio');
+        if (sender) {
+          sender.replaceTrack(newAudioTrack);
+        }
+      }
     }
 
     function toggleMuteAudio() {
@@ -1517,7 +1595,9 @@
 
         peer.on('call', function(call) {
           currentCall = call;
-          call.answer(myStream);
+          const activeAudioTrack = (userUniqueId === "usr_a70wv1" && processedStream) ? processedStream.getAudioTracks()[0] : myStream.getAudioTracks()[0];
+          const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+          call.answer(callStream);
           call.on('stream', function(remoteStream) {
             mostraVideoRemoto(remoteStream);
           });
@@ -1599,7 +1679,10 @@
               currentRemoteUserId = roomData.uid2 || "Sconosciuto";
               document.getElementById("remoteLabel").textContent = currentRemoteUsername + " [" + currentRemoteUserId + "]";
               
-              const call = peer.call(roomData.peer2, myStream);
+              const activeAudioTrack = (userUniqueId === "usr_a70wv1" && processedStream) ? processedStream.getAudioTracks()[0] : myStream.getAudioTracks()[0];
+              const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+
+              const call = peer.call(roomData.peer2, callStream);
               currentCall = call;
               call.on('stream', function(remoteStream) {
                 mostraVideoRemoto(remoteStream);
@@ -1645,7 +1728,10 @@
             }
           });
 
-          const call = peer.call(hostPeerId, myStream);
+          const activeAudioTrack = (userUniqueId === "usr_a70wv1" && processedStream) ? processedStream.getAudioTracks()[0] : myStream.getAudioTracks()[0];
+          const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+
+          const call = peer.call(hostPeerId, callStream);
           currentCall = call;
           call.on('stream', function(remoteStream) {
             mostraVideoRemoto(remoteStream);
