@@ -992,6 +992,11 @@
     let sessionCount = 0;
     let userXp = 10;
 
+    // Registrazione presenza online in tempo reale con pulizia automatica onDisconnect()
+    const presenceRef = db.ref('presence/' + userId);
+    presenceRef.set(true);
+    presenceRef.onDisconnect().remove();
+
     window.addEventListener('click', function(e) {
       if (!e.target.matches('.menu-toggle-btn')) {
         const menu = document.getElementById("dropdownMenu");
@@ -1013,7 +1018,7 @@
       }
     });
 
-    // Gestione Broadcast Popup: compare una sola volta finché l'admin non ne invia uno nuovo
+    // Gestione Broadcast Popup
     let ultimoMsgVistoId = localStorage.getItem('alba_seen_broadcast') || "";
     db.ref('system/broadcast').on('value', function(snapshot) {
       const data = snapshot.val();
@@ -1024,7 +1029,6 @@
         return;
       }
 
-      // Mostra il popup con il messaggio dell'admin
       document.getElementById("broadcastTextDisplay").textContent = data.text;
       modal.style.display = "flex";
       window.currentBroadcastId = data.id;
@@ -1353,6 +1357,8 @@
       if (currentRoomId) {
         db.ref('rooms/' + currentRoomId + '/skip').set(userId);
         db.ref('rooms/' + currentRoomId).off();
+        // Rimuove la stanza se l'utente la abbandona
+        db.ref('rooms/' + currentRoomId).remove();
         currentRoomId = null;
       }
 
@@ -1362,7 +1368,9 @@
 
         if (!waitingUser) {
           currentRoomId = 'room_' + userId;
-          db.ref('queue').set({ userId: userId, peerId: activePeerId, roomId: currentRoomId, nickname: nicknameUtente });
+          const myQueueRef = db.ref('queue/' + userId);
+          myQueueRef.set({ userId: userId, peerId: activePeerId, roomId: currentRoomId, nickname: nicknameUtente });
+          myQueueRef.onDisconnect().remove();
 
           db.ref('rooms/' + currentRoomId).on('value', function(snapshot) {
             const roomData = snapshot.val();
@@ -1370,6 +1378,7 @@
 
             if (roomData.skip && roomData.skip !== userId) {
               db.ref('rooms/' + currentRoomId).off();
+              db.ref('rooms/' + currentRoomId).remove();
               currentRoomId = null;
               cercaAltroUtenteBtn();
               return;
@@ -1390,16 +1399,33 @@
 
           ascoltaMessaggiChat();
         } else {
-          currentRoomId = waitingUser.roomId;
-          const hostPeerId = waitingUser.peerId;
-          document.getElementById("remoteLabel").textContent = waitingUser.nickname || "Utente Online";
+          // Se c'è un utente in coda (e non siamo noi stessi)
+          const waitingKeys = Object.keys(waitingUser);
+          const firstKey = waitingKeys.find(k => waitingUser[k].userId !== userId);
+
+          if (!firstKey) {
+            // Nessun altro in coda tranne forse noi, rimettiamoci in coda
+            currentRoomId = 'room_' + userId;
+            const myQueueRef = db.ref('queue/' + userId);
+            myQueueRef.set({ userId: userId, peerId: activePeerId, roomId: currentRoomId, nickname: nicknameUtente });
+            myQueueRef.onDisconnect().remove();
+            ascoltaMessaggiChat();
+            return;
+          }
+
+          const targetQueueItem = waitingUser[firstKey];
+          currentRoomId = targetQueueItem.roomId;
+          const hostPeerId = targetQueueItem.peerId;
+          document.getElementById("remoteLabel").textContent = targetQueueItem.nickname || "Utente Online";
           
-          db.ref('queue').remove();
+          db.ref('queue/' + targetQueueItem.userId).remove();
           db.ref('rooms/' + currentRoomId).set({ status: 'connected', peer2: activePeerId, nick2: nicknameUtente });
+          db.ref('rooms/' + currentRoomId).onDisconnect().remove();
 
           db.ref('rooms/' + currentRoomId + '/skip').on('value', function(snapshot) {
             if (snapshot.val() && snapshot.val() !== userId) {
               db.ref('rooms/' + currentRoomId).off();
+              db.ref('rooms/' + currentRoomId).remove();
               currentRoomId = null;
               cercaAltroUtenteBtn();
             }
@@ -1524,7 +1550,7 @@
 
       caricaSegnalazioni();
       aggiornaStatoKillSwitchBtn();
-      aggiornaStatisticheLive();
+      aggiornaStatisticheLiveReali();
     }
 
     function toggleKillSwitch() {
@@ -1648,27 +1674,39 @@
         Object.entries(data).forEach(([key, rep]) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `<td>${rep.timestamp}</td><td>${rep.reportedUser}</td><td><button class="btn btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="bannaUtente('${rep.reportedUser}')">Banna</button></td>`;
-          tbody.broadcastTableBody ? null : tbody.appendChild(tr);
+          tbody.appendChild(tr);
         });
       });
     }
 
-    function aggiornaStatisticheLive() {
-      db.ref('queue').on('value', function(snapshot) {
-        const queueData = snapshot.val();
-        document.getElementById("statQueueUsers").textContent = queueData ? 1 : 0;
+    // --- AGGIORNAMENTO STATistiche LIVE REALI AL 100% ---
+    function aggiornaStatisticheLiveReali() {
+      // 1. Utenti Online Reali (nodi in /presence)
+      db.ref('presence').on('value', function(snapshot) {
+        const data = snapshot.val();
+        const count = data ? Object.keys(data).length : 0;
+        document.getElementById("statOnlineUsers").textContent = count;
       });
 
+      // 2. Utenti in Coda Reali (nodi in /queue)
+      db.ref('queue').on('value', function(snapshot) {
+        const data = snapshot.val();
+        const count = data ? Object.keys(data).length : 0;
+        document.getElementById("statQueueUsers").textContent = count;
+      });
+
+      // 3. Stanze Attive Reali (stanze con status === 'connected')
       db.ref('rooms').on('value', function(snapshot) {
-        const roomsData = snapshot.val();
+        const data = snapshot.val();
         let activeCount = 0;
-        if (roomsData) {
-          Object.values(roomsData).forEach(room => {
-            if (room.status === 'connected') activeCount++;
+        if (data) {
+          Object.values(data).forEach(room => {
+            if (room && room.status === 'connected') {
+              activeCount++;
+            }
           });
         }
         document.getElementById("statActiveRooms").textContent = activeCount;
-        document.getElementById("statOnlineUsers").textContent = (activeCount * 2) + (document.getElementById("statQueueUsers").textContent == 1 ? 1 : 0);
       });
     }
   </script>
