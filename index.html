@@ -640,46 +640,36 @@
       border-color: rgba(229, 9, 20, 0.4);
     }
 
-    /* Modale Termini Ottimizzato con Scrolling Interno e Pulsante Fisso */
     #termsConsentModal {
       display: flex;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85);
-      z-index: 2000;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(8px);
-      padding: 15px;
+      padding: 20px;
     }
     .consent-box {
       background: var(--panel-alt);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 24px;
-      width: min(100%, 600px);
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: var(--shadow);
-    }
-    .consent-box h3 { margin-top: 0; color: var(--primary); font-size: 1.4rem; text-align: center; flex-shrink: 0; }
-    .consent-scroll {
-      flex: 1;
+      padding: 25px;
+      width: min(100%, 550px);
+      max-height: 85vh;
       overflow-y: auto;
-      margin: 12px 0;
-      padding-right: 8px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .consent-box h3 { color: var(--primary); margin-top: 0; font-size: 1.4rem; }
+    .consent-text {
+      text-align: left;
       color: var(--muted);
       font-size: 0.9rem;
       line-height: 1.5;
-      text-align: left;
+      margin: 15px 0 20px;
     }
-    .consent-scroll h4 { color: var(--accent); margin: 12px 0 4px; font-size: 1rem; }
-    .consent-footer {
-      flex-shrink: 0;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-    }
+    .consent-text h4 { color: var(--accent); margin: 12px 0 4px; font-size: 1rem; }
 
     footer {
       text-align: center;
@@ -722,20 +712,18 @@
     </div>
   </div>
 
-  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy (Corretto con pulsante sempre visibile) -->
+  <!-- Pop-up Iniziale Obbligatorio Termini e Privacy Semplificato -->
   <div id="termsConsentModal">
     <div class="consent-box">
       <h3>Informativa sulla Privacy & Termini di Servizio</h3>
-      <div class="consent-scroll">
+      <div class="consent-text">
         <h4>1. Informativa sulla Privacy</h4>
         <p>Alba Core Live tutela la privacy dei propri utenti. La posizione GPS del browser viene utilizzata esclusivamente in tempo reale per verificare che l'utente si trovi entro un raggio di 50 km dal centro di Alba e non viene memorizzata in database permanenti. Le videochiamate avvengono tramite protocollo crittografato Peer-to-Peer (WebRTC) direttamente tra i dispositivi degli utenti e non sono registrate né archiviate da alcun server centrale.</p>
         
         <h4>2. Termini di Servizio e Proprietà Intellettuale</h4>
         <p>Utilizzando la piattaforma, l'utente si impegna a rispettare le linee guida della community ufficiale (@albacore26). È severamente vietato l'utilizzo di linguaggio offensivo, molesto, discriminatorio o la condivisione di contenuti espliciti/illegali. <strong>Tutti i contenuti, il design, la grafica e i codici sorgente di Alba Core Live sono di proprietà esclusiva dell'amministrazione. Ne è severamente vietata la copia, la riproduzione, l'ispezione non autorizzata o la ridistribuzione con qualsiasi mezzo.</strong> L'amministrazione si riserva il diritto di applicare il ban istantaneo in caso di violazione delle regole.</p>
       </div>
-      <div class="consent-footer">
-        <button class="btn btn-primary" onclick="accettaTerminiPrivacy()" style="width: 100%; padding: 12px; font-size: 1.05rem;">Accetta e Continua</button>
-      </div>
+      <button class="btn btn-primary" onclick="accettaTerminiPrivacy()" style="width: 100%; padding: 14px; font-size: 1.1rem; cursor: pointer;">Accetta e Continua</button>
     </div>
   </div>
 
@@ -1077,14 +1065,14 @@
     });
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBS1cEqUbUamlHzXGCpm4KuTjQ0fckLWPI",
-      authDomain: "albacorelive.firebaseapp.com",
-      databaseURL: "https://albacorelive-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "albacorelive",
-      storageBucket: "albacorelive.firebasestorage.app",
-      messagingSenderId: "965767368161",
-      appId: "1:965767368161:web:3b1b601a1a98bb970416a0",
-      measurementId: "G-LB21Y75DDV"
+      apiKey: "AIzaSyBQWWVg_Ibw5KDl1VUSGGVdD2ur6og6xiQ",
+      authDomain: "albacorelive-ed7dd.firebaseapp.com",
+      databaseURL: "https://albacorelive-ed7dd-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "albacorelive-ed7dd",
+      storageBucket: "albacorelive-ed7dd.firebasestorage.app",
+      messagingSenderId: "873946593693",
+      appId: "1:873946593693:web:51ff0e6c6615e9029a5774",
+      measurementId: "G-6KMR59ZK7M"
     };
 
     firebase.initializeApp(firebaseConfig);
