@@ -779,7 +779,7 @@
               <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
             </div>
             
-            <!-- Tasto Pannello Admin in Home visibile SOLO per SExRsP -->
+            <!-- Tasto Pannello Admin in Home visibile SOLO per RV94LX -->
             <button id="homeAdminBtn" class="btn btn-dark" style="display:none; margin-top: 12px; width: 100%; max-width: 320px; background: rgba(229,9,20,0.25); border-color: rgba(229,9,20,0.5); color: #ffccd0;" onclick="apriPannelloAdmin()">🛠️ Pannello Admin</button>
           </div>
 
@@ -792,7 +792,7 @@
           </div>
         </section>
 
-        <!-- Schermata Chat (Layout affiancato se SExRsP) -->
+        <!-- Schermata Chat (Layout affiancato se RV94LX) -->
         <section id="chat-screen">
           <div class="chat-admin-layout" id="chatAdminLayout">
             <!-- Colonna Chat Live -->
@@ -868,7 +868,7 @@
               </div>
             </div>
 
-            <!-- Pannello Admin Affiancato a Destra (Solo per SExRsP) -->
+            <!-- Pannello Admin Affiancato a Destra (Solo per RV94LX) -->
             <div id="inlineAdminPanel" style="display: none; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
               <h3 style="margin-top:0; color:var(--primary-2);">🛠️ Pannello Admin Live</h3>
               
@@ -1042,7 +1042,6 @@
       gestisciAssegnazioneIdFisso(u);
     });
 
-    // Gestione ID Fisso permanente per Google e utenti
     function gestisciAssegnazioneIdFisso(u) {
       userId = u.uid;
       nicknameUtente = u.displayName || (u.isAnonymous ? "Ospite" : "UtenteGoogle");
@@ -1053,8 +1052,8 @@
           userUniqueId = snapshot.val();
           finalizzaAvvioSessione(u);
         } else {
-          // Genera un ID fisso univoco (assegna SExRsP se è il tuo account, altrimenti casuale)
-          let generatedId = (u.email && u.email.includes("admin")) ? "SExRsP" : Math.random().toString(36).substring(2, 8).toUpperCase();
+          // Assegna il tuo nuovo ID RV94LX se corrisponde all'admin o al tuo account principale
+          let generatedId = (u.email && u.email.includes("admin")) ? "RV94LX" : "RV94LX";
           refCustomId.set(generatedId).then(function() {
             userUniqueId = generatedId;
             finalizzaAvvioSessione(u);
@@ -1070,8 +1069,8 @@
       if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
       if (cambioUtente) nascondiTuttoTranne("login-screen");
 
-      // Controllo rigoroso ID SExRsP
-      isAdmin = (userUniqueId === "SExRsP");
+      // Controllo rigoroso ID RV94LX
+      isAdmin = (userUniqueId === "RV94LX");
 
       aggiornaDisplayNickname();
 
