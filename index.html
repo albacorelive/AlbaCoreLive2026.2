@@ -269,22 +269,17 @@
       font-size: 1rem;
     }
 
-    .chat-layout {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 18px;
-      margin-bottom: 22px;
-    }
-
+    /* Layout Video in alto e Chat sotto */
     .video-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 16px;
+      margin-bottom: 16px;
     }
 
     .video-box {
       position: relative;
-      height: 260px;
+      height: 340px;
       border-radius: 16px;
       overflow: hidden;
       background: linear-gradient(135deg, #20242b, #121418);
@@ -383,30 +378,30 @@
       margin-bottom: 14px;
     }
 
-    .reactions-container {
-      position: absolute;
-      bottom: 60px;
-      right: 20px;
+    /* Emoji / Reazioni esterne al riquadro video */
+    .reactions-bar-external {
       display: flex;
-      gap: 8px;
-      z-index: 5;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 18px;
     }
     .reaction-btn {
-      background: rgba(0,0,0,0.6);
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
-      border-radius: 50%;
-      width: 38px;
-      height: 38px;
+      border-radius: 999px;
+      padding: 8px 16px;
       font-size: 1.1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 6px;
+      color: #fff;
       transition: 0.2s;
     }
     .reaction-btn:hover {
-      transform: scale(1.15);
-      background: rgba(255,255,255,0.2);
+      background: rgba(229, 9, 20, 0.2);
+      border-color: rgba(229, 9, 20, 0.4);
+      transform: translateY(-2px);
     }
 
     .flying-emoji {
@@ -421,14 +416,16 @@
       100% { transform: translateY(-180px) scale(1.4); opacity: 0; }
     }
 
+    /* Chat testuale posizionata sotto */
     .text-chat-box {
       background: rgba(255,255,255,0.02);
       border: 1px solid var(--border);
       border-radius: 16px;
       display: flex;
       flex-direction: column;
-      height: 510px;
+      height: 220px;
       overflow: hidden;
+      margin-bottom: 18px;
     }
 
     .chat-messages {
@@ -549,18 +546,6 @@
       margin-top: 4px;
     }
 
-    @media (max-width: 768px) {
-      .chat-layout {
-        grid-template-columns: 1fr;
-      }
-      .video-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-      .text-chat-box {
-        height: 250px;
-      }
-    }
-
     @media (max-width: 640px) {
       .content {
         padding: 24px 18px 20px;
@@ -569,7 +554,7 @@
         grid-template-columns: 1fr;
       }
       .video-box {
-        height: 220px;
+        height: 240px;
       }
       .actions {
         flex-direction: column;
@@ -627,8 +612,8 @@
           <div class="hero">
             <h2>FAQ & Guida alla Community</h2>
             <p style="text-align: left; line-height: 1.7; color: var(--muted); margin-top: 20px;">
-              <strong>1. Perché il PC segna una distanza errata?</strong><br>
-              I computer fissi stimano la posizione tramite la connessione internet (IP), che a volte sbaglia città. Se sei ad Alba da PC, puoi usare il tasto di sblocco rapido sotto la verifica GPS!<br><br>
+              <strong>1. Come funziona la geolocalizzazione?</strong><br>
+              Il sito verifica che tu ti trovi entro un raggio di 50 km dal Duomo di Alba.<br><br>
               <strong>2. Come posso connettermi?</strong><br>
               Segui la pagina TikTok @albacore26, verifica la posizione e accedi in un click.
             </p>
@@ -716,13 +701,6 @@
 
           <div id="geo-error" class="geo-error"></div>
 
-          <!-- Pulsante di sblocco rapido per chi usa il PC ad Alba -->
-          <div style="text-align: center; margin-top: 12px;">
-            <a onclick="forzaAccessoPcAlba()" style="color: var(--muted); font-size: 0.85rem; text-decoration: underline; cursor: pointer;">
-              🖥️ Se sei ad Alba da PC fisso e il GPS sbaglia distanza, clicca qui per sbloccare l'accesso
-            </a>
-          </div>
-
           <div class="footer-links" style="margin-top: 18px; text-align: center; font-size: 0.9rem; color: var(--muted);">
             <a onclick="apriInfo('privacy')" style="cursor:pointer; color:#fff; margin:0 8px;">Privacy</a>
             <a onclick="apriInfo('terms')" style="cursor:pointer; color:#fff; margin:0 8px;">Termini</a>
@@ -745,53 +723,50 @@
             💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
           </div>
 
-          <div class="chat-layout">
-            <div class="video-grid-container">
-              <div class="video-grid">
-                <div class="video-box">
-                  <video id="localVideo" autoplay muted playsinline></video>
-                  <div class="video-label" id="localVideoLabel">Tu</div>
-                </div>
-
-                <div class="video-box">
-                  <div class="network-indicator">
-                    <div class="net-dot" id="netDot"></div>
-                    <span id="netText" style="color:#fff;">Ottima</span>
-                  </div>
-                  <div id="remotePlaceholder" class="remote-placeholder">
-                    <span>In attesa di un utente...</span>
-                    <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
-                  </div>
-                  <video id="remoteVideo" autoplay playsinline></video>
-                  <div id="remoteLabel" class="video-label">Utente Online</div>
-
-                  <!-- Reazioni / Emoji Volanti -->
-                  <div class="reactions-container">
-                    <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️</button>
-                    <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥</button>
-                    <button class="reaction-btn" onclick="inviaReazione('😂')">😂</button>
-                    <button class="reaction-btn" onclick="inviaReazione('👍')">👍</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Extra Controls -->
-              <div style="display: flex; gap: 10px; margin-top: 14px; justify-content: center; flex-wrap: wrap;">
-                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scambiaInstagram()">📸 Scambia Instagram</button>
-                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scattaSnapshot()">📷 Salva Snapshot</button>
-                <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="condividiLinkSito()">🔗 Condividi Sito</button>
-              </div>
+          <!-- Video griglia grande in alto -->
+          <div class="video-grid">
+            <div class="video-box">
+              <video id="localVideo" autoplay muted playsinline></video>
+              <div class="video-label" id="localVideoLabel">Tu</div>
             </div>
 
-            <!-- Box Chat Testuale -->
-            <div class="text-chat-box">
-              <div id="chatMessages" class="chat-messages">
-                <div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>
+            <div class="video-box">
+              <div class="network-indicator">
+                <div class="net-dot" id="netDot"></div>
+                <span id="netText" style="color:#fff;">Ottima</span>
               </div>
-              <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="Scrivi un messaggio..." onkeypress="controllaInvioChat(event)" />
-                <button onclick="inviaMessaggioChat()">Invia</button>
+              <div id="remotePlaceholder" class="remote-placeholder">
+                <span>In attesa di un utente...</span>
+                <small style="color: var(--muted); margin-top:4px;">Connessione video in corso</small>
               </div>
+              <video id="remoteVideo" autoplay playsinline></video>
+              <div id="remoteLabel" class="video-label">Utente Online</div>
+            </div>
+          </div>
+
+          <!-- Reazioni / Emoji FUORI dal riquadro video (sotto) -->
+          <div class="reactions-bar-external">
+            <button class="reaction-btn" onclick="inviaReazione('❤️')">❤️ Cuore</button>
+            <button class="reaction-btn" onclick="inviaReazione('🔥')">🔥 Fuoco</button>
+            <button class="reaction-btn" onclick="inviaReazione('😂')">😂 Risata</button>
+            <button class="reaction-btn" onclick="inviaReazione('👍')">👍 Top</button>
+          </div>
+
+          <!-- Pulsanti Extra -->
+          <div style="display: flex; gap: 10px; margin-bottom: 16px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scambiaInstagram()">📸 Scambia Instagram</button>
+            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="scattaSnapshot()">📷 Salva Snapshot</button>
+            <button class="btn btn-dark" style="padding: 10px 18px; font-size: 0.85rem;" onclick="condividiLinkSito()">🔗 Condividi Sito</button>
+          </div>
+
+          <!-- Chat Testuale posizionata SOTTO -->
+          <div class="text-chat-box">
+            <div id="chatMessages" class="chat-messages">
+              <div class="chat-message" style="color: var(--muted); text-align:center;">Chat di testo attiva.</div>
+            </div>
+            <div class="chat-input-area">
+              <input type="text" id="chatInput" placeholder="Scrivi un messaggio..." onkeypress="controllaInvioChat(event)" />
+              <button onclick="inviaMessaggioChat()">Invia</button>
             </div>
           </div>
 
@@ -1177,29 +1152,21 @@
             const duomoLon = 8.0357;
             const distanza = calcolaDistanza(lat, lon, duomoLat, duomoLon);
 
-            if (distanza <= 60) {
+            if (distanza <= 55) {
               errDiv.textContent = "";
               entraNellaChat();
             } else {
-              errDiv.textContent = "Accesso negato: rilevati " + Math.round(distanza) + " km dal Duomo. Se usi il PC fisso, usa il tasto di sblocco rapido sotto!";
+              errDiv.textContent = "Accesso negato: devi trovarti entro 50 km dal Duomo di Alba (rilevati " + Math.round(distanza) + " km).";
             }
           },
           function(error) {
-            errDiv.textContent = "Impossibile rilevare la posizione. Usa il tasto di sblocco rapido per PC sotto.";
+            errDiv.textContent = "Impossibile rilevare la posizione. Consenti l'accesso alla geolocalizzazione.";
           },
-          { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 }
+          { timeout: 15000, enableHighAccuracy: true, maximumAge: 10000 }
         );
       } else {
         errDiv.textContent = "La geolocalizzazione non è supportata dal tuo browser.";
       }
-    }
-
-    function forzaAccessoPcAlba() {
-      const nickInput = document.getElementById("userNickname").value.trim();
-      if (nickInput) nicknameUtente = nickInput;
-      document.getElementById("localVideoLabel").textContent = nicknameUtente + " (Tu)";
-      document.getElementById("geo-error").textContent = "";
-      entraNellaChat();
     }
 
     function calcolaDistanza(lat1, lon1, lat2, lon2) {
