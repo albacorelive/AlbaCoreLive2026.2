@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">   
+<html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -256,7 +256,7 @@
       line-height: 1.4;
     }
 
-    #chat-screen, #admin-panel-screen, #maintenance-screen, #info-screen, #faq-screen, #account-screen, #report-modal {
+    #chat-screen, #admin-panel-screen, #aiuto-admin-screen, #maintenance-screen, #info-screen, #faq-screen, #account-screen, #report-modal {
       display: none;
     }
 
@@ -704,6 +704,7 @@
     <div id="dropdownMenu" class="dropdown-menu">
       <a class="dropdown-item" onclick="apriAccountScreen()">👤 Account (<span id="menuAccountStatus">Ospite</span>)</a>
       <a id="adminMenuItem" class="dropdown-item" style="display:none;" onclick="apriPannelloAdmin()">🛠️ Pannello Admin</a>
+      <a id="aiutoAdminMenuItem" class="dropdown-item" style="display:none;" onclick="apriPannelloAiutoAdmin()">🛡️ Pannello Aiuto Admin</a>
       <div class="dropdown-divider"></div>
       <a class="dropdown-item" onclick="attivaFullscreen()">📺 Schermo Intero</a>
       <a class="dropdown-item" href="https://www.tiktok.com/@albacore26" target="_blank" rel="noopener">🎵 Segui @albacore26</a>
@@ -800,8 +801,9 @@
               <button class="btn btn-primary" onclick="avviaVerificaGPS()">Verifica Posizione e Accedi</button>
             </div>
             
-            <!-- Tasto Pannello Admin in Home visibile SOLO per RV94LX -->
+            <!-- Tasti Pannello Admin in Home -->
             <button id="homeAdminBtn" class="btn btn-dark" style="display:none; margin-top: 12px; width: 100%; max-width: 320px; background: rgba(229,9,20,0.25); border-color: rgba(229,9,20,0.5); color: #ffccd0;" onclick="apriPannelloAdmin()">🛠️ Pannello Admin</button>
+            <button id="homeAiutoAdminBtn" class="btn btn-dark" style="display:none; margin-top: 12px; width: 100%; max-width: 320px; background: rgba(255,152,0,0.25); border-color: rgba(255,152,0,0.5); color: #ffe0b2;" onclick="apriPannelloAiutoAdmin()">🛡️ Pannello Aiuto Admin</button>
           </div>
 
           <div id="geo-error" class="geo-error"></div>
@@ -964,6 +966,21 @@
             </div>
           </div>
 
+          <!-- Gestione Co-Admin (Aiuto Admin) -->
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,152,0,0.05); border-radius: 12px; border: 1px solid rgba(255,152,0,0.3);">
+            <h3 style="margin-top:0; color:var(--accent);">🛡️ Gestione Aiuto Admin (Co-Admin)</h3>
+            <p style="font-size:0.85rem; color:var(--muted); margin-bottom:10px;">Inserisci l'ID univoco del tuo amico per promuoverlo ad Aiuto Admin:</p>
+            <div class="form-group" style="display:flex; gap:10px; margin-bottom:8px;">
+              <input type="text" id="aiutoAdminIdInput" placeholder="Es. ABC123" style="flex:1; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff;" />
+              <button class="btn btn-primary" onclick="aggiungiAiutoAdmin()" style="background:linear-gradient(135deg, #ff9800, #f57c00);">Promuovi</button>
+            </div>
+            <div style="max-height: 100px; overflow-y: auto; margin-top: 10px;">
+              <table class="admin-table">
+                <tbody id="aiutoAdminListBody"><tr><td style="text-align:center;">Nessun aiuto admin attivo.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
           <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
             <h3 style="margin-top:0;">Stato Piattaforma</h3>
             <button id="killSwitchModalBtn" class="btn btn-primary" style="width:100%;" onclick="toggleKillSwitch()">Disattiva Sito / Attiva Sito (Manutenzione)</button>
@@ -1000,6 +1017,27 @@
 
           <div class="actions" style="margin-top: 25px;">
             <button class="btn btn-dark" onclick="tornaAllaHomeDaAdmin()">Torna alla Home</button>
+          </div>
+        </section>
+
+        <!-- Pannello Dedicato Aiuto Admin (Solo Segnalazioni) -->
+        <section id="aiuto-admin-screen">
+          <div class="hero">
+            <h2>Pannello Aiuto Admin</h2>
+            <p>Gestione e moderazione delle segnalazioni della community</p>
+          </div>
+
+          <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0;">Segnalazioni Ricevute</h3>
+            <div style="max-height: 300px; overflow-y: auto;">
+              <table class="admin-table">
+                <tbody id="reportsTableBodyAiuto"><tr><td style="text-align:center;">Nessuna segnalazione.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="actions" style="margin-top: 25px;">
+            <button class="btn btn-dark" onclick="tornaAllaHomeDaAiutoAdmin()">Torna alla Home</button>
           </div>
         </section>
       </div>
@@ -1042,6 +1080,7 @@
     let userUniqueId = "";
     let nicknameUtente = "Ospite";
     let isAdmin = false;
+    let isAiutoAdmin = false;
 
     let peer = null;
     let myStream = null;
@@ -1073,7 +1112,7 @@
       document.getElementById("icebreakerText").textContent = "💡 Rompighiaccio: " + domandaScelta;
     }
 
-    const SCHERMATE = ["login-screen", "chat-screen", "admin-panel-screen", "info-screen", "faq-screen", "account-screen", "maintenance-screen"];
+    const SCHERMATE = ["login-screen", "chat-screen", "admin-panel-screen", "aiuto-admin-screen", "info-screen", "faq-screen", "account-screen", "maintenance-screen"];
 
     window.addEventListener('DOMContentLoaded', function() {
       document.getElementById("termsConsentModal").style.display = "flex";
@@ -1086,12 +1125,16 @@
         const ms = document.getElementById("maintenance-screen");
         const isMaint = s.val() || false;
         if (isMaint) {
-          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+          SCHERMATE.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = "none";
+          });
           ms.style.display = "block";
         } else {
           if (ms.style.display === "block") {
             ms.style.display = "none";
-            document.getElementById("login-screen").style.display = "block";
+            const consentModalOpen = document.getElementById("termsConsentModal").style.display === "flex";
+            if (!consentModalOpen) mostraSchermataDiretta("login-screen");
           }
         }
       });
@@ -1131,17 +1174,23 @@
       listenerAttivi.forEach(function(r) { r.off(); });
       listenerAttivi = [];
       if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
-      if (cambioUtente) {
-        db.ref('system/maintenance').once('value', function(s) {
-          if (!s.val()) {
-            const consentModalOpen = document.getElementById("termsConsentModal").style.display === "flex";
-            if (!consentModalOpen) mostraSchermataDiretta("login-screen");
-          }
-        });
-      }
 
       isAdmin = (userUniqueId === "RV94LX");
-      aggiornaDisplayNickname();
+
+      // Controlla se l'utente corrente è un Aiuto Admin nel database
+      db.ref('aiutoAdmins/' + userUniqueId).once('value', function(snapshot) {
+        isAiutoAdmin = snapshot.exists() && snapshot.val() === true;
+        aggiornaDisplayNickname();
+
+        if (cambioUtente) {
+          db.ref('system/maintenance').once('value', function(s) {
+            if (!s.val()) {
+              const consentModalOpen = document.getElementById("termsConsentModal").style.display === "flex";
+              if (!consentModalOpen) mostraSchermataDiretta("login-screen");
+            }
+          });
+        }
+      });
 
       const on = function(ref, cb) { ref.on('value', cb); listenerAttivi.push(ref); };
 
@@ -1162,12 +1211,22 @@
 
     function aggiornaDisplayNickname() {
       const reg = !auth.currentUser.isAnonymous;
-      document.getElementById("activeNicknameDisplay").textContent =
-        reg ? nicknameUtente + " [" + userUniqueId + "] (Account Verificato)" : "Ospite [" + userUniqueId + "]";
+      let ruoloTesto = "";
+      if (isAdmin) ruoloTesto = " (Admin)";
+      else if (isAiutoAdmin) ruoloTesto = " (Aiuto Admin)";
+      else if (reg) ruoloTesto = " (Account Verificato)";
+      else ruoloTesto = " [Ospite]";
+
+      document.getElementById("activeNicknameDisplay").textContent = nicknameUtente + " [" + userUniqueId + "]" + ruoloTesto;
       document.getElementById("menuAccountStatus").textContent = reg ? nicknameUtente : "Ospite";
       document.getElementById("logoutAccountBtn").style.display = reg ? "block" : "none";
+      
       document.getElementById("adminMenuItem").style.display = isAdmin ? "block" : "none";
       document.getElementById("homeAdminBtn").style.display = isAdmin ? "block" : "none";
+
+      document.getElementById("aiutoAdminMenuItem").style.display = (isAdmin || isAiutoAdmin) ? "block" : "none";
+      document.getElementById("homeAiutoAdminBtn").style.display = (isAdmin || isAiutoAdmin) ? "block" : "none";
+
       document.getElementById("localVideoLabel").textContent = nicknameUtente + " [" + userUniqueId + "] (Tu)";
     }
 
@@ -1221,6 +1280,7 @@
     function tornaAllaHomeDaInfo() { mostraSchermataDiretta("login-screen"); }
     function tornaAllaHomeDaFaq() { mostraSchermataDiretta("login-screen"); }
     function tornaAllaHomeDaAdmin() { mostraSchermataDiretta("login-screen"); }
+    function tornaAllaHomeDaAiutoAdmin() { mostraSchermataDiretta("login-screen"); }
 
     function mostraSchermataDiretta(screenId) {
       SCHERMATE.forEach(id => {
@@ -1575,12 +1635,42 @@
       cercaAltroUtenteBtn();
     }
 
-    // --- PANNELLO ADMIN & STATISTICHE ORIGINALI ---
+    // --- PANNELLO ADMIN & STATISTICHE ---
     function apriPannelloAdmin() {
       document.getElementById("dropdownMenu").classList.remove('active');
       if (!isAdmin) { alert("Non autorizzato."); return; }
       mostraSchermataDiretta("admin-panel-screen");
       caricaDatiAdminModal();
+    }
+
+    function apriPannelloAiutoAdmin() {
+      document.getElementById("dropdownMenu").classList.remove('active');
+      if (!isAdmin && !isAiutoAdmin) { alert("Non autorizzato."); return; }
+      mostraSchermataDiretta("aiuto-admin-screen");
+      caricaDatiAiutoAdmin();
+    }
+
+    function aggiungiAiutoAdmin() {
+      if (!isAdmin) return;
+      const targetId = document.getElementById("aiutoAdminIdInput").value.trim().toUpperCase();
+      if (!targetId) { alert("Inserisci un ID valido."); return; }
+      db.ref('aiutoAdmins/' + targetId).set(true, function(err) {
+        if (!err) {
+          alert("Utente " + targetId + " promosso ad Aiuto Admin con successo!");
+          document.getElementById("aiutoAdminIdInput").value = "";
+          caricaDatiAdminModal();
+        }
+      });
+    }
+
+    function rimuoviAiutoAdmin(targetId) {
+      if (!isAdmin) return;
+      db.ref('aiutoAdmins/' + targetId).remove(function(err) {
+        if (!err) {
+          alert("Permessi di Aiuto Admin rimossi per " + targetId);
+          caricaDatiAdminModal();
+        }
+      });
     }
 
     function toggleKillSwitch() {
@@ -1683,6 +1773,34 @@
 
       db.ref('reports').once('value', s => {
         const tbody = document.getElementById("reportsTableBodyModal");
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td style="text-align:center;">Nessuna segnalazione.</td></tr>`; return; }
+        Object.entries(data).forEach(([k, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r.timestamp}</td><td>${r.reportedUser}</td><td>${r.reason}</td><td><button class="btn btn-primary" style="padding:4px;" onclick="bannaUtente('${r.targetUid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+
+      db.ref('aiutoAdmins').once('value', s => {
+        const tbody = document.getElementById("aiutoAdminListBody");
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td style="text-align:center;">Nessun aiuto admin attivo.</td></tr>`; return; }
+        Object.entries(data).forEach(([aid, active]) => {
+          if (active) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>ID: <strong>${aid}</strong></td><td><button class="btn btn-dark" style="padding:2px 6px; font-size:0.75rem;" onclick="rimuoviAiutoAdmin('${aid}')">Rimuovi</button></td>`;
+            tbody.appendChild(tr);
+          }
+        });
+      });
+    }
+
+    function caricaDatiAiutoAdmin() {
+      db.ref('reports').once('value', s => {
+        const tbody = document.getElementById("reportsTableBodyAiuto");
         tbody.innerHTML = "";
         const data = s.val();
         if (!data) { tbody.innerHTML = `<tr><td style="text-align:center;">Nessuna segnalazione.</td></tr>`; return; }
