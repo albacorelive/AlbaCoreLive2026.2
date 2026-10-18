@@ -53,7 +53,7 @@
       position: absolute;
       top: 20px;
       right: 20px;
-      z-index: 100;
+      z-index: 3000;
     }
 
     .menu-toggle-btn {
@@ -81,7 +81,7 @@
       width: 240px;
       padding: 8px 0;
       backdrop-filter: blur(10px);
-      z-index: 101;
+      z-index: 3001;
     }
 
     .dropdown-menu.active { display: block; }
@@ -604,7 +604,7 @@
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.85);
-      z-index: 2000;
+      z-index: 5000;
       align-items: center;
       justify-content: center;
       padding: 20px;
@@ -619,6 +619,8 @@
       width: min(100%, 550px);
       box-shadow: var(--shadow);
       text-align: center;
+      position: relative;
+      z-index: 5001;
     }
     .consent-box { max-height: 85vh; overflow-y: auto; text-align: center; }
     .consent-text {
@@ -1131,7 +1133,10 @@
       if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
       if (cambioUtente) {
         db.ref('system/maintenance').once('value', function(s) {
-          if (!s.val()) nascondiTuttoTranne("login-screen");
+          if (!s.val()) {
+            const consentModalOpen = document.getElementById("termsConsentModal").style.display === "flex";
+            if (!consentModalOpen) mostraSchermataDiretta("login-screen");
+          }
         });
       }
 
@@ -1192,7 +1197,7 @@
     window.addEventListener('click', function(e) {
       const menu = document.getElementById("dropdownMenu");
       const toggleBtn = document.querySelector(".menu-toggle-btn");
-      if (!menu.contains(e.target) && !toggleBtn.contains(e.target)) {
+      if (menu && toggleBtn && !menu.contains(e.target) && !toggleBtn.contains(e.target)) {
         menu.classList.remove('active');
       }
     });
@@ -1218,7 +1223,10 @@
     function tornaAllaHomeDaAdmin() { mostraSchermataDiretta("login-screen"); }
 
     function mostraSchermataDiretta(screenId) {
-      SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+      SCHERMATE.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
       document.getElementById("reportModal").style.display = "none";
       document.getElementById("mainPageContainer").classList.remove("admin-expanded");
       document.getElementById(screenId).style.display = "block";
@@ -1282,7 +1290,10 @@
     async function entraNellaChat() {
       db.ref('system/maintenance').once('value', async function(s) {
         if (s.val()) { alert("Sito in manutenzione."); return; }
-        SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+        SCHERMATE.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = "none";
+        });
         document.getElementById("chat-screen").style.display = "block";
 
         cambiaDomandaRompighiaccio();
@@ -1506,3 +1517,182 @@
         const data = snapshot.val();
         if (data && data.sender !== userId) mostraAnimazioneEmoji(data.emoji);
       });
+    }
+
+    function mostraAnimazioneEmoji(emoji) {
+      const box = document.querySelectorAll(".video-box")[1];
+      if (!box) return;
+      const span = document.createElement("div");
+      span.className = "flying-emoji";
+      span.textContent = emoji;
+      span.style.left = Math.random() * 70 + 15 + "%";
+      box.appendChild(span);
+      setTimeout(() => span.remove(), 2000);
+    }
+
+    function inviaMessaggioChat() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text || !currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/messages').push().set({ sender: userId, name: nicknameUtente, text: text });
+      input.value = "";
+    }
+
+    function controllaInvioChat(e) { if (e.key === 'Enter') inviaMessaggioChat(); }
+
+    function ascoltaMessaggiChat() {
+      if (!currentRoomId) return;
+      db.ref('rooms/' + currentRoomId + '/messages').on('child_added', function(snapshot) {
+        const msg = snapshot.val();
+        if (!msg) return;
+        const chatBox = document.getElementById("chatMessages");
+        const div = document.createElement("div");
+        div.className = "chat-message" + (msg.sender === userId ? " me" : "");
+        div.textContent = (msg.name ? msg.name + ": " : "") + msg.text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+
+    function apriReportModal() { document.getElementById("reportModal").style.display = "flex"; }
+    function chiudiReportModal() { document.getElementById("reportModal").style.display = "none"; }
+    function inviaSegnalazioneConMotivo(motivo) { inviaSegnalazioneEffettiva(motivo); }
+    function inviaSegnalazionePersonalizzata() {
+      const custom = document.getElementById("customReportReason").value.trim();
+      inviaSegnalazioneEffettiva(custom || "Segnalazione generica");
+    }
+
+    function inviaSegnalazioneEffettiva(motivo) {
+      db.ref('reports').push().set({
+        timestamp: new Date().toLocaleString(),
+        reportedUser: currentRemoteUsername ? (currentRemoteUsername + " [" + (currentRemoteUserId || "?") + "]") : "Utente Sconosciuto",
+        targetUid: currentRemoteFullUid || "ignoto",
+        reason: motivo,
+        reporter: nicknameUtente + " [" + userUniqueId + "]"
+      });
+      alert("Segnalazione inviata.");
+      chiudiReportModal();
+      cercaAltroUtenteBtn();
+    }
+
+    // --- PANNELLO ADMIN & STATISTICHE ORIGINALI ---
+    function apriPannelloAdmin() {
+      document.getElementById("dropdownMenu").classList.remove('active');
+      if (!isAdmin) { alert("Non autorizzato."); return; }
+      mostraSchermataDiretta("admin-panel-screen");
+      caricaDatiAdminModal();
+    }
+
+    function toggleKillSwitch() {
+      db.ref('system/maintenance').once('value', function(s) {
+        const currentState = s.val() || false;
+        db.ref('system/maintenance').set(!currentState, function(err) {
+          if (!err) {
+            alert(!currentState ? "Sito disattivato (Modalità Manutenzione attiva)." : "Sito riattivato online!");
+          }
+        });
+      });
+    }
+
+    function inviaBroadcast() {
+      const text = document.getElementById("broadcastText").value.trim();
+      if (!text) return;
+      db.ref('system/broadcast').set({ id: 'msg_' + Date.now(), text: text }, function(err) {
+        if (!err) { alert("Broadcast inviato!"); document.getElementById("broadcastText").value = ""; }
+      });
+    }
+
+    function inviaBroadcastModal() {
+      const text = document.getElementById("broadcastTextModal").value.trim();
+      if (!text) return;
+      db.ref('system/broadcast').set({ id: 'msg_' + Date.now(), text: text }, function(err) {
+        if (!err) { alert("Broadcast inviato!"); document.getElementById("broadcastTextModal").value = ""; }
+      });
+    }
+
+    function rimuoviBroadcast() {
+      db.ref('system/broadcast').remove();
+      alert("Broadcast rimosso.");
+    }
+
+    function bannaUtente(uid) {
+      if (uid && uid !== "ignoto") db.ref('bans/' + uid).set(true);
+    }
+
+    function avviaAscoltoStatisticheAdmin() {
+      db.ref('presence').on('value', s => {
+        const val = s.val();
+        let total = val ? Object.keys(val).length : 0;
+        if (document.getElementById("statOnlineUsers")) document.getElementById("statOnlineUsers").textContent = total;
+        if (document.getElementById("statOnlineUsersModal")) document.getElementById("statOnlineUsersModal").textContent = total;
+      });
+
+      db.ref('queue').on('value', s => {
+        const q = s.val() ? Object.keys(s.val()).length : 0;
+        if (document.getElementById("statQueueUsers")) document.getElementById("statQueueUsers").textContent = q;
+        if (document.getElementById("statQueueUsersModal")) document.getElementById("statQueueUsersModal").textContent = q;
+      });
+
+      db.ref('rooms').on('value', s => {
+        const d = s.val();
+        let count = 0;
+        if (d) Object.values(d).forEach(r => { if (r && r.info) count++; });
+        if (document.getElementById("statActiveRooms")) document.getElementById("statActiveRooms").textContent = count;
+        if (document.getElementById("statActiveRoomsModal")) document.getElementById("statActiveRoomsModal").textContent = count;
+      });
+
+      db.ref('customIds').on('value', s => {
+        const tbody = document.getElementById("usersTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td>Nessun utente.</td></tr>`; return; }
+        Object.entries(data).forEach(([uId, customId]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>ID: ${customId}<br><button class="btn btn-dark" style="padding:2px 6px; font-size:0.75rem; margin-top:2px;" onclick="bannaUtente('${uId}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+
+      db.ref('reports').on('value', s => {
+        const tbody = document.getElementById("reportsTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td>Nessuna segnalazione.</td></tr>`; return; }
+        Object.entries(data).forEach(([k, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><b>${r.reportedUser}</b>: ${r.reason}<br><button class="btn btn-primary" style="padding:2px 6px; font-size:0.75rem; margin-top:2px;" onclick="bannaUtente('${r.targetUid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function caricaDatiAdminModal() {
+      db.ref('customIds').once('value', s => {
+        const tbody = document.getElementById("usersTableBodyModal");
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td style="text-align:center;">Nessun utente.</td></tr>`; return; }
+        Object.entries(data).forEach(([uId, customId]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><strong>ID: ${customId}</strong><br><small>${uId}</small></td><td><button class="btn btn-dark" style="padding:4px;" onclick="bannaUtente('${uId}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+
+      db.ref('reports').once('value', s => {
+        const tbody = document.getElementById("reportsTableBodyModal");
+        tbody.innerHTML = "";
+        const data = s.val();
+        if (!data) { tbody.innerHTML = `<tr><td style="text-align:center;">Nessuna segnalazione.</td></tr>`; return; }
+        Object.entries(data).forEach(([k, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r.timestamp}</td><td>${r.reportedUser}</td><td>${r.reason}</td><td><button class="btn btn-primary" style="padding:4px;" onclick="bannaUtente('${r.targetUid}')">Banna</button></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
