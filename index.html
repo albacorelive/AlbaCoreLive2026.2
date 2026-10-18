@@ -410,13 +410,31 @@
     .icebreaker-bar {
       background: rgba(229, 9, 20, 0.1);
       border: 1px solid rgba(229, 9, 20, 0.2);
-      padding: 8px 14px;
+      padding: 10px 14px;
       border-radius: 12px;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       color: #ffccd0;
       text-align: center;
       margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
     }
+
+    .next-icebreaker-btn {
+      background: rgba(229, 9, 20, 0.3);
+      border: 1px solid rgba(229, 9, 20, 0.5);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+    .next-icebreaker-btn:hover { background: rgba(229, 9, 20, 0.6); }
 
     .reactions-bar-external {
       display: flex;
@@ -707,11 +725,11 @@
           </div>
         </section>
 
-        <!-- Schermata Account (Solo Google + Logout pulito) -->
+        <!-- Schermata Account -->
         <section id="account-screen">
           <div class="hero">
-            <h2>Gestione Account</h2>
-            <p>Accedi con il tuo account Google per entrare nella community.</p>
+            <h2>Gestione Account & Profilo</h2>
+            <p>Accedi con Google per sbloccare statistiche, trofei e personalizzazioni.</p>
           </div>
 
           <div style="max-width: 320px; margin: 0 auto 20px auto;">
@@ -806,8 +824,10 @@
                 </div>
               </div>
 
+              <!-- Box Rompighiaccio con Domande Casuali e Pulsante Cambia -->
               <div id="icebreakerBar" class="icebreaker-bar">
-                💡 Rompighiaccio: Qual è il tuo posto preferito ad Alba?
+                <span id="icebreakerText">💡 Rompighiaccio: Caricamento domanda...</span>
+                <button class="next-icebreaker-btn" onclick="cambiaDomandaRompighiaccio()">🔄 Altra Domanda</button>
               </div>
 
               <div class="video-grid">
@@ -1031,12 +1051,32 @@
     let userXp = 10;
     let listenerAttivi = [];
 
+    // Lista di domande rompighiaccio assortite
+    const listaDomandeRompighiaccio = [
+      "Qual è il tuo posto preferito in centro ad Alba?",
+      "Preferisci la Nutella o i prodotti tipici delle Langhe?",
+      "Qual è la cosa più folle che hai fatto quest'anno?",
+      "Se potessi viaggiare in qualsiasi posto ora, dove andresti?",
+      "Qual è la tua serie TV o film preferito in assoluto?",
+      "Meglio una serata tranquilla al bar o una festa scatenata?",
+      "Qual è il tuo piatto preferito della cucina piemontese?",
+      "Se potessi avere un superpotere, quale sceglieresti?",
+      "Qual è l'hobby o la passione a cui dedichi più tempo?",
+      "Mare o montagna per le prossime vacanze?"
+    ];
+
+    function cambiaDomandaRompighiaccio() {
+      const randomIndex = Math.floor(Math.random() * listaDomandeRompighiaccio.length);
+      const domandaScelta = listaDomandeRompighiaccio[randomIndex];
+      document.getElementById("icebreakerText").textContent = "💡 Rompighiaccio: " + domandaScelta;
+    }
+
     const SCHERMATE = ["login-screen", "chat-screen", "admin-panel-screen", "info-screen", "faq-screen", "account-screen", "maintenance-screen"];
 
     window.addEventListener('DOMContentLoaded', function() {
       document.getElementById("termsConsentModal").style.display = "flex";
-      // Ascolta subito lo stato di manutenzione globale all'avvio
       avviaAscoltoManutenzioneGlobale();
+      cambiaDomandaRompighiaccio();
     });
 
     function avviaAscoltoManutenzioneGlobale() {
@@ -1075,7 +1115,6 @@
           userUniqueId = snapshot.val();
           finalizzaAvvioSessione(u);
         } else {
-          // Genera un ID casuale univoco e diverso per ogni nuovo utente
           let generatedId = Math.random().toString(36).substring(2, 8).toUpperCase();
           refCustomId.set(generatedId).then(function() {
             userUniqueId = generatedId;
@@ -1096,9 +1135,7 @@
         });
       }
 
-      // CONTROLLO ADMIN: Autorizzazione concessa SOLO se l'ID univoco generato è esattamente RV94LX
       isAdmin = (userUniqueId === "RV94LX");
-
       aggiornaDisplayNickname();
 
       const on = function(ref, cb) { ref.on('value', cb); listenerAttivi.push(ref); };
@@ -1260,6 +1297,8 @@
         SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
         document.getElementById("chat-screen").style.display = "block";
 
+        cambiaDomandaRompighiaccio();
+
         const layout = document.getElementById("chatAdminLayout");
         const inlineAdmin = document.getElementById("inlineAdminPanel");
         const container = document.getElementById("mainPageContainer");
@@ -1345,6 +1384,7 @@
       if (!activePeerId || !userId) return;
 
       nascondiVideoRemoto();
+      cambiaDomandaRompighiaccio();
       if (currentCall) { currentCall.close(); currentCall = null; }
       if (currentRoomId) {
         db.ref('rooms/' + currentRoomId).off();
