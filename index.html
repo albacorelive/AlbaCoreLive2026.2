@@ -81,6 +81,7 @@
       width: 240px;
       padding: 8px 0;
       backdrop-filter: blur(10px);
+      z-index: 101;
     }
 
     .dropdown-menu.active { display: block; }
@@ -1051,7 +1052,6 @@
     let userXp = 10;
     let listenerAttivi = [];
 
-    // Lista di domande rompighiaccio assortite
     const listaDomandeRompighiaccio = [
       "Qual è il tuo posto preferito in centro ad Alba?",
       "Preferisci la Nutella o i prodotti tipici delle Langhe?",
@@ -1190,11 +1190,10 @@
     }
 
     window.addEventListener('click', function(e) {
-      if (!e.target.matches('.menu-toggle-btn')) {
-        const menu = document.getElementById("dropdownMenu");
-        if (menu.classList.contains('active')) {
-          menu.classList.remove('active');
-        }
+      const menu = document.getElementById("dropdownMenu");
+      const toggleBtn = document.querySelector(".menu-toggle-btn");
+      if (!menu.contains(e.target) && !toggleBtn.contains(e.target)) {
+        menu.classList.remove('active');
       }
     });
 
@@ -1203,13 +1202,23 @@
       document.getElementById("dropdownMenu").classList.toggle('active');
     }
 
-    function apriAccountScreen() { nascondiTuttoTranne("account-screen"); }
+    function apriAccountScreen() {
+      document.getElementById("dropdownMenu").classList.remove('active');
+      nascondiTuttoTranne("account-screen");
+    }
+
+    function apriFaq() {
+      document.getElementById("dropdownMenu").classList.remove('active');
+      nascondiTuttoTranne("faq-screen");
+    }
+
     function tornaAllaHomeDaAccount() { rientraHomeControllata(); }
     function tornaAllaHomeDaInfo() { rientraHomeControllata(); }
     function tornaAllaHomeDaFaq() { rientraHomeControllata(); }
     function tornaAllaHomeDaAdmin() { rientraHomeControllata(); }
 
     function rientraHomeControllata() {
+      document.getElementById("dropdownMenu").classList.remove('active');
       db.ref('system/maintenance').once('value', function(s) {
         if (s.val()) {
           SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
@@ -1222,9 +1231,8 @@
       });
     }
 
-    function apriFaq() { nascondiTuttoTranne("faq-screen"); }
-
     function apriInfo(tipo) {
+      document.getElementById("dropdownMenu").classList.remove('active');
       nascondiTuttoTranne("info-screen");
       const titleEl = document.getElementById("infoTitle");
       const contentEl = document.getElementById("infoContent");
@@ -1238,6 +1246,7 @@
     }
 
     function apriBugModal() {
+      document.getElementById("dropdownMenu").classList.remove('active');
       const bugText = prompt("Segnala un bug o invia un feedback tecnico:");
       if (bugText) {
         db.ref('reports').push().set({
@@ -1478,6 +1487,7 @@
     }
 
     function attivaFullscreen() {
+      document.getElementById("dropdownMenu").classList.remove('active');
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else if (document.exitFullscreen) {
@@ -1577,6 +1587,7 @@
 
     // --- PANNELLO ADMIN & STATISTICHE ORIGINALI ---
     function apriPannelloAdmin() {
+      document.getElementById("dropdownMenu").classList.remove('active');
       if (!isAdmin) { alert("Non autorizzato."); return; }
       nascondiTuttoTranne("admin-panel-screen");
       caricaDatiAdminModal();
