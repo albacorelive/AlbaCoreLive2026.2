@@ -1035,7 +1035,25 @@
 
     window.addEventListener('DOMContentLoaded', function() {
       document.getElementById("termsConsentModal").style.display = "flex";
+      // Ascolta subito lo stato di manutenzione globale all'avvio
+      avviaAscoltoManutenzioneGlobale();
     });
+
+    function avviaAscoltoManutenzioneGlobale() {
+      db.ref('system/maintenance').on('value', function(s) {
+        const ms = document.getElementById("maintenance-screen");
+        const isMaint = s.val() || false;
+        if (isMaint) {
+          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+          ms.style.display = "block";
+        } else {
+          if (ms.style.display === "block") {
+            ms.style.display = "none";
+            document.getElementById("login-screen").style.display = "block";
+          }
+        }
+      });
+    }
 
     auth.onAuthStateChanged(function(u) {
       if (!u) {
@@ -1072,7 +1090,11 @@
       listenerAttivi.forEach(function(r) { r.off(); });
       listenerAttivi = [];
       if (currentRoomId || currentCall) { nascondiVideoRemoto(); }
-      if (cambioUtente) nascondiTuttoTranne("login-screen");
+      if (cambioUtente) {
+        db.ref('system/maintenance').once('value', function(s) {
+          if (!s.val()) nascondiTuttoTranne("login-screen");
+        });
+      }
 
       // CONTROLLO ADMIN: Autorizzazione concessa SOLO se l'ID univoco generato è esattamente RV94LX
       isAdmin = (userUniqueId === "RV94LX");
@@ -1090,18 +1112,6 @@
           if (myStream) myStream.getTracks().forEach(t => t.stop());
           if (peer) peer.destroy();
           document.body.innerHTML = '<h2 style="padding:60px 20px;text-align:center;color:#fff;font-family:sans-serif">Accesso negato: il tuo account è stato bannato.</h2>';
-        }
-      });
-
-      on(db.ref('system/maintenance'), function(s) {
-        const ms = document.getElementById("maintenance-screen");
-        const isMaint = s.val();
-        if (isMaint) {
-          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
-          ms.style.display = "block";
-        } else if (ms.style.display === "block") {
-          ms.style.display = "none";
-          document.getElementById("login-screen").style.display = "block";
         }
       });
 
@@ -1163,9 +1173,16 @@
     function tornaAllaHomeDaAdmin() { rientraHomeControllata(); }
 
     function rientraHomeControllata() {
-      SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
-      document.getElementById("mainPageContainer").classList.remove("admin-expanded");
-      document.getElementById("login-screen").style.display = "block";
+      db.ref('system/maintenance').once('value', function(s) {
+        if (s.val()) {
+          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+          document.getElementById("maintenance-screen").style.display = "block";
+        } else {
+          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+          document.getElementById("mainPageContainer").classList.remove("admin-expanded");
+          document.getElementById("login-screen").style.display = "block";
+        }
+      });
     }
 
     function apriFaq() { nascondiTuttoTranne("faq-screen"); }
@@ -1196,28 +1213,38 @@
     }
 
     function nascondiTuttoTranne(screenId) {
-      SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
-      document.getElementById("reportModal").style.display = "none";
-      document.getElementById("mainPageContainer").classList.remove("admin-expanded");
-      document.getElementById(screenId).style.display = "block";
+      db.ref('system/maintenance').once('value', function(s) {
+        if (s.val()) {
+          SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+          document.getElementById("maintenance-screen").style.display = "block";
+          return;
+        }
+        SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+        document.getElementById("reportModal").style.display = "none";
+        document.getElementById("mainPageContainer").classList.remove("admin-expanded");
+        document.getElementById(screenId).style.display = "block";
+      });
     }
 
     function avviaVerificaGPS() {
-      const errDiv = document.getElementById("geo-error");
-      errDiv.textContent = "Verifica GPS in corso...";
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          function(pos) {
-            const d = calcolaDistanza(pos.coords.latitude, pos.coords.longitude, 44.7035, 8.0357);
-            if (d <= 55) { errDiv.textContent = ""; entraNellaChat(); }
-            else errDiv.textContent = "Accesso negato: devi trovarti entro 50 km da Alba.";
-          },
-          function() { errDiv.textContent = "Impossibile rilevare la posizione GPS."; },
-          { timeout: 15000, enableHighAccuracy: true }
-        );
-      } else {
-        errDiv.textContent = "Geolocalizzazione non supportata dal browser.";
-      }
+      db.ref('system/maintenance').once('value', function(s) {
+        if (s.val()) { alert("Sito in manutenzione."); return; }
+        const errDiv = document.getElementById("geo-error");
+        errDiv.textContent = "Verifica GPS in corso...";
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            function(pos) {
+              const d = calcolaDistanza(pos.coords.latitude, pos.coords.longitude, 44.7035, 8.0357);
+              if (d <= 55) { errDiv.textContent = ""; entraNellaChat(); }
+              else errDiv.textContent = "Accesso negato: devi trovarti entro 50 km da Alba.";
+            },
+            function() { errDiv.textContent = "Impossibile rilevare la posizione GPS."; },
+            { timeout: 15000, enableHighAccuracy: true }
+          );
+        } else {
+          errDiv.textContent = "Geolocalizzazione non supportata dal browser.";
+        }
+      });
     }
 
     function calcolaDistanza(lat1, lon1, lat2, lon2) {
@@ -1228,60 +1255,63 @@
     }
 
     async function entraNellaChat() {
-      SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
-      document.getElementById("chat-screen").style.display = "block";
+      db.ref('system/maintenance').once('value', async function(s) {
+        if (s.val()) { alert("Sito in manutenzione."); return; }
+        SCHERMATE.forEach(id => document.getElementById(id).style.display = "none");
+        document.getElementById("chat-screen").style.display = "block";
 
-      const layout = document.getElementById("chatAdminLayout");
-      const inlineAdmin = document.getElementById("inlineAdminPanel");
-      const container = document.getElementById("mainPageContainer");
+        const layout = document.getElementById("chatAdminLayout");
+        const inlineAdmin = document.getElementById("inlineAdminPanel");
+        const container = document.getElementById("mainPageContainer");
 
-      if (isAdmin) {
-        layout.classList.add("with-admin");
-        inlineAdmin.style.display = "block";
-        container.classList.add("admin-expanded");
-      } else {
-        layout.classList.remove("with-admin");
-        inlineAdmin.style.display = "none";
-        container.classList.remove("admin-expanded");
-      }
-
-      try {
-        if (!myStream) {
-          myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (isAdmin) {
+          layout.classList.add("with-admin");
+          inlineAdmin.style.display = "block";
+          container.classList.add("admin-expanded");
+        } else {
+          layout.classList.remove("with-admin");
+          inlineAdmin.style.display = "none";
+          container.classList.remove("admin-expanded");
         }
-        document.getElementById("localVideo").srcObject = myStream;
-      } catch (err) {
-        console.error("Errore webcam:", err);
-        alert("Impossibile accedere alla webcam o al microfono. Verifica i permessi.");
-        tornaAllaHomeDaFaq();
-        return;
-      }
 
-      if (!peer) {
-        peer = new Peer({
-          config: {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
-            ]
+        try {
+          if (!myStream) {
+            myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
           }
-        });
+          document.getElementById("localVideo").srcObject = myStream;
+        } catch (err) {
+          console.error("Errore webcam:", err);
+          alert("Impossibile accedere alla webcam o al microfono. Verifica i permessi.");
+          tornaAllaHomeDaFaq();
+          return;
+        }
 
-        peer.on('open', function(id) {
-          cercaAltroUtente(id);
-        });
+        if (!peer) {
+          peer = new Peer({
+            config: {
+              iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+              ]
+            }
+          });
 
-        peer.on('call', function(call) {
-          currentCall = call;
-          const activeAudioTrack = myStream.getAudioTracks()[0];
-          const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
-          call.answer(callStream);
-          call.on('stream', function(remoteStream) { mostraVideoRemoto(remoteStream); });
-          call.on('close', function() { nascondiVideoRemoto(); });
-        });
-      } else {
-        cercaAltroUtente(peer.id);
-      }
+          peer.on('open', function(id) {
+            cercaAltroUtente(id);
+          });
+
+          peer.on('call', function(call) {
+            currentCall = call;
+            const activeAudioTrack = myStream.getAudioTracks()[0];
+            const callStream = new MediaStream([activeAudioTrack, myStream.getVideoTracks()[0]]);
+            call.answer(callStream);
+            call.on('stream', function(remoteStream) { mostraVideoRemoto(remoteStream); });
+            call.on('close', function() { nascondiVideoRemoto(); });
+          });
+        } else {
+          cercaAltroUtente(peer.id);
+        }
+      });
     }
 
     function mostraVideoRemoto(stream) {
@@ -1568,19 +1598,6 @@
         if (d) Object.values(d).forEach(r => { if (r && r.info) count++; });
         if (document.getElementById("statActiveRooms")) document.getElementById("statActiveRooms").textContent = count;
         if (document.getElementById("statActiveRoomsModal")) document.getElementById("statActiveRoomsModal").textContent = count;
-      });
-
-      db.ref('system/maintenance').on('value', s => {
-        const isMaint = s.val();
-        const btnInline = document.getElementById("killSwitchBtn");
-        const btnModal = document.getElementById("killSwitchModalBtn");
-        if (isMaint) {
-          if (btnInline) { btnInline.textContent = "🟢 Riattiva Sito Online"; btnInline.style.background = "#4ade80"; btnInline.style.color = "#000"; }
-          if (btnModal) { btnModal.textContent = "🟢 Riattiva Sito Online"; btnModal.style.background = "#4ade80"; btnModal.style.color = "#000"; }
-        } else {
-          if (btnInline) { btnInline.textContent = "🔴 Disattiva Sito (Manutenzione)"; btnInline.style.background = ""; btnInline.style.color = ""; }
-          if (btnModal) { btnModal.textContent = "🔴 Disattiva Sito (Manutenzione)"; btnModal.style.background = ""; btnModal.style.color = ""; }
-        }
       });
 
       db.ref('customIds').on('value', s => {
